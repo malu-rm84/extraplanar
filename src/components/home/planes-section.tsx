@@ -2,7 +2,8 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { PlaneBadge } from "@/components/ui/plane-badge";
-import { Globe, Bookmark } from "lucide-react";
+import { Globe, Bookmark, BookOpen } from "lucide-react";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 const planes = [
   {
@@ -13,15 +14,17 @@ const planes = [
   },
   {
     name: "Esmeralda",
-    description: "Um plano selvagem e natural, repleto de magia elemental da terra e floresta. Lar de fadas e seres arbóreos.",
+    description: "Um plano selvagem e natural, repleto de magia elemental da terra e floresta. Lar de Elfos, Feéricos e outras criaturas mágicas.",
     color: "emerald",
     image: "bg-gradient-to-br from-green-300 to-green-500",
+    lore: "A muito tempo atrás, dois seres primordiais, Oberon e Titânia, deram vida ao Plano Esmeralda. Juntos, criaram um lindo lugar e originaram uma raça de seres chamados de Feéricos. Aquele reino antigo formou o maior império que o universo já viu. Os dois deuses tiveram um filho, Puck, que havia herdado o melhor dos dois. Após anos de negligência e conflitos, uma guerra dividiu os Feéricos em dois: Fadas, seguidores de Titânia, e Elfos, seguidores de Oberon. Baba Yaga, a Mãe das Bruxas, junto com suas três filhas, Oberon e Puck conspiraram para derrubar Titânia. Com a vitória, os elfos tomaram o plano esmeralda, dividindo o antigo reino das fadas entre as filhas de Baba Yaga."
   },
   {
     name: "Inferno",
     description: "Plano de fogo e destruição, onde demônios e outras criaturas ardentes habitam fortalezas de obsidiana e lava.",
     color: "inferno",
     image: "bg-gradient-to-br from-red-300 to-red-500",
+    lore: "Após a grande guerra do Plano Esmeralda, os elfos expandiram seu domínio e colonizaram partes do Inferno. Este plano é dominado pelo calor extremo e habitado por criaturas que se adaptaram a viver em condições mortais para a maioria dos seres."
   },
   {
     name: "Etéreo",
@@ -70,6 +73,21 @@ export function PlanesSection() {
               <p className="text-muted-foreground mb-4">
                 {plane.description}
               </p>
+              {plane.lore && (
+                <Accordion type="single" collapsible className="mb-4">
+                  <AccordionItem value="lore">
+                    <AccordionTrigger className="text-sm">
+                      <span className="flex items-center">
+                        <BookOpen className="h-4 w-4 mr-2" />
+                        História do Plano
+                      </span>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <p className="text-sm text-muted-foreground">{plane.lore}</p>
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
+              )}
               <div className="flex justify-end">
                 <Button variant="ghost" size="sm" className="text-primary" asChild>
                   <Link to={`/planos/${plane.name.toLowerCase()}`}>
@@ -80,6 +98,29 @@ export function PlanesSection() {
               </div>
             </div>
           ))}
+        </div>
+
+        <div className="mt-16 p-6 bg-secondary/20 rounded-lg max-w-3xl mx-auto">
+          <h3 className="font-serif text-2xl font-semibold mb-4 text-center">O Complexo Esmeralda</h3>
+          <p className="text-muted-foreground mb-4">
+            A muito tempo atrás, 2 seres primordiais deram vida a um local, onde eles chamaram de Plano Esmeralda. 
+            Oberon e Titânia, juntos, criaram um lindo lugar, e originaram uma raça de seres chamados de Feéricos.
+          </p>
+          <p className="text-muted-foreground mb-4">
+            Aquele reino antigo formou o maior império que o universo já viu, maior mesmo que o próprio céu. 
+            Os deuses celestiais os invejavam, e nada podiam fazer a respeito, pois seus poderes mágicos 
+            originaram a magia natural por si própria.
+          </p>
+          <p className="text-muted-foreground mb-4">
+            O império foi dividido após uma guerra entre Oberon e Titânia, que separou os Feéricos em dois grupos: 
+            Fadas (seguidores de Titânia) e Elfos (seguidores de Oberon). O filho do casal divino, Puck, 
+            incapaz de escolher um lado na guerra, retirou-se para a "Floresta da Terra de Ninguém".
+          </p>
+          <p className="text-muted-foreground">
+            Com a ajuda de Baba Yaga, a Mãe das Bruxas, e suas três filhas (Bavlorna, Scabatha e Endelyn), 
+            Oberon e Puck conspiraram para derrubar Titânia. Após sua vitória, os elfos dividiram o antigo reino 
+            das fadas entre as filhas de Baba Yaga e expandiram seu império para o plano material e o inferno.
+          </p>
         </div>
       </div>
     </section>
