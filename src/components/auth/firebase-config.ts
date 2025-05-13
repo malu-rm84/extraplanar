@@ -1,15 +1,25 @@
 
-// Este arquivo deve ser substituído com suas configurações do Firebase quando estiver pronto
-// As chaves abaixo são apenas para referência e não são válidas
+// Firebase configuration for Extraplanar RPG
+import { initializeApp } from "firebase/app";
+import { getAuth, GoogleAuthProvider } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
 
 export const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "extraplanar-rpg.firebaseapp.com",
-  projectId: "extraplanar-rpg",
-  storageBucket: "extraplanar-rpg.appspot.com",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID",
+  apiKey: "AIzaSyCsJfhToQi0Rfzuiv8EaEqHZoFNgJAToDI",
+  authDomain: "extraplanar-7a4e6.firebaseapp.com",
+  projectId: "extraplanar-7a4e6",
+  storageBucket: "extraplanar-7a4e6.firebasestorage.app",
+  messagingSenderId: "444109466666",
+  appId: "1:444109466666:web:ac4159d4aab3f32d30e753"
 };
 
-// Nota: Substitua as configurações acima com suas próprias chaves do Firebase
-// quando estiver pronto para implementar a autenticação e o banco de dados
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+export const auth = getAuth(app);
+export const googleProvider = new GoogleAuthProvider();
+export const db = getFirestore(app);
+
+// Configure Google provider
+googleProvider.setCustomParameters({
+  prompt: 'select_account'
+});
