@@ -16,21 +16,21 @@ export function Footer() {
           </p>
         </div>
         <div className="flex flex-col md:flex-row gap-4 md:gap-6 text-sm">
-          <Link to="/sistema" className="hover:text-primary transition-colors">
+          <a href="/sistema" className="hover:text-primary transition-colors">
             Sistema
-          </Link>
-          <Link to="/planos" className="hover:text-primary transition-colors">
+          </a>
+          <a href="/planos" className="hover:text-primary transition-colors">
             Planos
-          </Link>
-          <Link to="/raças" className="hover:text-primary transition-colors">
+          </a>
+          <a href="/raças" className="hover:text-primary transition-colors">
             Raças
-          </Link>
-          <Link to="/termos" className="hover:text-primary transition-colors">
+          </a>
+          <a href="/termos" className="hover:text-primary transition-colors">
             Termos
-          </Link>
-          <Link to="/privacidade" className="hover:text-primary transition-colors">
+          </a>
+          <a href="/privacidade" className="hover:text-primary transition-colors">
             Privacidade
-          </Link>
+          </a>
         </div>
       </div>
     </footer>
