@@ -138,144 +138,154 @@ const MasterLore = () => {
 
   return (
     <MasterLayout>
-      <div className="flex h-screen">
-        {/* Sidebar de Pastas */}
-        <div className="w-64 border-r p-4">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="font-semibold">Pastas</h2>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                placeholder="Nome da pasta"
-                value={newFolderName}
-                onChange={(e) => setNewFolderName(e.target.value)}
-                className="text-sm px-2 py-1 border rounded w-32"
-              />
-              <button
-                onClick={handleCreateFolder}
-                className="p-1 hover:bg-muted rounded"
-              >
-                <Plus size={16} />
-              </button>
-            </div>
-          </div>
-
-          {folders.map((folder) => (
-            <div
-              key={folder.id}
-              className={`flex items-center p-2 hover:bg-muted rounded cursor-pointer ${
-                selectedFolder === folder.id ? "bg-muted" : ""
-              }`}
-              onClick={() => setSelectedFolder(folder.id)}
-            >
-              <Folder size={16} className="mr-2" />
-              {folder.name}
-            </div>
-          ))}
+      <div className="max-w-6xl mx-auto px-4 pb-16">
+        {/* Header atualizado */}
+        <div className="text-center mb-12 pt-8">
+          <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent">
+            Arquivo Extraplanar
+          </h1>
+          <p className="text-muted-foreground text-lg">
+            Registros das realidades transcendentes
+          </p>
         </div>
 
-        {/* Área Principal */}
-        <div className="flex-1 p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-serif font-bold">Lore</h1>
-            {!selectedNote && (
-              <button
-                onClick={handleCreateNote}
-                className="bg-primary text-primary-foreground px-4 py-2 rounded flex items-center"
+        <div className="flex gap-8">
+          {/* Sidebar de Pastas atualizada */}
+          <div className="w-64 bg-black/20 backdrop-blur-lg rounded-xl p-4 border border-white/10">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="font-semibold text-primary">Pastas</h2>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Nova pasta"
+                  value={newFolderName}
+                  onChange={(e) => setNewFolderName(e.target.value)}
+                  className="text-sm px-3 py-1 bg-black/30 rounded-full w-32 border border-white/10 focus:ring-0"
+                />
+                <button
+                  onClick={handleCreateFolder}
+                  className="p-1.5 hover:bg-primary/20 rounded-full transition-all"
+                >
+                  <Plus size={18} className="text-primary" />
+                </button>
+              </div>
+            </div>
+
+            {folders.map((folder) => (
+              <div
+                key={folder.id}
+                className={`flex items-center p-2 mb-1 rounded-lg transition-all ${
+                  selectedFolder === folder.id 
+                    ? 'bg-primary/20 text-primary' 
+                    : 'hover:bg-white/5'
+                }`}
+                onClick={() => setSelectedFolder(folder.id)}
               >
-                <Plus className="mr-2" size={16} />
-                Nova Anotação
-              </button>
-            )}
+                <Folder size={18} className="mr-2 text-muted-foreground" />
+                {folder.name}
+              </div>
+            ))}
           </div>
 
-          {/* Lista de Anotações */}
-          {!selectedNote && (
-            <div className="grid grid-cols-3 gap-4">
-              {notes
-                .filter((n) => n.folderId === selectedFolder)
-                .map((note) => (
-                  <div
-                    key={note.id}
-                    className="border p-4 rounded-lg hover:bg-muted/50"
-                  >
-                    <div className="flex justify-between items-center mb-2">
-                      <FileText className="text-muted-foreground" size={16} />
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => setSelectedNote(note)}
-                          className="hover:text-primary"
-                        >
-                          <Edit size={16} />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteNote(note.id)}
-                          className="hover:text-destructive"
-                        >
-                          <Trash2 size={16} />
-                        </button>
+          {/* Área Principal atualizada */}
+          <div className="flex-1">
+            <div className="flex justify-between items-center mb-6">
+              {!selectedNote && (
+                <button
+                  onClick={handleCreateNote}
+                  className="bg-primary/20 hover:bg-primary/30 text-primary px-4 py-2 rounded-full flex items-center transition-all"
+                >
+                  <Plus className="mr-2" size={18} />
+                  Nova Anotação
+                </button>
+              )}
+            </div>
+
+            {/* Lista de Anotações atualizada */}
+            {!selectedNote && (
+              <div className="grid grid-cols-2 gap-4">
+                {notes
+                  .filter((n) => n.folderId === selectedFolder)
+                  .map((note) => (
+                    <div
+                      key={note.id}
+                      className="bg-black/20 backdrop-blur-lg border border-white/10 rounded-xl p-4 hover:bg-white/5 transition-all"
+                    >
+                      <div className="flex justify-between items-center mb-3">
+                        <div className="flex items-center gap-2">
+                          <FileText className="text-primary" size={18} />
+                          <h3 className="font-medium">{note.title}</h3>
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => setSelectedNote(note)}
+                            className="text-muted-foreground hover:text-primary"
+                          >
+                            <Edit size={18} />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteNote(note.id)}
+                            className="text-muted-foreground hover:text-destructive"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                    <h3 className="font-medium">{note.title}</h3>
-                    <div className="text-sm text-muted-foreground mt-2 line-clamp-3">
-                      <div className="prose">
+                      <div className="text-sm text-muted-foreground line-clamp-3 prose">
                         <ReactMarkdown>{note.content}</ReactMarkdown>
                       </div>
                     </div>
-                  </div>
-                ))}
-            </div>
-          )}
-
-          {/* Editor de Markdown */}
-          {selectedNote && (
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <input
-                  type="text"
-                  value={selectedNote.title}
-                  onChange={(e) =>
-                    setSelectedNote({ ...selectedNote, title: e.target.value })
-                  }
-                  className="text-xl font-bold bg-transparent border-b-2 focus:border-primary focus:outline-none"
-                />
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => exportToMarkdown(selectedNote)}
-                    className="p-2 hover:bg-muted rounded"
-                  >
-                    <Download size={16} />
-                  </button>
-                  <button
-                    onClick={() => {
-                      handleSaveNote(selectedNote);
-                      setSelectedNote(null);
-                    }}
-                    className="bg-primary text-primary-foreground px-4 py-2 rounded"
-                  >
-                    Salvar e Sair
-                  </button>
-                </div>
+                  ))}
               </div>
+            )}
 
-              <div className="grid grid-cols-2 gap-6 h-[700px]">
-                <textarea
-                  value={selectedNote.content}
-                  onChange={(e) =>
-                    setSelectedNote({ ...selectedNote, content: e.target.value })
-                  }
-                  className="w-full p-4 border rounded-lg font-mono focus:ring-0 resize-none"
-                  placeholder="Escreva seu conteúdo em Markdown..."
-                />
+            {/* Editor atualizado */}
+            {selectedNote && (
+              <div className="bg-black/20 backdrop-blur-lg border border-white/10 rounded-xl p-6">
+                <div className="flex justify-between items-center mb-6">
+                  <input
+                    type="text"
+                    value={selectedNote.title}
+                    onChange={(e) =>
+                      setSelectedNote({ ...selectedNote, title: e.target.value })
+                    }
+                    className="text-2xl font-bold bg-transparent border-b-2 border-primary/50 focus:outline-none"
+                  />
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => exportToMarkdown(selectedNote)}
+                      className="p-2 hover:bg-primary/20 rounded-full transition-all"
+                    >
+                      <Download size={18} className="text-primary" />
+                    </button>
+                    <button
+                      onClick={() => {
+                        handleSaveNote(selectedNote);
+                        setSelectedNote(null);
+                      }}
+                      className="bg-primary/20 hover:bg-primary/30 text-primary px-4 py-2 rounded-full transition-all"
+                    >
+                      Salvar e Sair
+                    </button>
+                  </div>
+                </div>
 
-                <div className="border rounded-lg p-4 overflow-y-auto">
-                  <div className="prose max-w-none">
+                <div className="grid grid-cols-2 gap-6 h-[700px]">
+                  <textarea
+                    value={selectedNote.content}
+                    onChange={(e) =>
+                      setSelectedNote({ ...selectedNote, content: e.target.value })
+                    }
+                    className="w-full p-4 bg-black/30 border border-white/10 rounded-xl font-mono focus:ring-0 resize-none"
+                    placeholder="Escreva seu conteúdo em Markdown..."
+                  />
+                  <div className="bg-black/30 border border-white/10 rounded-xl p-4 overflow-y-auto prose max-w-none">
                     <ReactMarkdown>{selectedNote.content}</ReactMarkdown>
                   </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
     </MasterLayout>
