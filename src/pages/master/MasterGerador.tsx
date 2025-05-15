@@ -3,7 +3,7 @@ import NPCNameGenerator from "@/components/NPCNameGenerator";
 import { useEffect, useState } from "react";
 import { db, auth } from "@/components/auth/firebase-config";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
-import { races } from "@/data/racas";
+import { Planos } from "@/data/PlanosRacas";
 
 const MasterGerador = () => {
   const [sessaoId] = useState("sessao-atual");
@@ -11,10 +11,22 @@ const MasterGerador = () => {
   const [planoSelecionado, setPlanoSelecionado] = useState("");
   const [racasFiltradas, setRacasFiltradas] = useState<string[]>([]);
 
+  // Criar objeto de raças a partir dos Planos
+  const races = Planos.reduce((acc, plano) => {
+    plano.racas.forEach((raca) => {
+      acc[raca.nome] = { plano: plano.nome };
+    });
+    return acc;
+  }, {} as { [key: string]: { plano: string } });
+
   // Extrair planos únicos
   const planos = Array.from(
-    new Set(Object.values(races).map((r) => r.plano))
-  ).filter(Boolean) as string[];
+    new Set(
+      Object.values(races)
+        .map((r) => r.plano)
+        .filter(Boolean)
+    )
+  ) as string[];
 
   useEffect(() => {
     if (planoSelecionado) {

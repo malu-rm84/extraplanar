@@ -25,13 +25,14 @@ import MasterDashboard from "./pages/master/MasterDashboard";
 import MasterCampanhas from "./pages/master/MasterCampanhas";
 import MasterNotes from "./pages/master/MasterNotes";
 import MasterGerador from "./pages/master/MasterGerador";
+import { MasterCriarPersonagens } from "./pages/master/MasterCriarPersonagens";
 import MasterSistema from "./pages/master/MasterSistema";
 import MasterPlayers from "./pages/master/MasterPlayers";
 import MasterConfig from "./pages/master/MasterConfig";
 
 // Player Pages
 import PlayerDashboard from "./pages/player/PlayerDashboard";
-import PlayerPersonagens from "./pages/player/PlayerPersonagens";
+import { PlayerCriarPersonagens } from "./pages/player/PlayerCriarPersonagens";
 import PlayerSessao from "./pages/player/PlayerSessao";
 import PlayerConfig from "./pages/player/PlayerConfig";
 
@@ -64,6 +65,7 @@ const App = () => (
                 <Route path="/master/campanhas" element={<MasterCampanhas />} />
                 <Route path="/master/notes" element={<MasterNotes />} />
                 <Route path="/master/gerador" element={<MasterGerador />} />
+                <Route path="/master/criarpersonagens" element={<MasterCriarPersonagens />} />
                 <Route path="/master/sistema" element={<MasterSistema />} />
                 <Route path="/master/players" element={<MasterPlayers />} />
                 <Route path="/master/config" element={<MasterConfig />} />
@@ -74,7 +76,7 @@ const App = () => (
             <Route element={<ProtectedRoute />}>
               <Route element={<PlayerRoute />}>
                 <Route path="/player/dashboard" element={<PlayerDashboard />} />
-                <Route path="/player/personagens" element={<PlayerPersonagens />} />
+                <Route path="/player/criarpersonagens" element={<PlayerCriarPersonagens />} />
                 <Route path="/player/sessao" element={<PlayerSessao />} />
                 <Route path="/player/config" element={<PlayerConfig />} />
               </Route>

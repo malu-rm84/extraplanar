@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { maleNames, femaleNames, surnames } from "@/data/names";
 import { Button } from "@/components/ui/button";
-import { Plus, RefreshCw, Check } from "lucide-react";
+import { RefreshCw, Check } from "lucide-react";
 import { db, auth } from "@/components/auth/firebase-config";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
-import { races } from "@/data/racas";
+import { Planos } from "@/data/PlanosRacas";
 
 interface NPC {
   id?: string;
@@ -22,6 +22,14 @@ interface NPCNameGeneratorProps {
 }
 
 const NPCNameGenerator = ({ sessaoId, filtroRaca }: NPCNameGeneratorProps) => {
+  // Criar objeto de raças a partir dos Planos
+  const races = Planos.reduce((acc, plano) => {
+    plano.racas.forEach((raca) => {
+      acc[raca.nome] = { plano: plano.nome };
+    });
+    return acc;
+  }, {} as { [key: string]: { plano: string } });
+
   const [npc, setNpc] = useState<NPC>({
     nome: "",
     idade: "Adulto",

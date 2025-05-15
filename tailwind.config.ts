@@ -24,51 +24,51 @@ export default {
         sans: ["Inter", "sans-serif"],
       },
       colors: {
-        border: "hsl(var(--border))",
-        input: "hsl(var(--input))",
-        ring: "hsl(var(--ring))",
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
+        // Cores base ajustadas para melhor contraste
+        border: "hsl(240 6% 25%)", // Bordas mais visíveis
+        input: "hsl(0 0% 95%)", // Inputs mais claros
+        ring: "hsl(250 82% 60%)", // Anel de foco mais vibrante
+        background: "hsl(240 10% 8%)", // Fundo levemente mais claro
+        foreground: "hsl(0 0% 90%)", // Texto principal mais brilhante
         primary: {
-          DEFAULT: "hsl(var(--primary))",
-          foreground: "hsl(var(--primary-foreground))",
+          DEFAULT: "hsl(250 82% 60%)", // Roxo mais vibrante
+          foreground: "hsl(0 0% 100%)",
         },
         secondary: {
-          DEFAULT: "hsl(var(--secondary))",
-          foreground: "hsl(var(--secondary-foreground))",
-        },
-        destructive: {
-          DEFAULT: "hsl(var(--destructive))",
-          foreground: "hsl(var(--destructive-foreground))",
+          DEFAULT: "hsl(240 5% 26%)", // Secundário mais claro
+          foreground: "hsl(0 0% 90%)",
         },
         muted: {
-          DEFAULT: "hsl(var(--muted))",
-          foreground: "hsl(var(--muted-foreground))",
+          DEFAULT: "hsl(240 6% 20%)", // Fundo muted mais claro
+          foreground: "hsl(0 0% 70%)", // Texto muted mais legível
         },
-        accent: {
-          DEFAULT: "hsl(var(--accent))",
-          foreground: "hsl(var(--accent-foreground))",
+        // Novas cores para suportar os componentes
+        gray: {
+          300: "hsl(0 0% 80%)",
+          400: "hsl(0 0% 70%)",
+          800: "hsl(240 8% 12%)",
         },
-        popover: {
-          DEFAULT: "hsl(var(--popover))",
-          foreground: "hsl(var(--popover-foreground))",
+        // Extensões para transparências
+        'primary/20': "hsla(250 82% 60% / 0.2)",
+        'white/5': "hsla(0 0% 100% / 0.05)",
+        'white/10': "hsla(0 0% 100% / 0.1)",
+        // Planos com novas tonalidades
+        plane: {
+          material: "#A8ABBF", // Mais claro
+          emerald: "#6EED92", // Mais vibrante
+          inferno: "#FF5C6C", // Menos saturado
+          ethereal: "#9D7AFF", // Mais suave
+          astral: "#3FB4FF", // Azul mais claro
         },
         card: {
-          DEFAULT: "hsl(var(--card))",
-          foreground: "hsl(var(--card-foreground))",
-        },
-        plane: {
-          material: "#8E9196",
-          emerald: "#4ade80",
-          inferno: "#ea384c",
-          ethereal: "#8b5cf6",
-          astral: "#0ea5e9",
+          DEFAULT: "rgb(var(--card) / <alpha-value>)", // Permite usar opacidade
+          foreground: "rgb(var(--card-foreground) / <alpha-value>)",
         },
       },
       borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+        lg: "12px",
+        md: "8px",
+        sm: "4px",
       },
       keyframes: {
         "accordion-down": {
@@ -94,6 +94,9 @@ export default {
         "float": "float 6s ease-in-out infinite",
         "glow": "glow 3s ease-in-out infinite",
       },
+      backgroundImage: {
+        'primary-gradient': 'linear-gradient(135deg, hsl(250 82% 60%) 0%, hsl(270 70% 50%) 100%)',
+      }
     },
   },
   plugins: [

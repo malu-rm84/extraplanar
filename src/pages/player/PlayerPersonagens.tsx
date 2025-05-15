@@ -1,6 +1,6 @@
 import { PlayerLayout } from "@/components/layout/PlayerLayout";
 import { useState, useEffect } from "react";
-import { races } from "@/data/racas";
+import { races } from "@/data/PlanosRacas";
 import { Character, Item, Arma } from "../../data/character";
 
 const planos = ["Material", "Esmeralda", "Chiclete", "Inferno", "Étereo", "Céu"];
