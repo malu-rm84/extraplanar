@@ -12,8 +12,6 @@ export type Character = {
   nome: string;
   raca: string;
   plano: string;
-  linguas: string[];
-  capacidades: string[];
   atributos: {
     forca: number;
     agilidade: number;
@@ -29,11 +27,7 @@ export type Character = {
     dp: number;
   };
   afinidade: {
-    arcana: number;
-    cosmica: number;
-    divina: number;
     natural: number;
-    necromante: number;
   };
   herancas: {
     magia: number;
@@ -46,20 +40,11 @@ export type Character = {
     origem: string;
     extras: string[];
   };
-  faixaEtaria: string;
   pericias: Record<string, number>;
-  ocupacoes: Ocupacao[];
   inventario: {
     itens: Item[];
     armas: Arma[];
   };
   magias: string[];
   anotacoes: string;
-};
-
-export type Ocupacao = {
-  nome: string;
-  categoria: string;
-  nivel: number;
-  custoPD: number;
 };

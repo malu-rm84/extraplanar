@@ -22,8 +22,8 @@ import NotFound from "./pages/NotFound";
 
 // Master Pages
 import MasterDashboard from "./pages/master/MasterDashboard";
-import MasterMesas from "./pages/master/MasterMesas";
-import MasterLore from "./pages/master/MasterLore";
+import MasterCampanhas from "./pages/master/MasterCampanhas";
+import MasterNotes from "./pages/master/MasterNotes";
 import MasterGerador from "./pages/master/MasterGerador";
 import MasterSistema from "./pages/master/MasterSistema";
 import MasterPlayers from "./pages/master/MasterPlayers";
@@ -61,8 +61,8 @@ const App = () => (
             <Route element={<ProtectedRoute />}>
               <Route element={<MasterRoute />}>
                 <Route path="/master/dashboard" element={<MasterDashboard />} />
-                <Route path="/master/mesas" element={<MasterMesas />} />
-                <Route path="/master/lore" element={<MasterLore />} />
+                <Route path="/master/campanhas" element={<MasterCampanhas />} />
+                <Route path="/master/notes" element={<MasterNotes />} />
                 <Route path="/master/gerador" element={<MasterGerador />} />
                 <Route path="/master/sistema" element={<MasterSistema />} />
                 <Route path="/master/players" element={<MasterPlayers />} />

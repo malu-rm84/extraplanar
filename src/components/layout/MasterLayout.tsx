@@ -3,13 +3,15 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { 
   LayoutDashboard, 
   BookOpen, 
+  ScrollText,
   Users, 
   Settings, 
   LogOut,
   Menu,
   X,
-  FileText,
-  Table
+  Bot,
+  Map,
+  Sparkles
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { auth } from "@/components/auth/firebase-config";
@@ -51,7 +53,7 @@ export function MasterLayout({ children }: MasterLayoutProps) {
       {/* Mobile Header */}
       <div className="md:hidden flex items-center justify-between border-b border-white/10 p-4 bg-black/30 backdrop-blur-lg">
         <Link to="/master/dashboard" className="flex items-center gap-2">
-          <BookOpen className="h-6 w-6 text-primary" />
+          <Sparkles className="h-6 w-6 text-primary" />
           <span className="font-serif text-xl font-bold bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent">
             Extraplanar
           </span>
@@ -70,7 +72,7 @@ export function MasterLayout({ children }: MasterLayoutProps) {
       {/* Sidebar */}
       <aside className={`${isMenuOpen ? 'flex' : 'hidden'} md:flex flex-col w-full md:w-64 bg-black/30 backdrop-blur-lg border-r border-white/10`}>
         <div className="hidden md:flex items-center gap-2 p-6 border-b border-white/10">
-          <BookOpen className="h-6 w-6 text-primary" />
+          <Sparkles className="h-6 w-6 text-primary" />
           <span className="font-serif text-xl font-bold bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent">
             Extraplanar
           </span>
@@ -79,9 +81,9 @@ export function MasterLayout({ children }: MasterLayoutProps) {
         <nav className="flex-grow p-4 space-y-2">
           {[
             { path: "/master/dashboard", icon: <LayoutDashboard />, label: "Dashboard" },
-            { path: "/master/mesas", icon: <Table />, label: "Mesas" },
-            { path: "/master/lore", icon: <BookOpen />, label: "Lore" },
-            { path: "/master/gerador", icon: <FileText />, label: "Gerador" },
+            { path: "/master/campanhas", icon: <Map />, label: "Campanhas" },
+            { path: "/master/notes", icon: <ScrollText />, label: "Notes" },
+            { path: "/master/gerador", icon: <Bot />, label: "Gerador" },
             { path: "/master/sistema", icon: <BookOpen />, label: "Sistema" },
             { path: "/master/players", icon: <Users />, label: "Players" },
             { path: "/master/config", icon: <Settings />, label: "Configurações" },
