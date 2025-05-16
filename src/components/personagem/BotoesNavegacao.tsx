@@ -8,6 +8,7 @@ interface BotoesNavegacaoProps {
   irParaEtapaAnterior: () => void;
   irParaProximaEtapa: () => void;
   salvarPersonagem: () => void;
+  pdExcedido: boolean;
 }
 
 const BotoesNavegacao = ({
@@ -17,6 +18,7 @@ const BotoesNavegacao = ({
   irParaEtapaAnterior,
   irParaProximaEtapa,
   salvarPersonagem,
+  pdExcedido, // Adicione esta linha
 }: BotoesNavegacaoProps) => {
   return (
     <div className="flex justify-between mt-8 gap-4">
@@ -42,6 +44,7 @@ const BotoesNavegacao = ({
         <Button 
           onClick={irParaProximaEtapa} 
           className="bg-gradient-to-r from-emerald-500 to-cyan-400 hover:from-emerald-400 hover:to-cyan-300 text-white"
+          disabled={pdExcedido} // Agora usando a prop
         >
           Próximo
           <ChevronRight className="ml-2 h-4 w-4" />

@@ -12,14 +12,14 @@ export interface CategoriaExperiencia {
 
 export const experiencia: CategoriaExperiencia[] = [
   {
-    categoria: "PD 1 (Fundamentais)",
+    categoria: "Fundamentais",
     itens: [
       { nome: "PV", custo: "1 + Vigor + Bônus de Faixa Etária", descricao: "Some 1 + Vigor + Bônus de Faixa Etária nos seus PVs." },
       { nome: "PE", custo: "1 + Vigor + Bônus de Faixa Etária", descricao: "Some 1 + Vigor + Bônus de Faixa Etária nos seus PEs." },
     ],
   },
   {
-    categoria: "PD 2 (Habilidades Básicas)",
+    categoria: "Habilidades Básicas",
     itens: [
       { nome: "Saque Rápido", custo: "2 + 3PD", descricao: "Desce um passo do saque de arma. Mais 1 passo com 3PD.", efeito: "" },
       { nome: "Atleta", custo: "2PD", descricao: "+3m de deslocamento.", efeito: "" },
@@ -30,7 +30,7 @@ export const experiencia: CategoriaExperiencia[] = [
     ],
   },
   {
-    categoria: "PD 3 (Habilidades Sólidas)",
+    categoria: "Habilidades Sólidas",
     itens: [
       { nome: "Proficiência", custo: "3PD", descricao: "Usa o valor do atributo no ataque com um tipo de arma.", efeito: "" },
       { nome: "Furtividade Suprema", custo: "3PD", descricao: "Move-se totalmente enquanto está furtivo.", efeito: "" },
@@ -44,7 +44,7 @@ export const experiencia: CategoriaExperiencia[] = [
     ],
   },
   {
-    categoria: "PD 4 (Habilidades Boas)",
+    categoria: "Habilidades Boas",
     itens: [
       { nome: "Arma Favorita", custo: "4PD", descricao: "+1 na margem de ameaça da arma escolhida.", efeito: "" },
       { nome: "Artista Marcial", custo: "4PD", descricao: "Ataques desarmados com AGI ou FOR à vontade.", efeito: "" },
@@ -61,7 +61,7 @@ export const experiencia: CategoriaExperiencia[] = [
     ],
   },
   {
-    categoria: "PD 5 (Habilidades Fortes)",
+    categoria: "Habilidades Fortes",
     itens: [
       { nome: "Evasão", custo: "5PD", descricao: "Evita todo dano em área, não só metade.", efeito: "" },
       { nome: "Expert", custo: "5 + 4PD", descricao: "1-5PE = +1 a +5 bônus em perícias com até +3. 10PE = +10 com 4PD.", efeito: "" },
@@ -77,7 +77,7 @@ export const experiencia: CategoriaExperiencia[] = [
     ],
   },
   {
-    categoria: "PD 6 (Habilidades Muito Fortes)",
+    categoria: "Habilidades Muito Fortes",
     itens: [
       { nome: "Maestria Mágica", custo: "6PD", descricao: "Reduz 1PE ao conjurar uma magia específica.", efeito: "" },
       { nome: "Primeiras Impressões", custo: "6PD", descricao: "+10 no primeiro teste social com alguém.", efeito: "" },
@@ -88,7 +88,7 @@ export const experiencia: CategoriaExperiencia[] = [
     ],
   },
   {
-    categoria: "PD 7 (Habilidades Excepcionais)",
+    categoria: "Habilidades Excepcionais",
     itens: [
       { nome: "Ambidestro", custo: "7PD", descricao: "1PE para atacar com ação bônus.", efeito: "" },
       { nome: "Concentração", custo: "7PD", descricao: "2PE para manter efeito sem precisar de concentração.", efeito: "" },
@@ -99,7 +99,7 @@ export const experiencia: CategoriaExperiencia[] = [
     ],
   },
   {
-    categoria: "PD 8-10 (Habilidades Quebradas)",
+    categoria: "Habilidades Quebradas",
     itens: [
       { nome: "Ataque Extra", custo: "8PD", descricao: "2PE para atacar duas vezes na mesma ação.", efeito: "" },
       { nome: "Resistência Natural", custo: "8PD", descricao: "Escolhe 1 tipo de dano (concussão, cortante, perfurante) para ter resistência.", efeito: "" },

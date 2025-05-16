@@ -8,37 +8,55 @@ import { Capacidade, CategoriaCapacidades } from "../../data/Capacidades";
 
 export type EtapaCriacao =
   | "dados"
+  | "descricao"
   | "atributos"
-  | "magias"
+  | "afinidades"
   | "pericias"
   | "ocupacoes"
   | "capacidades"
+  | "linguas" 
   | "inventario"
-  | "extras";
+  | "experiencia";
 
 export interface Personagem {
   nome: string;
   idade: string;
   plano: string;
   raca: string;
-  faixaEtaria?: FaixaEtaria;
-  linguaMaterna?: Lingua;
+  descricaoFisica?: string;
+  personalidade?: string;
+  historia?: string;
+  observacoes?: string;
+  habilidadeRacial: string;
+  faixaEtaria?: string;
+  linguaMaterna: Lingua;
+  linguasAdquiridas: Lingua[];
   dialectos?: Lingua[];
   atributos: {
-    forca: number;
-    destreza: number;
-    constituicao: number;
-    inteligencia: number;
-    sabedoria: number;
-    carisma: number;
+    agilidade: { base: number; racial: number };
+    forca: { base: number; racial: number };
+    intelecto: { base: number; racial: number };
+    presenca: { base: number; racial: number };
+    vigor: { base: number; racial: number };
   };
-  afinidades: string[];
+  afinidades: {
+    arcana: number;
+    cosmica: number;
+    divina: number;
+    natural: number;
+    necromante: number;
+  };
   magias: any[];
   experiencia?: CategoriaExperiencia[];
   pericias?: CategoriaPericias[];
-  ocupacoes?: CategoriaOcupacoes[];
-  capacidades?: CategoriaCapacidades[];
+  ocupacoesSelecionadas?: Array<{
+    nome: string;
+    nivel: number;
+  }>;
+  capacidadesSelecionadas?: Array<{
+    nome: string;
+    custo: number;
+  }>;
   inventario?: any[];
   extras?: Record<string, any>;
 }
-

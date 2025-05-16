@@ -3,6 +3,7 @@ export interface Pericia {
   atributo: string;
   custoPD: number;
   descricao: string;
+  pontos?: number; // Adicione esta linha
 }
 
 export interface CategoriaPericias {

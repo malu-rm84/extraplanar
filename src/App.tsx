@@ -19,6 +19,8 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import UserType from "./pages/UserType";
 import NotFound from "./pages/NotFound";
+import { PersonagensPage } from './pages/PersonagensPage';
+import { PersonagemFichaWrapper } from './pages/player/PersonagemFichaWrapper';
 
 // Master Pages
 import MasterDashboard from "./pages/master/MasterDashboard";
@@ -69,6 +71,8 @@ const App = () => (
                 <Route path="/master/sistema" element={<MasterSistema />} />
                 <Route path="/master/players" element={<MasterPlayers />} />
                 <Route path="/master/config" element={<MasterConfig />} />
+                <Route path="/personagens" element={<PersonagensPage />} />
+                <Route path="/personagens/:id" element={<PersonagemFichaWrapper />} />
               </Route>
             </Route>
             
