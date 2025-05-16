@@ -85,6 +85,7 @@ export function MasterLayout({ children }: MasterLayoutProps) {
             { path: "/master/campanhas", icon: <Map />, label: "Campanhas" },
             { path: "/master/notes", icon: <ScrollText />, label: "Notes" },
             { path: "/master/gerador", icon: <Bot />, label: "Gerador" },
+            { path: "/master/personagens", icon: <Users />, label: "Meus Personagens" },
             { path: "/master/criarpersonagens", icon: <User />, label: "Criar Personagens" },
             { path: "/master/sistema", icon: <BookOpen />, label: "Sistema" },
             { path: "/master/players", icon: <Users />, label: "Players" },

@@ -4,6 +4,7 @@ import { Planos, MAPEAMENTO_ATRIBUTOS } from "@/data/PlanosRacas";
 import { FaixasEtarias } from "@/data/FaixaEtaria";
 import { linguas } from "@/data/Linguas";
 import { Lingua } from "@/data/Linguas";
+import { SelectDropdown } from "@/utils/SelectDropdown";
 
 interface EtapaDadosBasicosProps {
   personagem: any;
@@ -53,19 +54,19 @@ const EtapaDadosBasicos = ({ personagem, setPersonagem }: EtapaDadosBasicosProps
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-4">
-          <div className="bg-white/5 p-4 rounded-lg border border-white/10">
+          <div className="bg-black/30 backdrop-blur-sm p-4 rounded-lg border border-white/10">
             <Label className="text-gray-300">Nome do Personagem</Label>
             <Input
               value={personagem.nome}
               onChange={(e) => setPersonagem({...personagem, nome: e.target.value})}
-              className="mt-2 bg-white/10 border-none text-gray-200"
+              className="mt-2 bg-black/50 border-white/10 text-gray-200 focus:border-primary/40 focus:ring-primary"
               placeholder="Nome do seu personagem"
             />
           </div>
 
-          <div className="bg-white/5 p-4 rounded-lg border border-white/10">
+          <div className="bg-black/30 backdrop-blur-sm p-4 rounded-lg border border-white/10">
             <Label className="text-gray-300">Plano de Origem</Label>
-            <select
+            <SelectDropdown
               value={personagem.plano}
               onChange={(e) => setPersonagem({
                 ...personagem, 
@@ -73,7 +74,7 @@ const EtapaDadosBasicos = ({ personagem, setPersonagem }: EtapaDadosBasicosProps
                 raca: '',
                 habilidadeRacial: ''
               })}
-              className="w-full mt-2 bg-white/10 rounded-md p-2 text-gray-200 border-none"
+              className="mt-2"
             >
               <option value="">Selecione um plano</option>
               {Planos.map((plano) => (
@@ -81,14 +82,14 @@ const EtapaDadosBasicos = ({ personagem, setPersonagem }: EtapaDadosBasicosProps
                   {plano.nome}
                 </option>
               ))}
-            </select>
+            </SelectDropdown>
           </div>
         </div>
 
         <div className="space-y-4">
-          <div className="bg-white/5 p-4 rounded-lg border border-white/10">
+          <div className="bg-black/30 backdrop-blur-sm p-4 rounded-lg border border-white/10">
             <Label className="text-gray-300">Faixa Etária</Label>
-            <select
+            <SelectDropdown
               value={personagem.faixaEtaria}
               onChange={(e) => {
                 const newFaixa = e.target.value;
@@ -117,7 +118,7 @@ const EtapaDadosBasicos = ({ personagem, setPersonagem }: EtapaDadosBasicosProps
                   };
                 });
               }}
-              className="w-full mt-2 bg-white/10 rounded-md p-2 text-gray-200 border-none"
+              className="mt-2"
             >
               <option value="">Selecione uma faixa etária</option>
               {FaixasEtarias.map((faixa) => (
@@ -125,15 +126,15 @@ const EtapaDadosBasicos = ({ personagem, setPersonagem }: EtapaDadosBasicosProps
                   {faixa.nome}
                 </option>
               ))}
-            </select>
+            </SelectDropdown>
           </div>
 
-          <div className="bg-white/5 p-4 rounded-lg border border-white/10">
+          <div className="bg-black/30 backdrop-blur-sm p-4 rounded-lg border border-white/10">
             <Label className="text-gray-300">Raça</Label>
-            <select
+            <SelectDropdown
               value={personagem.raca}
               onChange={(e) => handleSelecionarRaca(e.target.value)}
-              className="w-full mt-2 bg-white/10 rounded-md p-2 text-gray-200 border-none"
+              className="mt-2"
               disabled={!personagem.plano}
             >
               <option value="">Selecione primeiro um plano</option>
@@ -148,12 +149,12 @@ const EtapaDadosBasicos = ({ personagem, setPersonagem }: EtapaDadosBasicosProps
                   </option>
                 );
               })}
-            </select>
+            </SelectDropdown>
           </div>
 
-          <div className="bg-white/5 p-4 rounded-lg border border-white/10">
+          <div className="bg-black/30 backdrop-blur-sm p-4 rounded-lg border border-white/10">
             <Label className="text-gray-300">Habilidade da Raça</Label>
-            <div className="mt-2 p-2 bg-white/10 rounded-md text-gray-300 min-h-[40px]">
+            <div className="mt-2 p-2 bg-black/50 rounded-md text-gray-300 min-h-[40px] border border-white/10">
               {personagem.habilidadeRacial || "Nenhuma habilidade especial"}
             </div>
           </div>

@@ -1,4 +1,4 @@
-
+// src/components/layout/footer.tsx
 import { Flame } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -16,21 +16,21 @@ export function Footer() {
           </p>
         </div>
         <div className="flex flex-col md:flex-row gap-4 md:gap-6 text-sm">
-          <a href="/sistema" className="hover:text-primary transition-colors">
+          <Link to="/#features" className="hover:text-primary transition-colors">
             Sistema
-          </a>
-          <a href="/planos" className="hover:text-primary transition-colors">
+          </Link>
+          <Link to="/#planos" className="hover:text-primary transition-colors">
             Planos
-          </a>
-          <a href="/raças" className="hover:text-primary transition-colors">
+          </Link>
+          <Link to="/racas" className="hover:text-primary transition-colors">
             Raças
-          </a>
-          <a href="/termos" className="hover:text-primary transition-colors">
+          </Link>
+          <Link to="/termos" className="hover:text-primary transition-colors">
             Termos
-          </a>
-          <a href="/privacidade" className="hover:text-primary transition-colors">
+          </Link>
+          <Link to="/privacidade" className="hover:text-primary transition-colors">
             Privacidade
-          </a>
+          </Link>
         </div>
       </div>
     </footer>

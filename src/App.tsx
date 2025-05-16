@@ -1,4 +1,4 @@
-
+// App.tsx
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -13,14 +13,13 @@ import {
   UserTypeRoute 
 } from "@/components/auth/ProtectedRoute";
 
-// Public Pages
-import Index from "./pages/Index";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
+// Página unificada
+import HomePage from "./pages/Home";
+import LoginPage from "./pages/Login";
 import UserType from "./pages/UserType";
 import NotFound from "./pages/NotFound";
 import { PersonagensPage } from './pages/PersonagensPage';
-import { PersonagemFichaWrapper } from './pages/player/PersonagemFichaWrapper';
+import { PersonagemFichaWrapper } from './pages/PersonagemFichaWrapper';
 
 // Master Pages
 import MasterDashboard from "./pages/master/MasterDashboard";
@@ -28,6 +27,7 @@ import MasterCampanhas from "./pages/master/MasterCampanhas";
 import MasterNotes from "./pages/master/MasterNotes";
 import MasterGerador from "./pages/master/MasterGerador";
 import { MasterCriarPersonagens } from "./pages/master/MasterCriarPersonagens";
+import { MasterPersonagensPage } from "./pages/master/MasterPersonagensPage";
 import MasterSistema from "./pages/master/MasterSistema";
 import MasterPlayers from "./pages/master/MasterPlayers";
 import MasterConfig from "./pages/master/MasterConfig";
@@ -37,6 +37,8 @@ import PlayerDashboard from "./pages/player/PlayerDashboard";
 import { PlayerCriarPersonagens } from "./pages/player/PlayerCriarPersonagens";
 import PlayerSessao from "./pages/player/PlayerSessao";
 import PlayerConfig from "./pages/player/PlayerConfig";
+import { PlayerPersonagensPage } from "./pages/player/PlayerPersonagensPage";
+
 
 const queryClient = new QueryClient();
 
@@ -48,11 +50,10 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-            {/* Public Routes */}
+            {/* Public Route */}
             <Route element={<PublicRoute />}>
-              <Route path="/" element={<Index />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
+              <Route path="/" element={<HomePage />} />
+              <Route path="/login" element={<LoginPage />} />
             </Route>
             
             {/* User Type Selection Route */}
@@ -68,6 +69,7 @@ const App = () => (
                 <Route path="/master/notes" element={<MasterNotes />} />
                 <Route path="/master/gerador" element={<MasterGerador />} />
                 <Route path="/master/criarpersonagens" element={<MasterCriarPersonagens />} />
+                <Route path="/master/personagens" element={<MasterPersonagensPage />} />
                 <Route path="/master/sistema" element={<MasterSistema />} />
                 <Route path="/master/players" element={<MasterPlayers />} />
                 <Route path="/master/config" element={<MasterConfig />} />
@@ -81,6 +83,7 @@ const App = () => (
               <Route element={<PlayerRoute />}>
                 <Route path="/player/dashboard" element={<PlayerDashboard />} />
                 <Route path="/player/criarpersonagens" element={<PlayerCriarPersonagens />} />
+                <Route path="/player/personagens" element={<PlayerPersonagensPage />} />
                 <Route path="/player/sessao" element={<PlayerSessao />} />
                 <Route path="/player/config" element={<PlayerConfig />} />
               </Route>

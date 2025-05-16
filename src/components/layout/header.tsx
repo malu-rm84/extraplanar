@@ -1,4 +1,4 @@
-
+// src/components/layout/header.tsx
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -37,23 +37,21 @@ export function Header() {
         
         {/* Desktop navigation */}
         <nav className="hidden md:flex items-center gap-6">
-          <Link to="/sistema" className="text-sm font-medium hover:text-primary transition-colors">
+          <Link to="/#features" className="text-sm font-medium hover:text-primary transition-colors">
             Sistema
           </Link>
-          <Link to="/planos" className="text-sm font-medium hover:text-primary transition-colors">
+          <Link to="/#planos" className="text-sm font-medium hover:text-primary transition-colors">
             Planos
           </Link>
-          <Link to="/raças" className="text-sm font-medium hover:text-primary transition-colors">
+          <Link to="/racas" className="text-sm font-medium hover:text-primary transition-colors">
             Raças
           </Link>
-          <Link to="/login" className="flex items-center gap-2 text-sm font-medium hover:text-primary transition-colors">
+          <Link 
+            to="/login" 
+            className="flex items-center gap-2 text-sm font-medium hover:text-primary transition-colors"
+          >
             <User className="h-4 w-4" />
-            Login
-          </Link>
-          <Link to="/register">
-            <Button size="sm" className="mystic-button">
-              Registrar
-            </Button>
+            Entrar
           </Link>
         </nav>
       </div>
@@ -63,7 +61,7 @@ export function Header() {
         <div className="md:hidden border-t p-4">
           <nav className="flex flex-col gap-4">
             <Link 
-              to="/sistema" 
+              to="/#features" 
               className="flex items-center gap-2 px-2 py-1 hover:bg-secondary rounded-md transition-colors"
               onClick={() => setIsMenuOpen(false)}
             >
@@ -71,7 +69,7 @@ export function Header() {
               Sistema
             </Link>
             <Link 
-              to="/planos" 
+              to="/#planos" 
               className="flex items-center gap-2 px-2 py-1 hover:bg-secondary rounded-md transition-colors"
               onClick={() => setIsMenuOpen(false)}
             >
@@ -79,7 +77,7 @@ export function Header() {
               Planos
             </Link>
             <Link 
-              to="/raças" 
+              to="/racas" 
               className="flex items-center gap-2 px-2 py-1 hover:bg-secondary rounded-md transition-colors"
               onClick={() => setIsMenuOpen(false)}
             >
@@ -93,15 +91,7 @@ export function Header() {
               onClick={() => setIsMenuOpen(false)}
             >
               <User className="h-4 w-4" />
-              Login
-            </Link>
-            <Link 
-              to="/register"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              <Button className="w-full mystic-button">
-                Registrar
-              </Button>
+              Entrar
             </Link>
           </nav>
         </div>

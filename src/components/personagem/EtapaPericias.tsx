@@ -1,7 +1,7 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Personagem } from "./types";
-import { pericias, Pericia } from "@/data/Pericias"; // Importe o tipo Pericia
+import { pericias, Pericia } from "@/data/Pericias";
 
 interface EtapaPericiasProps {
   personagem: Personagem;
@@ -32,15 +32,13 @@ const EtapaPericias = ({
       }))
     }));
 
-    // Calcular custo total de PD das perícias
     const custoPericias = periciasAtualizadas
       .flatMap(c => c.pericias)
       .reduce((acc, p) => acc + (p.custoPD * (p.pontos || 0)), 0);
 
-    // Verificar limite total de PD
     const pdAtual = calcularTotalPD(personagem);
     const pdSemPericias = pdAtual - (personagem.pericias?.flatMap(c => c.pericias)
-      .reduce((acc, p) => acc + (p.custoPD * (p.pontos || 0)), 0) || 0);
+      .reduce((acc, p) => acc + (p.custoPD * (p.pontos || 0)), 0)) || 0;
     
     if (pdSemPericias + custoPericias <= 50) {
       setPersonagem({
@@ -49,9 +47,6 @@ const EtapaPericias = ({
       });
     }
   };
-
-  const totalPDPericias = personagem.pericias?.flatMap(c => c.pericias)
-    .reduce((acc, p) => acc + (p.custoPD * (p.pontos || 0)), 0) || 0;
 
   return (
     <div className="space-y-6">
@@ -68,12 +63,11 @@ const EtapaPericias = ({
               {categoria.pericias.map((pericia) => {
                 const pontos = getPontosPericia(pericia.nome);
                 const bonusTotal = pontos * 5;
-                const pdGastos = pericia.custoPD * pontos;
                 
                 return (
                   <div 
                     key={pericia.nome} 
-                    className="bg-white/5 p-4 rounded-lg border border-white/10"
+                    className="bg-black/30 backdrop-blur-sm p-4 rounded-lg border border-white/10"
                   >
                     <div className="flex justify-between items-start mb-3">
                       <div>
@@ -103,15 +97,12 @@ const EtapaPericias = ({
                         onChange={(e) => 
                           atualizarPericia(pericia.nome, parseInt(e.target.value))
                         }
-                        className="bg-white/10 border-none text-lg text-center w-20"
+                        className="bg-black/50 border-white/10 text-gray-200 focus:border-primary/40 focus:ring-primary text-center w-20"
                       />
                       <div className="flex-1">
                         <p className="text-sm text-gray-400">
                           {pericia.descricao}
                         </p>
-                        <div className="mt-2 text-sm font-semibold text-primary">
-                          PD Gastos: {pdGastos}
-                        </div>
                       </div>
                     </div>
                   </div>
@@ -120,22 +111,6 @@ const EtapaPericias = ({
             </div>
           </div>
         ))}
-      </div>
-
-      <div className="mt-8 p-4 bg-white/5 rounded-lg border border-white/10">
-        <div className={`p-4 rounded-lg border ${
-          totalPDPericias > 45 ? "border-red-400/50 bg-red-400/10" : "border-white/10 bg-white/5"
-        }`}>
-          <div className="text-xl font-bold text-primary">
-            Custo Total de PD em Perícias: {totalPDPericias}
-            {totalPDPericias > 50 && (
-              <span className="text-red-400 ml-2">(Excedeu o limite!)</span>
-            )}
-          </div>
-          <div className="text-sm text-gray-400 mt-1">
-            Pontos de Desenvolvimento gastos nas perícias
-          </div>
-        </div>
       </div>
     </div>
   );

@@ -8,7 +8,7 @@ export const ProtectedRoute = () => {
   if (loading) return <div className="flex items-center justify-center h-screen">Carregando...</div>;
   
   if (!currentUser) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/login" replace />; // Garante que a rota /login existe
   }
 
   return <Outlet />;

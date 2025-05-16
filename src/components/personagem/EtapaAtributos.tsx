@@ -58,79 +58,30 @@ const EtapaAtributos = ({ personagem, setPersonagem }: EtapaAtributosProps) => {
       <h2 className="text-2xl font-bold text-primary mb-6">Atributos</h2>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-6">
-          {atributos.slice(0, 3).map(({ chave, nome, desc }) => (
-            <div key={chave} className="bg-white/5 p-4 rounded-lg border border-white/10">
-              <Label className="block text-lg font-medium mb-3 text-gray-300">{nome}</Label>
-              <div className="flex items-center gap-4">
-                <Input
-                  type="number"
-                  min="0"
-                  max="5"
-                  value={personagem.atributos[chave].base ?? 0}
-                  onChange={(e) => atualizarAtributo(chave, parseInt(e.target.value))}
-                  className="bg-white/10 border-none text-lg text-center w-20"
-                />
-                <div className="flex flex-col">
-                  <div className="text-lg font-semibold text-primary">
-                    PD: {getCustoAcumuladoPD(personagem.atributos[chave].base)}
-                  </div>
-                  <div className="text-sm text-green-400">
-                    Bônus Racial: +{personagem.atributos[chave].racial}
-                  </div>
-                  <div className="text-md font-bold text-yellow-400">
-                    Total: {personagem.atributos[chave].base + personagem.atributos[chave].racial}
-                  </div>
+        {atributos.map(({ chave, nome, desc }) => (
+          <div key={chave} className="bg-black/30 backdrop-blur-sm p-4 rounded-lg border border-white/10">
+            <Label className="block text-lg font-medium mb-3 text-gray-300">{nome}</Label>
+            <div className="flex items-center gap-4">
+              <Input
+                type="number"
+                min="0"
+                max="5"
+                value={personagem.atributos[chave].base ?? 0}
+                onChange={(e) => atualizarAtributo(chave, parseInt(e.target.value))}
+                className="bg-black/50 border-white/10 text-gray-200 focus:border-primary/40 focus:ring-primary text-center w-20"
+              />
+              <div className="flex flex-col">
+                <div className="text-sm text-green-400">
+                  Bônus Racial: +{personagem.atributos[chave].racial}
+                </div>
+                <div className="text-md font-bold text-yellow-400">
+                  Total: {personagem.atributos[chave].base + personagem.atributos[chave].racial}
                 </div>
               </div>
-              <p className="text-sm text-gray-400 mt-2">{desc}</p>
             </div>
-          ))}
-        </div>
-
-        <div className="space-y-6">
-          {atributos.slice(3).map(({ chave, nome, desc }) => (
-            <div key={chave} className="bg-white/5 p-4 rounded-lg border border-white/10">
-              <Label className="block text-lg font-medium mb-3 text-gray-300">{nome}</Label>
-              <div className="flex items-center gap-4">
-                <Input
-                  type="number"
-                  min="0"
-                  max="5"
-                  value={personagem.atributos[chave].base ?? 0}
-                  onChange={(e) => atualizarAtributo(chave, parseInt(e.target.value))}
-                  className="bg-white/10 border-none text-lg text-center w-20"
-                />
-                <div className="flex flex-col">
-                  <div className="text-lg font-semibold text-primary">
-                    PD: {getCustoAcumuladoPD(personagem.atributos[chave].base)}
-                  </div>
-                  <div className="text-sm text-green-400">
-                    Bônus Racial: +{personagem.atributos[chave].racial}
-                  </div>
-                  <div className="text-md font-bold text-yellow-400">
-                    Total: {personagem.atributos[chave].base + personagem.atributos[chave].racial}
-                  </div>
-                </div>
-              </div>
-              <p className="text-sm text-gray-400 mt-2">{desc}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="mt-8 p-4 bg-white/5 rounded-lg border border-white/10">
-        <div className={`p-4 rounded-lg border ${
-          totalPD > 45 ? "border-red-400/50 bg-red-400/10" : "border-white/10 bg-white/5"
-        }`}>
-          <div className="text-xl font-bold text-primary">
-            Custo Total de PD: {totalPD}
-            {totalPD > 50 && <span className="text-red-400 ml-2">(Excedeu o limite!)</span>}
+            <p className="text-sm text-gray-400 mt-2">{desc}</p>
           </div>
-          <div className="text-sm text-gray-400 mt-1">
-            (Pontos Desenvolvimento gastos nos atributos base)
-          </div>
-        </div>
+        ))}
       </div>
     </div>
   );

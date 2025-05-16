@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom";
 import { PlayerLayout } from "@/components/layout/PlayerLayout";
 import { Button } from "@/components/ui/button";
-import { PersonagemFicha } from "../PersonagemFicha";
+import { PersonagemFicha } from "./PersonagemFicha";
 
 export const PersonagemFichaWrapper = () => {
   const { id } = useParams<{ id: string }>();

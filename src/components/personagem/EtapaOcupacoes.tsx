@@ -23,10 +23,10 @@ const EtapaOcupacoes = ({ personagem, setPersonagem }: EtapaOcupacoesProps) => {
       case "Adolescente":
         return 2;
       case "Adulto":
-        return 2; // Pode selecionar até nível 2 (2+1=3)
+        return 2;
       case "Idoso":
       case "Caquético":
-        return 1; // Pode selecionar até nível 1 (1+2=3)
+        return 1;
       default:
         return 3;
     }
@@ -37,11 +37,9 @@ const EtapaOcupacoes = ({ personagem, setPersonagem }: EtapaOcupacoesProps) => {
     const index = updated.findIndex(o => o.nome === nome);
     const currentLevel = updated[index]?.nivel || 0;
 
-    // Toggle desmarcar
     if (nivel === currentLevel) {
       if (index !== -1) updated.splice(index, 1);
     } else {
-      // Verificar pré-requisitos
       if (nivel > 1 && !updated.some(o => o.nome === nome && o.nivel >= nivel - 1)) {
         return;
       }
@@ -66,21 +64,17 @@ const EtapaOcupacoes = ({ personagem, setPersonagem }: EtapaOcupacoesProps) => {
       <h2 className="text-2xl font-bold text-primary mb-6">Ocupações</h2>
       
       {ocupacoes.map((categoria) => (
-        <div key={categoria.categoria} className="bg-white/5 p-4 rounded-lg border border-white/10">
-          <h3 className="text-lg font-semibold mb-4">{categoria.categoria}</h3>
+        <div key={categoria.categoria} className="bg-black/30 backdrop-blur-sm p-4 rounded-lg border border-white/10">
+          <h3 className="text-lg font-semibold mb-4 text-gray-300">{categoria.categoria}</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {categoria.ocupacoes.map((ocupacao) => {
               const selected = personagem.ocupacoesSelecionadas?.find(o => o.nome === ocupacao.nome)?.nivel || 0;
               const maxAllowed = getAllowedMaxLevel();
               const isDisabled = personagem.faixaEtaria === "Criança";
 
-              // Calcular custo cumulativo
-              const custoCumulativo = [0, ocupacao.nivel1, ocupacao.nivel1 + ocupacao.nivel2, 
-                ocupacao.nivel1 + ocupacao.nivel2 + ocupacao.nivel3];
-
               return (
-                <div key={ocupacao.nome} className="bg-white/5 p-4 rounded border border-white/10">
-                  <div className="font-medium mb-2">
+                <div key={ocupacao.nome} className="bg-black/30 backdrop-blur-sm p-4 rounded-lg border border-white/10">
+                  <div className="font-medium mb-2 text-gray-300">
                     {ocupacao.nome}
                     {selected > 0 && (
                       <span className="ml-2 text-sm text-primary">
@@ -100,15 +94,15 @@ const EtapaOcupacoes = ({ personagem, setPersonagem }: EtapaOcupacoesProps) => {
                           key={nivel}
                           onClick={() => handleSelectOcupacao(ocupacao.nome, nivel)}
                           disabled={nivelDisabled}
-                          className={`flex-1 p-2 rounded ${
+                          className={`flex-1 p-2 rounded transition-colors ${
                             selected >= nivel
-                              ? 'bg-primary text-white'
+                              ? 'bg-primary/80 text-white border border-primary/40'
                               : nivelDisabled 
-                                ? 'bg-gray-800 text-gray-500 cursor-not-allowed'
-                                : 'bg-gray-800 hover:bg-primary/20'
+                                ? 'bg-gray-800/30 text-gray-500 cursor-not-allowed border border-white/10'
+                                : 'bg-black/50 border border-white/10 hover:bg-primary/30 hover:border-primary/40 text-gray-300'
                           }`}
                         >
-                          Nv.{nivel} (PD: {custoCumulativo[nivel]})
+                          Nv.{nivel}
                         </button>
                       );
                     })}

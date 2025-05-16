@@ -78,6 +78,7 @@ export function PlayerLayout({ children }: PlayerLayoutProps) {
         <nav className="flex-grow p-4 space-y-2">
           {[
             { path: "/player/dashboard", icon: <LayoutDashboard />, label: "Dashboard" },
+            { path: "/player/personagens", icon: <User />, label: "Meus Personagens" },
             { path: "/player/criarpersonagens", icon: <User />, label: "Criar Personagens" },
             { path: "/player/sessao", icon: <Map />, label: "Campanhas" },
             { path: "/player/config", icon: <Settings />, label: "Configurações" },

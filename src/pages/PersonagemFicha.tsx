@@ -9,7 +9,6 @@ interface PersonagemFichaProps {
 }
 
 export const PersonagemFicha = ({ personagem }: PersonagemFichaProps) => {
-  // Dados para atributos
   const dadosAtributos = {
     labels: ['Agilidade', 'Força', 'Intelecto', 'Presença', 'Vigor'],
     datasets: [{
@@ -27,7 +26,6 @@ export const PersonagemFicha = ({ personagem }: PersonagemFichaProps) => {
     }]
   };
 
-  // Dados para afinidades
   const dadosAfinidades = {
     labels: ['Arcana', 'Cósmica', 'Divina', 'Natural', 'Necromante'],
     datasets: [{
@@ -40,24 +38,26 @@ export const PersonagemFicha = ({ personagem }: PersonagemFichaProps) => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-8 print:p-8">
+    <div className="max-w-4xl mx-auto p-6 space-y-8 bg-gray-900 min-h-screen">
       {/* Cabeçalho */}
-      <div className="text-center mb-8">
-        <h1 className="text-4xl font-bold mb-2">{personagem.nome}</h1>
-        <p className="text-xl text-gray-600">{personagem.raca} do Plano {personagem.plano}</p>
+      <div className="text-center mb-8 pt-8">
+        <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent">
+          {personagem.nome}
+        </h1>
+        <p className="text-xl text-gray-400">{personagem.raca} do Plano {personagem.plano}</p>
       </div>
 
       {/* Atributos */}
-      <section className="bg-white p-6 rounded-lg shadow-sm">
-        <h2 className="text-2xl font-bold mb-4">Atributos</h2>
+      <section className="bg-black/30 backdrop-blur-sm p-6 rounded-lg border border-white/10">
+        <h2 className="text-2xl font-bold mb-4 text-primary">Atributos</h2>
         <div className="w-full max-w-xs mx-auto">
           <Radar data={dadosAtributos} />
         </div>
       </section>
 
       {/* Afinidades */}
-      <section className="bg-white p-6 rounded-lg shadow-sm">
-        <h2 className="text-2xl font-bold mb-4">Afinidades</h2>
+      <section className="bg-black/30 backdrop-blur-sm p-6 rounded-lg border border-white/10">
+        <h2 className="text-2xl font-bold mb-4 text-primary">Afinidades</h2>
         <div className="w-full max-w-xs mx-auto">
           <Radar data={dadosAfinidades} />
         </div>
@@ -66,15 +66,15 @@ export const PersonagemFicha = ({ personagem }: PersonagemFichaProps) => {
       {/* Perícias */}
       {personagem.pericias?.map(categoria => (
         categoria.pericias.some(p => p.pontos > 0) && (
-          <section key={categoria.categoria} className="bg-white p-6 rounded-lg shadow-sm">
-            <h3 className="text-xl font-bold mb-3">{categoria.categoria}</h3>
-            <div className="grid grid-cols-2 gap-2">
+          <section key={categoria.categoria} className="bg-black/30 backdrop-blur-sm p-6 rounded-lg border border-white/10">
+            <h3 className="text-xl font-bold mb-3 text-primary">{categoria.categoria}</h3>
+            <div className="grid grid-cols-2 gap-4">
               {categoria.pericias
                 .filter(p => p.pontos > 0)
                 .map(p => (
-                  <div key={p.nome} className="flex justify-between border-b pb-1">
-                    <span>{p.nome}</span>
-                    <span className="font-semibold">{p.pontos}</span>
+                  <div key={p.nome} className="flex justify-between py-2 border-b border-white/10">
+                    <span className="text-gray-300">{p.nome}</span>
+                    <span className="font-semibold text-primary">{p.pontos}</span>
                   </div>
                 ))}
             </div>
@@ -83,35 +83,21 @@ export const PersonagemFicha = ({ personagem }: PersonagemFichaProps) => {
       ))}
 
       {/* Descrição */}
-      <section className="bg-white p-6 rounded-lg shadow-sm mt-8">
-        <h2 className="text-2xl font-bold mb-4">Descrição</h2>
+      <section className="bg-black/30 backdrop-blur-sm p-6 rounded-lg border border-white/10">
+        <h2 className="text-2xl font-bold mb-4 text-primary">Descrição</h2>
         {personagem.descricaoFisica && (
           <div className="mb-4">
-            <h3 className="font-semibold mb-2">Aparência Física</h3>
-            <p className="text-gray-700">{personagem.descricaoFisica}</p>
+            <h3 className="font-semibold mb-2 text-gray-300">Aparência Física</h3>
+            <p className="text-gray-400">{personagem.descricaoFisica}</p>
           </div>
         )}
         {personagem.historia && (
           <div>
-            <h3 className="font-semibold mb-2">História</h3>
-            <p className="text-gray-700">{personagem.historia}</p>
+            <h3 className="font-semibold mb-2 text-gray-300">História</h3>
+            <p className="text-gray-400">{personagem.historia}</p>
           </div>
         )}
       </section>
-
-      <style>{`
-        @media print {
-          body { 
-            -webkit-print-color-adjust: exact;
-            background: white !important;
-          }
-          .no-print { display: none; }
-          .print-section { 
-            page-break-inside: avoid;
-            margin-bottom: 1rem;
-          }
-        }
-      `}</style>
     </div>
   );
 };

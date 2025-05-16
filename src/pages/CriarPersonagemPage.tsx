@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { parsePD } from "@/utils/pdHelpers";
 
@@ -183,7 +182,7 @@ export const CriarPersonagemPage = () => {
 
   return (
     <div className="container mx-auto px-4 py-8 min-h-screen">
-      <div className="text-center mb-12 pt-8">
+      <div className="text-center mb-8 pt-8">
         <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent">
           Criar Novo Personagem
         </h1>
@@ -192,27 +191,30 @@ export const CriarPersonagemPage = () => {
         </p>
       </div>
 
-      <div className="mb-8 max-w-4xl mx-auto">
-        <BarraProgressoCriacao
-          etapas={etapas}
-          etapaAtual={etapaAtual}
-          setEtapaAtual={(etapa) => setEtapaAtual(etapa as EtapaCriacao)}
-        />
-      </div>
-
-      <div className="sticky top-0 z-50 bg-black/80 backdrop-blur-md py-4 mb-8 border-b border-white/10">
-        <div className="max-w-4xl mx-auto flex justify-between items-center">
+      <div className="sticky top-4 z-50 bg-black/80 backdrop-blur-md py-3 px-6 mb-8 border border-white/10 rounded-full max-w-md mx-auto">
+        <div className="flex justify-center items-center">
           <div className="text-xl font-bold text-primary">
-            PD Disponíveis: <span className="text-emerald-400">{50 - calcularTotalPD(personagem)}</span>/50
+            PD Disponíveis: <span className={`${50 - calcularTotalPD(personagem) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+              {50 - calcularTotalPD(personagem)}
+            </span>/50
           </div>
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto animate-fadeIn">
-        <div className="bg-black/30 backdrop-blur-lg rounded-xl shadow-xl border border-white/10">
-          <div className="p-6">
-            {renderizarEtapaAtual()}
-
+      <div className="flex gap-6 mx-auto animate-fadeIn">
+        {/* Sidebar - Lista de Etapas e Navegação */}
+        <div className="w-64 sticky top-24 h-[calc(100vh-180px)] flex flex-col self-start">
+          {/* Lista de Etapas */}
+          <div className="flex-grow overflow-auto">
+            <BarraProgressoCriacao
+              etapas={etapas}
+              etapaAtual={etapaAtual}
+              setEtapaAtual={(etapa) => setEtapaAtual(etapa as EtapaCriacao)}
+            />
+          </div>
+          
+          {/* Botões de Navegação (fixos no fundo da sidebar) */}
+          <div className="mt-4">
             <BotoesNavegacao
               etapaAtual={etapaAtual}
               primeiraEtapa={etapas[0].id}
@@ -224,12 +226,19 @@ export const CriarPersonagemPage = () => {
             />
           </div>
         </div>
+
+        {/* Conteúdo Principal */}
+        <div className="flex-1 bg-black/30 backdrop-blur-lg rounded-xl shadow-xl border border-white/10">
+          <div className="p-6">
+            {renderizarEtapaAtual()}
+          </div>
+        </div>
       </div>
 
       <Dialog open={showConfirmation} onOpenChange={setShowConfirmation}>
-        <DialogContent className="bg-gray-900 border-gray-700">
+        <DialogContent className="bg-black/90 border-gray-700 backdrop-blur-lg">
           <DialogHeader>
-            <DialogTitle className="text-white">Confirmar Criação</DialogTitle>
+            <DialogTitle className="text-white text-xl">Confirmar Criação</DialogTitle>
             <DialogDescription className="text-gray-300">
               Tem certeza que deseja finalizar e salvar este personagem?
             </DialogDescription>
@@ -238,7 +247,7 @@ export const CriarPersonagemPage = () => {
             <Button 
               variant="outline" 
               onClick={() => setShowConfirmation(false)}
-              className="border-gray-600 text-gray-300 hover:bg-gray-800"
+              className="border-primary/30 text-gray-300 hover:bg-primary/20 hover:text-primary"
             >
               Cancelar
             </Button>
@@ -262,6 +271,27 @@ export const CriarPersonagemPage = () => {
         }
         body {
           background: #0a0a0a;
+        }
+        
+        /* Scrollbar personalizada */
+        .scrollbar-thin::-webkit-scrollbar {
+          width: 4px;
+        }
+        .scrollbar-thin::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .scrollbar-thin::-webkit-scrollbar-thumb {
+          background: rgba(165, 99, 243, 0.2);
+          border-radius: 999px;
+        }
+        .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+          background: rgba(165, 99, 243, 0.4);
+        }
+        
+        /* Estilos para os dropdowns nativos */
+        select option {
+          background-color: #0f0f1f;
+          color: #e2e2e2;
         }
       `}</style>
     </div>
