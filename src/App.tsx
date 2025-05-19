@@ -70,11 +70,11 @@ const App = () => (
                 <Route path="/master/gerador" element={<MasterGerador />} />
                 <Route path="/master/criarpersonagens" element={<MasterCriarPersonagens />} />
                 <Route path="/master/personagens" element={<MasterPersonagensPage />} />
+                <Route path="/master/personagens/:id" element={<PersonagemFichaWrapper />} />
                 <Route path="/master/sistema" element={<MasterSistema />} />
                 <Route path="/master/players" element={<MasterPlayers />} />
                 <Route path="/master/config" element={<MasterConfig />} />
                 <Route path="/personagens" element={<PersonagensPage />} />
-                <Route path="/personagens/:id" element={<PersonagemFichaWrapper />} />
               </Route>
             </Route>
             
@@ -84,6 +84,7 @@ const App = () => (
                 <Route path="/player/dashboard" element={<PlayerDashboard />} />
                 <Route path="/player/criarpersonagens" element={<PlayerCriarPersonagens />} />
                 <Route path="/player/personagens" element={<PlayerPersonagensPage />} />
+                <Route path="/player/personagens/:id" element={<PersonagemFichaWrapper />} />
                 <Route path="/player/sessao" element={<PlayerSessao />} />
                 <Route path="/player/config" element={<PlayerConfig />} />
               </Route>

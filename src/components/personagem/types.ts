@@ -6,6 +6,25 @@ import { Pericia, CategoriaPericias } from "../../data/Pericias";
 import { Ocupacao, CategoriaOcupacoes } from "../../data/Ocupacoes";
 import { Capacidade, CategoriaCapacidades } from "../../data/Capacidades";
 
+export interface Campanha {
+  id: string;
+  name: string;
+  description: string;
+  status: 'concluída' | 'em andamento' | 'não iniciada';
+  participants: Array<{
+    id: string;
+    name: string;
+    type: 'player' | 'character';
+    approved: boolean;
+    userId?: string;
+  }>;
+  inviteLink: string;
+  sessions: Array<{ id: string; link: string }>;
+  mestreId: string;
+  mestreNome: string;
+  createdAt: Date;
+}
+
 export type EtapaCriacao =
   | "dados"
   | "descricao"
@@ -19,6 +38,10 @@ export type EtapaCriacao =
   | "experiencia";
 
 export interface Personagem {
+  id?: string;
+  criadoPor: string;
+  criadorNome: string;
+  dataCriacao: Date;
   nome: string;
   idade: string;
   plano: string;

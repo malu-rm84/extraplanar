@@ -1,7 +1,10 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Personagem } from "@/components/personagem/types";
+import { useAuth } from "@/contexts/AuthContext";
+import { collection, query, where, getDocs } from "firebase/firestore";
+import { db } from "@/components/auth/firebase-config";
 
 interface PersonagensPageProps {
   className?: string;
@@ -10,14 +13,28 @@ interface PersonagensPageProps {
 
 export const PersonagensPage = ({ className, hideHeader }: PersonagensPageProps) => {
   const [personagens, setPersonagens] = useState<Personagem[]>([]);
+  const { currentUser, userRole } = useAuth();
 
   useEffect(() => {
-    const carregarPersonagens = () => {
-      const dados = localStorage.getItem('personagens');
-      if (dados) setPersonagens(JSON.parse(dados));
+    const carregarPersonagens = async () => {
+      if (!currentUser) return;
+      
+      const q = query(
+        collection(db, "personagens"),
+        where("criadoPor", "==", currentUser.uid)
+      );
+      
+      const querySnapshot = await getDocs(q);
+      const dados = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      
+      setPersonagens(dados as Personagem[]);
     };
+
     carregarPersonagens();
-  }, []);
+  }, [currentUser]);
 
   return (
     <div className={`container mx-auto p-4 bg-gray-900 min-h-screen ${className || ''}`}>
@@ -27,7 +44,7 @@ export const PersonagensPage = ({ className, hideHeader }: PersonagensPageProps)
             Meus Personagens
           </h1>
           <Link 
-            to="/criar-personagem" 
+            to={`/${userRole === 'master' ? 'master' : 'player'}/criarpersonagens`}
             className="px-6 py-3 bg-primary/80 hover:bg-primary text-white rounded-lg transition-colors backdrop-blur-sm border border-primary/40"
           >
             Novo Personagem
@@ -48,7 +65,7 @@ export const PersonagensPage = ({ className, hideHeader }: PersonagensPageProps)
                 <p className="text-sm text-gray-500">Plano: {personagem.plano}</p>
               </div>
               <Link
-                to={`/personagens/${index}`}
+                to={`/${userRole === 'master' ? 'master' : 'player'}/personagens/${personagem.id}`} // Usar ID do documento
                 className="px-4 py-2 bg-primary/80 hover:bg-primary text-white rounded-lg transition-colors backdrop-blur-sm border border-primary/40"
               >
                 Visualizar

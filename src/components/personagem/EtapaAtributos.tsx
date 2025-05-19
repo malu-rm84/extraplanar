@@ -23,8 +23,8 @@ const EtapaAtributos = ({ personagem, setPersonagem }: EtapaAtributosProps) => {
     { chave: 'agilidade', nome: 'Agilidade', desc: 'Reflexos e movimentos ágeis' },
     { chave: 'forca', nome: 'Força', desc: 'Resistência física e saúde' },
     { chave: 'intelecto', nome: 'Intelecto', desc: 'Conhecimento e raciocínio' },
-    { chave: 'presenca', nome: 'Presença', desc: 'Capacidade física bruta' },
-    { chave: 'vigor', nome: 'Vigor', desc: 'Carisma e influência social' }
+    { chave: 'presenca', nome: 'Presença', desc: 'Carisma e influência social' },
+    { chave: 'vigor', nome: 'Vigor', desc: 'Capacidade física bruta' }
   ];
 
   const atualizarAtributo = (atributo: keyof Personagem['atributos'], valor: number) => {

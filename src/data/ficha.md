@@ -96,8 +96,8 @@ A criação do personagem é a parte mais legal de todo RPG, e mais trabalhosa t
 - **Agilidade:** Reflexos e movimentos ágeis
 - **Força:** Resistência física e saúde
 - **Intelecto:** Conhecimento e raciocínio
-- **Presença:** Capacidade física bruta
-- **Vigor:** Carisma e influência social
+- **Presença:** Carisma e influência social
+- **Vigor:** Capacidade física bruta
 
 ### **Tabela de Afinidades**
 | Nível | Custo Individual | Custo Total Acumulado |         Descrição         |

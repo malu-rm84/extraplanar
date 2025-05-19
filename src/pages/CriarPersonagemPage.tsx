@@ -1,3 +1,7 @@
+import { useAuth } from "@/contexts/AuthContext";
+import { addDoc, collection } from "firebase/firestore";
+import { db } from "@/components/auth/firebase-config";
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
@@ -64,6 +68,7 @@ const calcularTotalPD = (personagem: Personagem) => {
 
 export const CriarPersonagemPage = () => {
   const navigate = useNavigate();
+  const { currentUser } = useAuth();
   const [etapaAtual, setEtapaAtual] = useState<EtapaCriacao>('dados');
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [personagem, setPersonagem] = useState<Personagem>({
@@ -71,6 +76,9 @@ export const CriarPersonagemPage = () => {
     idade: '',
     plano: 'material',
     raca: 'humano',
+    criadoPor: '',
+    criadorNome: '',
+    dataCriacao: new Date(),
     atributos: {
       agilidade: { base: 0, racial: 0 },
       forca: { base: 0, racial: 0 },
@@ -127,10 +135,23 @@ export const CriarPersonagemPage = () => {
     }
   };
 
-  const salvarPersonagem = () => {
-    const personagensSalvos = JSON.parse(localStorage.getItem('personagens') || '[]');
-    localStorage.setItem('personagens', JSON.stringify([...personagensSalvos, personagem]));
-    navigate('/personagens');
+  const salvarPersonagem = async () => {
+    try {
+      if (!currentUser) throw new Error("Usuário não autenticado");
+
+      const personagemCompleto = {
+        ...personagem,
+        criadoPor: currentUser.uid,
+        criadorNome: currentUser.displayName || "Anônimo",
+        dataCriacao: new Date()
+      };
+
+      await addDoc(collection(db, "personagens"), personagemCompleto);
+      navigate('/personagens');
+    } catch (error) {
+      console.error("Erro ao salvar personagem:", error);
+      alert("Erro ao salvar personagem!");
+    }
   };
 
   const renderizarEtapaAtual = () => {
@@ -202,19 +223,17 @@ export const CriarPersonagemPage = () => {
       </div>
 
       <div className="flex gap-6 mx-auto animate-fadeIn">
-        {/* Sidebar - Lista de Etapas e Navegação */}
-        <div className="w-64 sticky top-24 h-[calc(100vh-180px)] flex flex-col self-start">
-          {/* Lista de Etapas */}
-          <div className="flex-grow overflow-auto">
+        {/* Sidebar - Agora com barra de progresso e lista de etapas lado a lado */}
+        <div className="w-72 h-auto sticky top-24 self-start">
+          <div className="flex flex-col gap-4">
+            {/* Componente com barra de progresso e lista de etapas */}
             <BarraProgressoCriacao
               etapas={etapas}
               etapaAtual={etapaAtual}
               setEtapaAtual={(etapa) => setEtapaAtual(etapa as EtapaCriacao)}
             />
-          </div>
-          
-          {/* Botões de Navegação (fixos no fundo da sidebar) */}
-          <div className="mt-4">
+            
+            {/* Botões de Navegação */}
             <BotoesNavegacao
               etapaAtual={etapaAtual}
               primeiraEtapa={etapas[0].id}
@@ -271,21 +290,6 @@ export const CriarPersonagemPage = () => {
         }
         body {
           background: #0a0a0a;
-        }
-        
-        /* Scrollbar personalizada */
-        .scrollbar-thin::-webkit-scrollbar {
-          width: 4px;
-        }
-        .scrollbar-thin::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        .scrollbar-thin::-webkit-scrollbar-thumb {
-          background: rgba(165, 99, 243, 0.2);
-          border-radius: 999px;
-        }
-        .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-          background: rgba(165, 99, 243, 0.4);
         }
         
         /* Estilos para os dropdowns nativos */
