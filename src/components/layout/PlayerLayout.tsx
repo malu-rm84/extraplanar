@@ -34,7 +34,7 @@ export function PlayerLayout({ children }: PlayerLayoutProps) {
         title: "Logout realizado",
         description: "Você saiu da sua conta."
       });
-      navigate("/login");
+      navigate("/");
     } catch (error) {
       console.error("Erro ao sair:", error);
       toast({

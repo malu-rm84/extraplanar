@@ -1,26 +1,25 @@
+// src/components/ui/plane-badge.tsx
+import { ReactNode } from 'react';
 
-import { cn } from "@/lib/utils";
-
-interface PlaneBadgeProps {
-  plane: "material" | "emerald" | "inferno" | "ethereal" | "astral";
+type PlaneBadgeProps = {
+  children: ReactNode;
+  plane?: 'material' | 'emerald' | 'bubblegum' | 'inferno' | 'sky' | 'ethereal';
   className?: string;
-  children: React.ReactNode;
-}
+};
 
-export function PlaneBadge({ plane, className, children }: PlaneBadgeProps) {
+export function PlaneBadge({ children, plane = 'ethereal', className = '' }: PlaneBadgeProps) {
+  const planeColors = {
+    material: 'bg-gradient-to-r from-indigo-400 to-violet-600',
+    emerald: 'bg-gradient-to-r from-emerald-400 to-green-600',
+    bubblegum: 'bg-gradient-to-r from-pink-400 to-fuchsia-600',
+    inferno: 'bg-gradient-to-r from-orange-400 to-red-600',
+    sky: 'bg-gradient-to-r from-sky-300 to-blue-600',
+    ethereal: 'bg-gradient-to-r from-amber-300 to-yellow-600',
+  };
+
   return (
-    <span
-      className={cn(
-        "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium",
-        {
-          "bg-plane-material/10 text-plane-material": plane === "material",
-          "bg-plane-emerald/10 text-plane-emerald": plane === "emerald",
-          "bg-plane-inferno/10 text-plane-inferno": plane === "inferno",
-          "bg-plane-ethereal/10 text-plane-ethereal": plane === "ethereal",
-          "bg-plane-astral/10 text-plane-astral": plane === "astral",
-        },
-        className
-      )}
+    <span 
+      className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium text-white ${planeColors[plane]} ${className}`}
     >
       {children}
     </span>

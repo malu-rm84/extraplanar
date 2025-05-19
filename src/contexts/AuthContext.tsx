@@ -1,13 +1,12 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { User, onAuthStateChanged } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "@/components/auth/firebase-config";
-
-type UserRole = "player" | "master" | null;
+import { User } from "firebase/auth";
+import { onAuthStateChanged } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
 
 interface AuthContextType {
-  currentUser: (User & { displayName?: string }) | null;
-  userRole: UserRole;
+  currentUser: User | null;
+  userRole: "master" | "player" | null;
   loading: boolean;
 }
 
@@ -17,42 +16,47 @@ const AuthContext = createContext<AuthContextType>({
   loading: true
 });
 
-export const useAuth = () => useContext(AuthContext);
-
-export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [currentUser, setCurrentUser] = useState<(User & { displayName?: string }) | null>(null);
-  const [userRole, setUserRole] = useState<UserRole>(null);
-  const [loading, setLoading] = useState(true);
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [authState, setAuthState] = useState<AuthContextType>({
+    currentUser: null,
+    userRole: null,
+    loading: true
+  });
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (firebaseUser) {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
         try {
-          const userDoc = await getDoc(doc(db, "users", firebaseUser.uid));
-          const userData = userDoc.data();
+          const docRef = doc(db, "users", user.uid);
+          const docSnap = await getDoc(docRef);
           
-          setCurrentUser({
-            ...firebaseUser,
-            displayName: userData?.nome || firebaseUser.displayName
+          setAuthState({
+            currentUser: user,
+            userRole: docSnap.exists() ? docSnap.data().role : null,
+            loading: false
           });
-          
-          setUserRole(userData?.role as UserRole || null);
         } catch (error) {
-          console.error("Erro ao buscar dados do usuário:", error);
+          console.error("Error fetching user role:", error);
+          setAuthState(prev => ({ ...prev, loading: false }));
         }
       } else {
-        setCurrentUser(null);
-        setUserRole(null);
+        setAuthState({
+          currentUser: null,
+          userRole: null,
+          loading: false
+        });
       }
-      setLoading(false);
     });
 
-    return unsubscribe;
+    return () => unsubscribe();
   }, []);
 
   return (
-    <AuthContext.Provider value={{ currentUser, userRole, loading }}>
-      {!loading && children}
+    <AuthContext.Provider value={authState}>
+      {children}
     </AuthContext.Provider>
   );
-};
+}
+
+// Exportação corrigida do hook
+export const useAuth = () => useContext(AuthContext);

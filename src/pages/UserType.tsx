@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -10,16 +10,21 @@ import { Footer } from "@/components/layout/footer";
 import { Shield, UserCircle } from "lucide-react";
 import { doc, setDoc } from "firebase/firestore";
 import { auth, db } from "@/components/auth/firebase-config";
+import { useAuth } from "@/contexts/AuthContext";
 
 const UserType = () => {
-  const [userType, setUserType] = useState("player");
+  const [userType, setUserType] = useState<"player" | "master">("player");
   const [masterPassword, setMasterPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { currentUser } = useAuth();
 
-  // Master password would be managed by admin, hardcoded for demo
   const MASTER_PASSWORD = "extraplanar123";
+
+  useEffect(() => {
+    if (!currentUser) navigate("/");
+  }, [currentUser, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,24 +40,14 @@ const UserType = () => {
 
     try {
       setIsLoading(true);
-      const user = auth.currentUser;
       
-      if (!user) {
-        toast({
-          title: "Erro de autenticação",
-          description: "Você não está autenticado. Por favor, faça login.",
-          variant: "destructive",
-        });
-        navigate("/login");
-        return;
-      }
+      if (!currentUser) throw new Error("Usuário não autenticado");
       
-      // Save user role in Firestore
-      await setDoc(doc(db, "users", user.uid), {
-        uid: user.uid,
-        email: user.email,
-        displayName: user.displayName,
-        photoURL: user.photoURL,
+      await setDoc(doc(db, "users", currentUser.uid), {
+        uid: currentUser.uid,
+        email: currentUser.email,
+        displayName: currentUser.displayName,
+        photoURL: currentUser.photoURL,
         role: userType,
         createdAt: new Date(),
       });
@@ -62,12 +57,7 @@ const UserType = () => {
         description: `Você foi registrado como ${userType === 'player' ? 'Jogador' : 'Mestre'}!`,
       });
 
-      // Redirect to appropriate dashboard
-      if (userType === "master") {
-        navigate("/master/dashboard");
-      } else {
-        navigate("/player/dashboard");
-      }
+      navigate(`/${userType}/dashboard`);
     } catch (error) {
       console.error("Erro ao definir tipo de usuário:", error);
       toast({
@@ -99,7 +89,7 @@ const UserType = () => {
               <RadioGroup 
                 defaultValue="player" 
                 value={userType}
-                onValueChange={setUserType}
+                onValueChange={(value: "player" | "master") => setUserType(value)}
                 className="grid grid-cols-2 gap-4"
               >
                 <div className="flex flex-col items-center border rounded-lg p-4 cursor-pointer hover:bg-secondary/50 transition-colors">
@@ -149,7 +139,7 @@ const UserType = () => {
             </Button>
           </form>
         </div>
-      </main>
+        </main>
       <Footer />
     </div>
   );

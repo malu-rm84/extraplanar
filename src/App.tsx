@@ -15,7 +15,6 @@ import {
 
 // Página unificada
 import HomePage from "./pages/Home";
-import LoginPage from "./pages/Login";
 import UserType from "./pages/UserType";
 import NotFound from "./pages/NotFound";
 import { PersonagensPage } from './pages/PersonagensPage';
@@ -53,12 +52,11 @@ const App = () => (
             {/* Public Route */}
             <Route element={<PublicRoute />}>
               <Route path="/" element={<HomePage />} />
-              <Route path="/login" element={<LoginPage />} />
             </Route>
             
             {/* User Type Selection Route */}
             <Route element={<UserTypeRoute />}>
-              <Route path="/user-type" element={<UserType />} />
+              <Route path="/choose-role" element={<UserType />} />
             </Route>
             
             {/* Protected Master Routes */}
