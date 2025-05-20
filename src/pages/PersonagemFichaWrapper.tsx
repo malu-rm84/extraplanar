@@ -38,6 +38,106 @@ export const PersonagemFichaWrapper = () => {
     carregarPersonagem();
   }, [id]);
 
+  const exportarParaMD = () => {
+    if (!personagem) return;
+
+    const mdContent = `
+<div style="font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; color: #333;">
+
+# ${personagem.nome}
+
+**Raça**: ${personagem.raca}  
+**Plano**: ${personagem.plano}  
+**Idade**: ${personagem.faixaEtaria}  
+**Habilidade Racial**: ${personagem.habilidadeRacial}
+
+---
+
+## Atributos
+${Object.entries(personagem.atributos)
+  .map(([attr, values]) => `
+### ${attr.charAt(0).toUpperCase() + attr.slice(1)}
+- **Base**: ${values.base}
+- **Bônus Racial**: ${values.racial}
+- **Total**: ${values.base + values.racial}`)
+  .join("\n")}
+
+---
+
+## Afinidades
+${Object.entries(personagem.afinidades)
+  .map(([afinidade, nivel]) => `- **${afinidade.charAt(0).toUpperCase() + afinidade.slice(1)}**: Nível ${nivel}`)
+  .join("\n")}
+
+---
+
+## Perícias
+${personagem.pericias
+  ?.map((categoria) => `
+### ${categoria.categoria}
+${categoria.pericias
+  .filter(p => p.pontos > 0)
+  .map(p => `- ${p.nome} (Nível ${p.pontos} | +${p.pontos * 5})`)
+  .join("\n")}`)
+  .join("\n") || "Nenhuma perícia adquirida"}
+
+---
+
+## Ocupações
+${personagem.ocupacoesSelecionadas
+  ?.map(occ => `- ${occ.nome} (Nível ${occ.nivel})`)
+  .join("\n") || "Nenhuma ocupação selecionada"}
+
+---
+
+## Capacidades
+${personagem.capacidadesSelecionadas
+  ?.map(cap => `- ${cap.nome} (Custo: ${cap.custo} PD)`)
+  .join("\n") || "Nenhuma capacidade selecionada"}
+
+---
+
+## Línguas
+**Materna**: ${personagem.linguaMaterna?.nome || "Não definida"}
+
+**Adquiridas**:
+${personagem.linguasAdquiridas
+  ?.map(l => `- ${l.nome}`)
+  .join("\n") || "Nenhuma língua adquirida"}
+
+---
+
+## Descrição
+${personagem.descricaoFisica ? `
+### Aparência Física
+${personagem.descricaoFisica}` : ""}
+
+${personagem.personalidade ? `
+### Personalidade
+${personagem.personalidade}` : ""}
+
+${personagem.historia ? `
+### História
+${personagem.historia}` : ""}
+
+${personagem.observacoes ? `
+### Observações
+${personagem.observacoes}` : ""}
+
+</div>
+    `.trim();
+
+    const blob = new Blob([mdContent], { type: "text/markdown" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${personagem.nome.replace(/\s/g, "_")}_Ficha.md`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   if (loading) return <div className="container mx-auto p-4">Carregando...</div>;
   
   if (!personagem || !personagem.atributos) {
@@ -53,12 +153,20 @@ export const PersonagemFichaWrapper = () => {
   return (
     <Layout>
       <div className="container mx-auto p-4">
-        <Button 
-          onClick={() => window.print()}
-          className="no-print mb-4 bg-primary text-white"
-        >
-          Imprimir Ficha
-        </Button>
+        <div className="no-print mb-4 flex gap-2">
+          <Button 
+            onClick={() => window.print()}
+            className="bg-primary text-white"
+          >
+            Imprimir Ficha
+          </Button>
+          <Button 
+            onClick={exportarParaMD}
+            className="bg-emerald-600 text-white hover:bg-emerald-700"
+          >
+            Exportar para MD
+          </Button>
+        </div>
         <PersonagemFicha personagem={personagem} />
       </div>
     </Layout>
