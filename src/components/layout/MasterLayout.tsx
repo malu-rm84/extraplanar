@@ -12,7 +12,8 @@ import {
   X,
   Bot,
   Map,
-  Sparkles
+  Sparkles,
+  Dice6
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { auth } from "@/components/auth/firebase-config";
@@ -85,6 +86,7 @@ export function MasterLayout({ children }: MasterLayoutProps) {
             { path: "/master/campanhas", icon: <Map />, label: "Campanhas" },
             { path: "/master/notes", icon: <ScrollText />, label: "Notes" },
             { path: "/master/gerador", icon: <Bot />, label: "Gerador" },
+            { path: "/master/Rolagem", icon: <Dice6 />, label: "Rolagem" },
             { path: "/master/personagens", icon: <Users />, label: "Meus Personagens" },
             { path: "/master/criarpersonagens", icon: <User />, label: "Criar Personagens" },
             { path: "/master/sistema", icon: <BookOpen />, label: "Sistema" },

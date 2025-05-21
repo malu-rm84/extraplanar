@@ -25,6 +25,7 @@ import MasterDashboard from "./pages/master/MasterDashboard";
 import MasterCampanhas from "./pages/master/MasterCampanhas";
 import MasterNotes from "./pages/master/MasterNotes";
 import MasterGerador from "./pages/master/MasterGerador";
+import MasterRoll from "./pages/master/MasterRoll";
 import { MasterCriarPersonagens } from "./pages/master/MasterCriarPersonagens";
 import { MasterPersonagensPage } from "./pages/master/MasterPersonagensPage";
 import MasterSistema from "./pages/master/MasterSistema";
@@ -66,6 +67,7 @@ const App = () => (
                 <Route path="/master/campanhas" element={<MasterCampanhas />} />
                 <Route path="/master/notes" element={<MasterNotes />} />
                 <Route path="/master/gerador" element={<MasterGerador />} />
+                <Route path="/master/rolagem" element={<MasterRoll />} />
                 <Route path="/master/criarpersonagens" element={<MasterCriarPersonagens />} />
                 <Route path="/master/personagens" element={<MasterPersonagensPage />} />
                 <Route path="/master/personagens/:id" element={<PersonagemFichaWrapper />} />
