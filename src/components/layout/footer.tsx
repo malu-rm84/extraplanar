@@ -1,5 +1,5 @@
 // src/components/layout/footer.tsx
-import { Flame, Wand2, Github } from "lucide-react";
+import { Flame, Wand2, Github, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export function Footer() {
@@ -9,7 +9,7 @@ export function Footer() {
         <div className="flex flex-col gap-1">
           <Link to="/" className="flex items-center gap-2 group">
             <div className="relative">
-              <Flame className="h-5 w-5 text-primary group-hover:opacity-0 transition-opacity duration-300" />
+              <Sparkles className="h-5 w-5 text-primary group-hover:opacity-0 transition-opacity duration-300" />
               <Wand2 className="h-5 w-5 text-primary absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             </div>
             <span className="font-serif text-lg font-medium bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/70">Extraplanar</span>

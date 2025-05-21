@@ -77,7 +77,7 @@ ${personagem.pericias
 ### ${categoria.categoria}
 ${categoria.pericias
   .filter(p => p.pontos > 0)
-  .map(p => `- ${p.nome} (Nível ${p.pontos} | +${p.pontos * 5})`)
+  .map(p => `- ${p.nome} (Nível ${p.pontos} | +${p.pontos * 2})`)
   .join("\n")}`)
   .join("\n") || "Nenhuma perícia adquirida"}
 

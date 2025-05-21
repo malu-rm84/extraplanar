@@ -278,7 +278,7 @@ export const PersonagemFicha = ({ personagem }: PersonagemFichaProps) => {
                           </td>
                           <td>
                             <div className="text-xs mt-1">
-                              <span className="text-emerald-400"> +{pericia.pontos * 5}</span>
+                              <span className="text-emerald-400"> +{pericia.pontos * 2}</span>
                             </div>
                           </td>
                         </tr>

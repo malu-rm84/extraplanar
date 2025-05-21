@@ -41,9 +41,9 @@ const planes = [
   {
     name: "Material",
     description: "O plano principal onde a maioria das raças vive. Um mundo semelhante ao nosso, com diversas paisagens e civilizações.",
-    color: "purple",
+    color: "gray",
     icon: <Globe className="h-6 w-6 text-white/90" />,
-    imageClass: "bg-gradient-to-br from-indigo-400 to-violet-600",
+    imageClass: "bg-gradient-to-br from-gray-200 to-gray-500",
     lore: "",
   },
   {
@@ -67,7 +67,7 @@ const planes = [
     description: "Plano de fogo e destruição, habitado por demônios e lava incandescente.",
     color: "red",
     icon: <Flame className="h-6 w-6 text-white/90" />,
-    imageClass: "bg-gradient-to-br from-orange-400 to-red-700",
+    imageClass: "bg-gradient-to-br from-orange-500 to-red-700",
     lore: "Após a Guerra de Ânimos, as chamas do Inferno consumiram mundos menores, criando fortalezas de obsidiana.",
   },
   {
@@ -75,39 +75,29 @@ const planes = [
     description: "Um reino etéreo de nuvens e luz, onde anjos e aves gigantes dominam o horizonte.",
     color: "blue",
     icon: <Cloud className="h-6 w-6 text-white/90" />,
-    imageClass: "bg-gradient-to-br from-sky-300 to-blue-600",
+    imageClass: "bg-gradient-to-br from-sky-300 to-blue-500",
     lore: "Dizem que quem alcança o Plano Céu ouve cantos de harpas celestiais e vê constelações vivas.",
   },
   {
     name: "Etéreo",
     description: "Dimensão mística entre os planos, repleta de energia arcana.",
+    color: "purple",
+    icon: <Zap className="h-6 w-6 text-white/90" />,
+    imageClass: "bg-gradient-to-br from-indigo-400 to-violet-600",
+    lore: "O Éter é a passagem de almas e feitiços, conectando todos os planos conhecidos.",
+  },
+  {
+    name: "Elysium",
+    description: "É um plano consciente, um jardim místico com diferentes níveis.",
     color: "yellow",
     icon: <Zap className="h-6 w-6 text-white/90" />,
-    imageClass: "bg-gradient-to-br from-amber-300 to-yellow-600",
-    lore: "O Éter é a passagem de almas e feitiços, conectando todos os planos conhecidos.",
+    imageClass: "bg-gradient-to-r from-amber-200 to-yellow-500",
+    lore: "Alguns dizem que dragões e outras criaturas místicas são de lá, mas ninguém sabe como ir para lá ou o que encontrará lá.",
   },
 ];
 
 // Define affinities
 const affinities = [
-  {
-    name: "Arcana",
-    description: "Magia arcana e artefatos",
-    icon: <Wand2 className="h-6 w-6 text-white/90" />,
-    imageClass: "bg-gradient-to-br from-purple-400 to-indigo-600",
-  },
-  {
-    name: "Cósmica",
-    description: "Energias cósmicas e dimensões",
-    icon: <Sparkles className="h-6 w-6 text-white/90" />,
-    imageClass: "bg-gradient-to-br from-blue-400 to-violet-600",
-  },
-  {
-    name: "Divina",
-    description: "Poder sagrado e milagres",
-    icon: <Zap className="h-6 w-6 text-white/90" />,
-    imageClass: "bg-gradient-to-br from-amber-300 to-orange-500",
-  },
   {
     name: "Natural",
     description: "Ligada a elementos naturais",
@@ -115,10 +105,28 @@ const affinities = [
     imageClass: "bg-gradient-to-br from-emerald-300 to-green-600",
   },
   {
+    name: "Arcana",
+    description: "Magia arcana e artefatos",
+    icon: <Wand2 className="h-6 w-6 text-white/90" />,
+    imageClass: "bg-gradient-to-br from-pink-300 to-fuchsia-600",
+  },
+  {
     name: "Necromante",
     description: "Manipulação da morte",
     icon: <Skull className="h-6 w-6 text-white/90" />,
-    imageClass: "bg-gradient-to-br from-gray-400 to-gray-700",
+    imageClass: "bg-gradient-to-br from-orange-500 to-red-700",
+  },
+  {
+    name: "Divina",
+    description: "Poder sagrado e milagres",
+    icon: <Zap className="h-6 w-6 text-white/90" />,
+    imageClass: "bg-gradient-to-br from-sky-300 to-blue-500",
+  },
+  {
+    name: "Cósmica",
+    description: "Energias cósmicas e dimensões",
+    icon: <Sparkles className="h-6 w-6 text-white/90" />,
+    imageClass: "bg-gradient-to-r from-amber-200 to-yellow-500",
   },
 ];
 
@@ -131,6 +139,7 @@ function PlaneBadge({ children, plane, className }: PlaneBadgeProps) {
     inferno: "bg-gradient-to-r from-orange-400 to-red-600",
     sky: "bg-gradient-to-r from-sky-300 to-blue-600",
     ethereal: "bg-gradient-to-r from-amber-300 to-yellow-600",
+    elysium: "bg-gradient-to-r from-amber-300 to-yellow-600",
   };
 
   return (
@@ -230,7 +239,7 @@ export default function HomePage() {
                   className="relative overflow-hidden bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary text-primary-foreground transition-all duration-300 shadow-lg hover:shadow-primary/25 hover:scale-[1.02]"
                 >
                   <a href="#planos">
-                    <Flame className="mr-2 h-4 w-4" />Começar Aventura
+                    <Sparkles className="mr-2 h-4 w-4" />Começar Aventura
                   </a>
                 </Button>
                 <Button 
@@ -435,11 +444,11 @@ export default function HomePage() {
                     <h3 className="font-serif text-xl font-medium">Gerenciador de Mesas</h3>
                   </div>
                   <p className="text-muted-foreground mb-4">
-                    Crie e gerencie suas mesas de jogo, adicione jogadores por e-mail e mantenha suas anotações organizadas.
+                    Crie e gerencie suas mesas de jogo, adicione jogadores por links e mantenha suas anotações organizadas.
                   </p>
                   <ul className="space-y-2 text-sm text-muted-foreground/90">
                     <li className="flex items-center">
-                      <span className="mr-2 text-primary">•</span> Convites por e-mail
+                      <span className="mr-2 text-primary">•</span> Convites por link
                     </li>
                     <li className="flex items-center">
                       <span className="mr-2 text-primary">•</span> Anotações colaborativas
@@ -528,10 +537,10 @@ export default function HomePage() {
                     <div className="bg-primary/10 p-3 rounded-full">
                       <Download className="h-6 w-6 text-primary" />
                     </div>
-                    <h3 className="font-serif text-xl font-medium">Exportação para Obsidian</h3>
+                    <h3 className="font-serif text-xl font-medium">Exportação</h3>
                   </div>
                   <p className="text-muted-foreground mb-4">
-                    Exporte seus dados em Markdown para o Obsidian ou outros editores.
+                    Exporte seus dados em Markdown para outros editores.
                   </p>
                   <ul className="space-y-2 text-sm text-muted-foreground/90">
                     <li className="flex items-center">
@@ -593,14 +602,13 @@ export default function HomePage() {
             <div className="relative">
               <div className="flex overflow-x-auto pb-8 -mx-4 px-4 space-x-4 scrollbar-hide snap-x">
                 {[
-                  { name: "Humano", plane: "Material", image: "bg-gradient-to-br from-gray-300 to-gray-500" },
-                  { name: "Elfo", plane: "Esmeralda", image: "bg-gradient-to-br from-emerald-300 to-green-600" },
-                  { name: "Anão", plane: "Material", image: "bg-gradient-to-br from-amber-300 to-amber-700" },
-                  { name: "Feérico", plane: "Esmeralda", image: "bg-gradient-to-br from-pink-300 to-purple-500" },
-                  { name: "Demonídeo", plane: "Inferno", image: "bg-gradient-to-br from-red-400 to-red-700" },
-                  { name: "Celestial", plane: "Céu", image: "bg-gradient-to-br from-sky-300 to-blue-600" },
-                  { name: "Chicletóide", plane: "Chiclete", image: "bg-gradient-to-br from-pink-300 to-pink-600" },
-                  { name: "Elemental", plane: "Etéreo", image: "bg-gradient-to-br from-yellow-300 to-orange-500" },
+                  { name: "Elfo", plane: "Material", image: "bg-gradient-to-br from-gray-300 to-gray-500" },
+                  { name: "Fada", plane: "Esmeralda", image: "bg-gradient-to-br from-emerald-300 to-green-600" },
+                  { name: "Chiclete", plane: "Chiclete", image: "bg-gradient-to-br from-pink-300 to-pink-600" },
+                  { name: "Diabrete", plane: "Inferno", image: "bg-gradient-to-br from-orange-500 to-red-700" },
+                  { name: "Anjo", plane: "Céu", image: "bg-gradient-to-br from-sky-300 to-blue-500" },
+                  { name: "Fantasma", plane: "Etéreo", image: "bg-gradient-to-br from-indigo-400 to-violet-600" },
+                  { name: "Dragão", plane: "Elysium", image: "bg-gradient-to-r from-amber-200 to-yellow-500" },
                 ].map((race, index) => (
                   <div 
                     key={index}

@@ -63,7 +63,7 @@ export function Header() {
         <div className="flex items-center gap-2">
           <Link to="/" className="flex items-center gap-2 group">
             <div className="relative">
-              <Flame className="h-6 w-6 text-primary animate-pulse group-hover:opacity-0 transition-opacity duration-300" />
+              <Sparkles className="h-6 w-6 text-primary animate-pulse group-hover:opacity-0 transition-opacity duration-300" />
               <Wand2 className="h-6 w-6 text-primary absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             </div>
             <span className={`font-serif text-xl font-bold tracking-tight transition-all duration-300 ${
@@ -116,7 +116,7 @@ export function Header() {
             href="#afinidades" 
             className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors"
           >
-            <Sparkles className="h-4 w-4 inline mr-1" />
+            <Wand2 className="h-4 w-4 inline mr-1" />
             Afinidades
           </a>
           <Button 

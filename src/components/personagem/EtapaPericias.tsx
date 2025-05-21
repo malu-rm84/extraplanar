@@ -62,7 +62,7 @@ const EtapaPericias = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {categoria.pericias.map((pericia) => {
                 const pontos = getPontosPericia(pericia.nome);
-                const bonusTotal = pontos * 5;
+                const bonusTotal = pontos * 2;
                 
                 return (
                   <div 
