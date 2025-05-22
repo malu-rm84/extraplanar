@@ -161,3 +161,25 @@
 .tab-content {
   @apply plane-section mt-4;
 }
+
+@layer utilities {
+  .drop-shadow-dice {
+    filter: drop-shadow(0 2px 8px rgba(125, 90, 255, 0.3));
+  }
+
+  @keyframes dice-roll {
+    0% {
+      transform: rotate(0deg) scale(1);
+    }
+    50% {
+      transform: rotate(180deg) scale(1.2);
+    }
+    100% {
+      transform: rotate(360deg) scale(1);
+    }
+  }
+
+  .animate-dice-roll {
+    animation: dice-roll 0.8s ease-in-out;
+  }
+}

@@ -25,7 +25,7 @@ import MasterDashboard from "./pages/master/MasterDashboard";
 import MasterCampanhas from "./pages/master/MasterCampanhas";
 import MasterNotes from "./pages/master/MasterNotes";
 import MasterGerador from "./pages/master/MasterGerador";
-import MasterRoll from "./pages/master/MasterRoll";
+import { MasterRoll } from "./pages/master/MasterRoll";
 import { MasterCriarPersonagens } from "./pages/master/MasterCriarPersonagens";
 import { MasterPersonagensPage } from "./pages/master/MasterPersonagensPage";
 import MasterSistema from "./pages/master/MasterSistema";
@@ -36,6 +36,7 @@ import MasterConfig from "./pages/master/MasterConfig";
 import PlayerDashboard from "./pages/player/PlayerDashboard";
 import { PlayerCriarPersonagens } from "./pages/player/PlayerCriarPersonagens";
 import PlayerSessao from "./pages/player/PlayerSessao";
+import { PlayerRoll } from "./pages/player/PlayerRoll";
 import PlayerConfig from "./pages/player/PlayerConfig";
 import { PlayerPersonagensPage } from "./pages/player/PlayerPersonagensPage";
 
@@ -84,6 +85,7 @@ const App = () => (
                 <Route path="/player/dashboard" element={<PlayerDashboard />} />
                 <Route path="/player/criarpersonagens" element={<PlayerCriarPersonagens />} />
                 <Route path="/player/personagens" element={<PlayerPersonagensPage />} />
+                <Route path="/player/rolagem" element={<PlayerRoll />} />
                 <Route path="/player/personagens/:id" element={<PersonagemFichaWrapper />} />
                 <Route path="/player/sessao" element={<PlayerSessao />} />
                 <Route path="/player/config" element={<PlayerConfig />} />
