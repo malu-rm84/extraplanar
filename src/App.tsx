@@ -76,6 +76,7 @@ const App = () => (
                 <Route path="/master/players" element={<MasterPlayers />} />
                 <Route path="/master/config" element={<MasterConfig />} />
                 <Route path="/personagens" element={<PersonagensPage />} />
+                <Route path="/personagens/:id" element={<PersonagemFichaWrapper />} />
               </Route>
             </Route>
             

@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Personagem } from "@/components/personagem/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "@/components/auth/firebase-config";
+import { User, Plus } from "lucide-react";
 
 interface PersonagensPageProps {
   className?: string;
@@ -37,43 +39,96 @@ export const PersonagensPage = ({ className, hideHeader }: PersonagensPageProps)
   }, [currentUser]);
 
   return (
-    <div className={`container mx-auto p-4 bg-gray-900 min-h-screen ${className || ''}`}>
+    <div className={`p-6 space-y-8 ${className || ''}`}>
       {!hideHeader && (
-        <div className="flex justify-between items-center mb-8 pt-8">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent">
             Meus Personagens
           </h1>
           <Link 
             to={`/${userRole === 'master' ? 'master' : 'player'}/criarpersonagens`}
-            className="px-6 py-3 bg-primary/80 hover:bg-primary text-white rounded-lg transition-colors backdrop-blur-sm border border-primary/40"
+            className="inline-flex"
           >
-            Novo Personagem
+            <Button 
+              size="lg"
+              className="bg-primary/20 hover:bg-primary/30 border border-primary/30 hover:border-primary/50 transition-all shadow-glow hover:shadow-glow-lg"
+            >
+              <Plus className="h-5 w-5 mr-2" />
+              Novo Personagem
+            </Button>
           </Link>
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {personagens.map((personagem, index) => (
-          <Card 
-            key={index} 
-            className="p-6 bg-black/30 backdrop-blur-sm border border-white/10 hover:border-primary/40 transition-all"
+      {personagens.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16 space-y-6">
+          <div className="p-8 rounded-full bg-primary/10 border border-primary/20">
+            <User className="h-16 w-16 text-primary/60" />
+          </div>
+          <div className="text-center space-y-2">
+            <h3 className="text-xl font-semibold text-muted-foreground">
+              Nenhum personagem criado ainda
+            </h3>
+            <p className="text-muted-foreground max-w-md">
+              Comece sua jornada criando seu primeiro personagem e explore os planos extraplanares.
+            </p>
+          </div>
+          <Link 
+            to={`/${userRole === 'master' ? 'master' : 'player'}/criarpersonagens`}
+            className="inline-flex"
           >
-            <div className="flex justify-between items-center">
-              <div>
-                <h3 className="text-xl font-semibold text-gray-300">{personagem.nome}</h3>
-                <p className="text-gray-400">{personagem.raca}</p>
-                <p className="text-sm text-gray-500">Plano: {personagem.plano}</p>
+            <Button 
+              size="lg"
+              className="bg-primary/20 hover:bg-primary/30 border border-primary/30 hover:border-primary/50 transition-all shadow-glow hover:shadow-glow-lg"
+            >
+              <Plus className="h-5 w-5 mr-2" />
+              Criar Primeiro Personagem
+            </Button>
+          </Link>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {personagens.map((personagem, index) => (
+            <Card 
+              key={index} 
+              className="p-6 bg-white/10 backdrop-blur-sm border border-white/10 hover:border-primary/40 transition-all hover:bg-white/15 group"
+            >
+              <div className="space-y-4">
+                <div className="flex items-start justify-between">
+                  <div className="space-y-1">
+                    <h3 className="text-xl font-semibold text-white group-hover:text-primary transition-colors">
+                      {personagem.nome}
+                    </h3>
+                    <p className="text-muted-foreground capitalize">
+                      {personagem.raca}
+                    </p>
+                    <p className="text-sm text-muted-foreground/80 capitalize">
+                      Plano: {personagem.plano}
+                    </p>
+                  </div>
+                  <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">
+                    <User className="h-6 w-6 text-primary" />
+                  </div>
+                </div>
+                
+                <div className="pt-4 border-t border-white/10">
+                  <Link
+                    to={`/${userRole === 'master' ? 'master' : 'player'}/personagens/${personagem.id}`}
+                    className="inline-flex w-full"
+                  >
+                    <Button
+                      variant="outline"
+                      className="w-full bg-black/30 border-white/20 hover:bg-primary/20 hover:border-primary/40 hover:text-primary transition-all"
+                    >
+                      Visualizar Personagem
+                    </Button>
+                  </Link>
+                </div>
               </div>
-              <Link
-                to={`/${userRole === 'master' ? 'master' : 'player'}/personagens/${personagem.id}`} // Usar ID do documento
-                className="px-4 py-2 bg-primary/80 hover:bg-primary text-white rounded-lg transition-colors backdrop-blur-sm border border-primary/40"
-              >
-                Visualizar
-              </Link>
-            </div>
-          </Card>
-        ))}
-      </div>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

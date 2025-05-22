@@ -4,12 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SelectDropdown } from "@/utils/SelectDropdown";
-import { addDoc, collection, doc, updateDoc, onSnapshot, query, where } from "firebase/firestore";
+import { addDoc, collection, doc, updateDoc, onSnapshot, query, where, getDocs, arrayUnion } from "firebase/firestore";
 import { db } from "@/components/auth/firebase-config";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface Participant {
   id: string;
+  characterId?: string;
   name: string;
   type: 'player' | 'character';
   approved: boolean;
@@ -22,11 +23,12 @@ interface Campaign {
   description: string;
   status: 'concluída' | 'em andamento' | 'não iniciada';
   participants: Participant[];
+  participantUserIds: string[];
   inviteLink: string;
-  sessions: { id: string; link: string }[];
   mestreId: string;
   mestreNome: string;
   createdAt: Date;
+  proximaSessao?: Date;
 }
 
 const MasterCampanhas = () => {
@@ -36,6 +38,7 @@ const MasterCampanhas = () => {
   const [newDesc, setNewDesc] = useState('');
   const [newStatus, setNewStatus] = useState<Campaign['status']>('não iniciada');
   const [selectedCmp, setSelectedCmp] = useState('');
+  const [novaSessaoData, setNovaSessaoData] = useState('');
 
   useEffect(() => {
     if (!currentUser?.uid) return;
@@ -56,6 +59,41 @@ const MasterCampanhas = () => {
     return () => unsubscribe();
   }, [currentUser]);
 
+  const getOrCreateCampaignFolder = async (campaignName: string, userId: string): Promise<string> => {
+    const foldersQuery = query(
+      collection(db, "folders"),
+      where("name", "==", campaignName),
+      where("userId", "==", userId)
+    );
+    
+    const snapshot = await getDocs(foldersQuery);
+    if (!snapshot.empty) {
+      return snapshot.docs[0].id;
+    }
+
+    const newFolder = {
+      name: campaignName,
+      userId: userId,
+      parentFolderId: null
+    };
+    
+    const docRef = await addDoc(collection(db, "folders"), newFolder);
+    return docRef.id;
+  };
+
+  const createSessionNote = async (campaign: Campaign, userId: string) => {
+    const folderId = await getOrCreateCampaignFolder(campaign.name, userId);
+    
+    const newNote = {
+      title: `Sessão ${new Date().toLocaleDateString()}`,
+      content: `# Sessão da Campanha ${campaign.name}\n\n**Data:** ${new Date().toLocaleString()}\n\n## Descrição:\n\n## Acontecimentos importantes:`,
+      folderId: folderId,
+      userId: userId,
+    };
+
+    await addDoc(collection(db, "lore"), newNote);
+  };
+
   const addCampaign = async () => {
     if (!currentUser) return;
 
@@ -64,8 +102,8 @@ const MasterCampanhas = () => {
       description: newDesc,
       status: newStatus,
       participants: [],
+      participantUserIds: [],
       inviteLink: `${window.location.origin}/join/${crypto.randomUUID()}`,
-      sessions: [],
       mestreId: currentUser.uid,
       mestreNome: currentUser.displayName || "Mestre Anônimo",
       createdAt: new Date()
@@ -95,21 +133,42 @@ const MasterCampanhas = () => {
     }
   };
 
+  const agendarSessao = async (campaignId: string) => {
+    try {
+      if (!novaSessaoData) {
+        alert("Selecione uma data válida!");
+        return;
+      }
+      
+      const dataSessao = new Date(novaSessaoData);
+      if (isNaN(dataSessao.getTime())) {
+        throw new Error("Data inválida");
+      }
+
+      const campaignRef = doc(db, "campanhas", campaignId);
+      await updateDoc(campaignRef, {
+        proximaSessao: dataSessao.toISOString()
+      });
+      setNovaSessaoData('');
+      alert("Sessão agendada com sucesso!");
+    } catch (error) {
+      console.error("Erro ao agendar sessão:", error);
+      alert("Erro ao agendar sessão! Verifique a data e hora.");
+    }
+  };
+
   const createSession = async () => {
-    if (!selectedCmp) return;
+    if (!selectedCmp || !currentUser) return;
     
     try {
-      const campaignRef = doc(db, "campanhas", selectedCmp);
-      const sessionId = crypto.randomUUID();
-      
-      await updateDoc(campaignRef, {
-        sessions: [...campaigns.find(c => c.id === selectedCmp)?.sessions || [], {
-          id: sessionId,
-          link: `${window.location.origin}/session/${sessionId}`
-        }]
-      });
+      const campaign = campaigns.find(c => c.id === selectedCmp);
+      if (!campaign) return;
+
+      await createSessionNote(campaign, currentUser.uid);
+      alert("Nova anotação de sessão criada com sucesso na pasta da campanha!");
     } catch (error) {
       console.error("Erro ao criar sessão:", error);
+      alert("Erro ao criar anotação da sessão!");
     }
   };
 
@@ -165,22 +224,51 @@ const MasterCampanhas = () => {
                         <p className="text-sm text-muted-foreground">Nenhum participante aguardando.</p>
                       ) : c.participants.map(p => (
                         <div key={p.id} className="flex items-center justify-between py-1">
-                          <span className="text-sm text-muted-foreground">{p.name} ({p.type}) - {p.approved ? 'Aprovado' : 'Pendente'}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm text-muted-foreground">
+                              {p.name} ({p.type}) - {p.approved ? 'Aprovado' : 'Pendente'}
+                            </span>
+                            {p.approved && p.type === 'character' && (
+                              <Button
+                                variant="link"
+                                size="sm"
+                                className="text-primary hover:text-primary/80"
+                                onClick={() => window.open(`/master/personagens/${p.characterId}`, '_blank')}
+                              >
+                                Ver Ficha
+                              </Button>
+                            )}
+                          </div>
                           {!p.approved && <Button size="sm" onClick={() => approveParticipant(c.id, p.id)}>Aprovar</Button>}
                         </div>
                       ))}
                     </div>
 
-                    <div>
-                      <p className="font-medium">Sessões</p>
-                      {c.sessions.length === 0 ? (
-                        <p className="text-sm text-muted-foreground">Nenhuma sessão criada.</p>
-                      ) : c.sessions.map(s => (
-                        <a key={s.id} href={s.link} target="_blank" rel="noopener noreferrer" className="block text-sm underline">
-                          {s.link}
-                        </a>
-                      ))}
-                    </div>
+                    {c.participants.length > 0 && (
+                      <div className="mt-4">
+                        <Label>Agendar Próxima Sessão</Label>
+                        <div className="flex gap-2 mt-2">
+                          <Input
+                            type="datetime-local"
+                            value={novaSessaoData}
+                            min={new Date().toISOString().slice(0, 16)}
+                            onChange={(e) => setNovaSessaoData(e.target.value)}
+                            className="bg-black/50 border-gray-600 text-white"
+                          />
+                          <Button 
+                            onClick={() => agendarSessao(c.id)}
+                            className="bg-primary hover:bg-primary/90"
+                          >
+                            Agendar
+                          </Button>
+                        </div>
+                        {c.proximaSessao && (
+                          <p className="text-sm mt-2 text-green-400">
+                            Próxima sessão: {new Date(c.proximaSessao).toLocaleString()}
+                          </p>
+                        )}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -194,7 +282,10 @@ const MasterCampanhas = () => {
                 <option value="">Escolha campanha</option>
                 {campaigns.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </SelectDropdown>
-              <Button onClick={createSession}>Gerar Link de Sessão</Button>
+              <Button onClick={createSession}>Criar Anotação de Sessão</Button>
+              <p className="text-sm text-muted-foreground">
+                Uma nova anotação será criada na pasta da campanha no sistema de notas
+              </p>
             </div>
           </div>
         </div>

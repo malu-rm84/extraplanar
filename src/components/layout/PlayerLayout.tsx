@@ -8,6 +8,7 @@ import {
   Menu,
   X,
   Map,
+  Dice6,
   Sparkles
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -81,6 +82,7 @@ export function PlayerLayout({ children }: PlayerLayoutProps) {
             { path: "/player/personagens", icon: <User />, label: "Meus Personagens" },
             { path: "/player/criarpersonagens", icon: <User />, label: "Criar Personagens" },
             { path: "/player/sessao", icon: <Map />, label: "Campanhas" },
+            { path: "/player/rolagem", icon: <Dice6 />, label: "Rolagem" },
             { path: "/player/config", icon: <Settings />, label: "Configurações" },
           ].map((item) => (
             <Link
