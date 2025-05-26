@@ -9,6 +9,7 @@ import {
   X,
   Map,
   Dice6,
+  Notebook,
   Sparkles
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -79,9 +80,10 @@ export function PlayerLayout({ children }: PlayerLayoutProps) {
         <nav className="flex-grow p-4 space-y-2">
           {[
             { path: "/player/dashboard", icon: <LayoutDashboard />, label: "Dashboard" },
-            { path: "/player/personagens", icon: <User />, label: "Meus Personagens" },
             { path: "/player/criarpersonagens", icon: <User />, label: "Criar Personagens" },
-            { path: "/player/sessao", icon: <Map />, label: "Campanhas" },
+            { path: "/player/personagens", icon: <User />, label: "Meus Personagens" },
+            { path: "/player/notes", icon: <Notebook />, label: "Anotações" },
+            { path: "/player/campanhas", icon: <Map />, label: "Campanhas" },
             { path: "/player/rolagem", icon: <Dice6 />, label: "Rolagem" },
             { path: "/player/config", icon: <Settings />, label: "Configurações" },
           ].map((item) => (
