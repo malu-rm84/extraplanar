@@ -50,7 +50,7 @@ const App = () => (
       <AuthProvider>
         <Toaster />
         <Sonner />
-        <BrowserRouter>
+        <BrowserRouter basename={process.env.PUBLIC_URL}>
           <Routes>
             {/* Public Route */}
             <Route element={<PublicRoute />}>
