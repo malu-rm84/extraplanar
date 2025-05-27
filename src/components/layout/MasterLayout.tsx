@@ -90,7 +90,6 @@ export function MasterLayout({ children }: MasterLayoutProps) {
             { path: "/master/personagens", icon: <Users />, label: "Meus Personagens" },
             { path: "/master/criarpersonagens", icon: <User />, label: "Criar Personagens" },
             { path: "/master/sistema", icon: <BookOpen />, label: "Sistema" },
-            { path: "/master/players", icon: <Users />, label: "Players" },
             { path: "/master/config", icon: <Settings />, label: "Configurações" },
           ].map((item) => (
             <Link

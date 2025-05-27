@@ -275,11 +275,19 @@ const SidebarCategory = ({ category, activeCategory, activeSection, onSelectSect
   );
 };
 
-const Sidebar = ({ activeCategory, activeSection, onSelectSection, isSidebarOpen }) => {
+const Sidebar = ({ activeCategory, activeSection, onSelectSection, isSidebarOpen, toggleSidebar }) => {
   return (
-    <div className={`h-full overflow-y-auto custom-scrollbar bg-black/40 backdrop-blur-xl border border-white/10 rounded-xl w-64 fixed md:relative ${
-        isSidebarOpen ? 'block' : 'hidden md:block'
-      }`}>
+    <div className={`h-full overflow-y-auto custom-scrollbar bg-black/80 md:bg-black/40 backdrop-blur-lg md:backdrop-blur-xl border border-white/10 rounded-xl w-[280px] fixed md:relative z-50 md:z-auto transform transition-transform duration-200 ease-in-out ${
+      isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+    }`}>
+      <div className="p-3 relative h-full">
+        {/* Botão de fechar */}
+        <button 
+          onClick={toggleSidebar}
+          className="md:hidden absolute top-3 right-3 p-1 hover:text-primary"
+        >
+          <X size={20} />
+        </button>
       <div className="p-3">
         <div className="mb-4">
           <h2 className="text-md font-semibold flex items-center gap-2">
@@ -302,6 +310,7 @@ const Sidebar = ({ activeCategory, activeSection, onSelectSection, isSidebarOpen
         </div>
       </div>
     </div>
+  </div>
   );
 };
 
@@ -489,15 +498,26 @@ const MasterSistema = () => {
   return (
     <MasterLayout>
       <div className="flex h-full">
+        {/* Overlay para mobile */}
+        {isSidebarOpen && (
+          <div 
+            className="fixed inset-0 bg-black/60 z-40 md:hidden"
+            onClick={toggleSidebar}
+          />
+        )}
+
         <Sidebar 
-          activeCategory={activeCategory} 
+          activeCategory={activeCategory}
           activeSection={activeSection}
           onSelectSection={navigateTo}
           isSidebarOpen={isSidebarOpen}
+          toggleSidebar={toggleSidebar}
         />
         
-        <div className="flex-1 overflow-y-auto custom-scrollbar">
+        {/* Div principal do conteúdo - ESTRUTURA RESTAURADA */}
+        <div className="flex-1 overflow-y-auto custom-scrollbar relative">
           <div className="sticky top-0 z-10 bg-black/60 backdrop-blur-lg border-b border-white/10 p-3 flex items-center">
+            {/* Botão do menu mobile */}
             <button 
               className="p-1.5 rounded-md hover:bg-white/10 md:hidden mr-2"
               onClick={toggleSidebar}
@@ -505,6 +525,7 @@ const MasterSistema = () => {
               <Menu size={18} />
             </button>
             
+            {/* Cabeçalho */}
             <div className="flex-1">
               <h1 className="text-2xl md:text-3xl font-bold mb-0.5 bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent">
                 Sistema Extraplanar
@@ -514,7 +535,8 @@ const MasterSistema = () => {
               </p>
             </div>
           </div>
-          
+
+          {/* Container do conteúdo - ESTRUTURA ORIGINAL */}
           <div className="max-w-4xl mx-auto px-3 md:px-4 py-4 pb-12">
             <SearchBar 
               onSearch={navigateTo}
@@ -543,43 +565,141 @@ const MasterSistema = () => {
           from { opacity: 0; transform: translateY(8px); }
           to { opacity: 1; transform: translateY(0); }
         }
+        
         .animate-fadeIn {
           animation: fadeIn 0.2s ease-out forwards;
         }
-        
-        /* Personalização das barras de rolagem */
+
+        /* Scrollbar geral */
         .custom-scrollbar::-webkit-scrollbar {
           width: 6px;
           height: 6px;
         }
-        
+
         .custom-scrollbar::-webkit-scrollbar-track {
           background: rgba(0, 0, 0, 0.2);
           border-radius: 10px;
         }
-        
+
         .custom-scrollbar::-webkit-scrollbar-thumb {
           background: rgba(124, 58, 237, 0.5);
           border-radius: 10px;
         }
-        
+
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
           background: rgba(124, 58, 237, 0.7);
         }
-        
-        /* Firefox */
+
         .custom-scrollbar {
           scrollbar-width: thin;
           scrollbar-color: rgba(124, 58, 237, 0.5) rgba(0, 0, 0, 0.2);
         }
-        
+
+        /* Breakpoints responsivos */
+        /* Desktop (padrão) */
+        @media (min-width: 1025px) {
+          .sidebar-desktop {
+            width: 280px;
+            border-radius: 0.75rem;
+          }
+        }
+
+        /* Tablet (768px - 1024px) */
+        @media (max-width: 1024px) and (min-width: 769px) {
+          .sidebar-tablet {
+            width: 240px;
+            border-radius: 0.75rem 0 0 0.75rem;
+          }
+          
+          .content-section {
+            padding: 1.5rem;
+          }
+        }
+
+        /* Celular (até 768px) */
         @media (max-width: 768px) {
+          /* Esconder scrollbar mobile */
+          .custom-scrollbar::-webkit-scrollbar {
+            display: none;
+          }
+          
+          .custom-scrollbar {
+            scrollbar-width: none;
+          }
+
+          /* Sidebar mobile */
+          .sidebar-mobile {
+            width: 85vw;
+            min-width: 260px;
+            border-radius: 0.75rem 0.75rem 0 0;
+            box-shadow: 0 0 15px rgba(0,0,0,0.3);
+            transform: translateX(-100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          }
+
+          .sidebar-mobile.active {
+            transform: translateX(0);
+          }
+
+          .sidebar-overlay {
+            background: rgba(0, 0, 0, 0.5);
+          }
+
+          /* Ajustes de tabela */
           table {
             font-size: 0.75rem;
           }
+
           th, td {
             padding: 0.3rem;
           }
+
+          /* Header */
+          .main-header h1 {
+            font-size: 1.5rem;
+          }
+
+          /* Conteúdo */
+          .content-container {
+            padding: 1rem;
+          }
+        }
+
+        /* Pequenos celulares (até 480px) */
+        @media (max-width: 480px) {
+          .sidebar-mobile {
+            width: 90vw;
+            min-width: unset;
+          }
+
+          .search-bar {
+            width: 95%;
+          }
+
+          .subsection-title {
+            font-size: 0.875rem;
+          }
+        }
+
+        /* Animação de transição suave */
+        .transform {
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Gradiente sutil na borda da sidebar */
+        .sidebar-edge::after {
+          content: '';
+          position: absolute;
+          right: -6px;
+          top: 0;
+          bottom: 0;
+          width: 6px;
+          background: linear-gradient(
+            90deg,
+            rgba(255, 255, 255, 0.05) 0%,
+            rgba(0, 0, 0, 0) 100%
+          );
+          z-index: 10;
         }
       `}</style>
     </MasterLayout>

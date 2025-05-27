@@ -19,7 +19,7 @@ interface Participant {
   userId?: string;
 }
 
-interface Campaign {
+export interface Campaign {
   id: string;
   name: string;
   description: string;

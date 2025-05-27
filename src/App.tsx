@@ -29,7 +29,6 @@ import { MasterRoll } from "./pages/master/MasterRoll";
 import { MasterCriarPersonagens } from "./pages/master/MasterCriarPersonagens";
 import { MasterPersonagensPage } from "./pages/master/MasterPersonagensPage";
 import MasterSistema from "./pages/master/MasterSistema";
-import MasterPlayers from "./pages/master/MasterPlayers";
 import MasterConfig from "./pages/master/MasterConfig";
 
 // Player Pages
@@ -74,7 +73,6 @@ const App = () => (
                 <Route path="/master/personagens" element={<MasterPersonagensPage />} />
                 <Route path="/master/personagens/:id" element={<PersonagemFichaWrapper />} />
                 <Route path="/master/sistema" element={<MasterSistema />} />
-                <Route path="/master/players" element={<MasterPlayers />} />
                 <Route path="/master/config" element={<MasterConfig />} />
                 <Route path="/personagens" element={<PersonagensPage />} />
                 <Route path="/personagens/:id" element={<PersonagemFichaWrapper />} />
