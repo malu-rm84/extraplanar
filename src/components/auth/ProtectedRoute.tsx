@@ -41,12 +41,15 @@ export const PlayerRoute = () => {
 export const PublicRoute = () => {
   const { currentUser, userRole } = useAuth();
   
-  if (currentUser && userRole === "master") {
-    return <Navigate to="/master/dashboard" replace />;
-  }
-
-  if (currentUser && userRole === "player") {
-    return <Navigate to="/player/dashboard" replace />;
+  if (currentUser) {
+    if (userRole === "master") {
+      return <Navigate to="/master/dashboard" replace />;
+    }
+    if (userRole === "player") {
+      return <Navigate to="/player/dashboard" replace />;
+    }
+    // Novo: Redireciona usuários autenticados sem papel para escolher o tipo
+    return <Navigate to="/choose-role" replace />;
   }
 
   return <Outlet />;

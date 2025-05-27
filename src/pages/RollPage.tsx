@@ -1,10 +1,10 @@
-// MasterRoll.tsx
+// RollPage.tsx
 import { useState, useEffect } from "react";
-import { Plus, X } from "lucide-react";
+import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-type DieType = 'd4' | 'd6' | 'd8' | 'd10' | 'd12' | 'd20' | 'd100';
+type DieType = 'D4' | 'D6' | 'D8' | 'D10' | 'D12' | 'D20' | 'D100';
 
 interface Die {
   id: string;
@@ -45,28 +45,37 @@ export default function RollPage() {
   const rollAll = () => {
     if (isRollingAll) return;
     setIsRollingAll(true);
-    
+
     setDice(prev => prev.map(die => ({ ...die, rolling: true })));
-    
+
     setTimeout(() => {
       setDice(prev => {
         const newDice = prev.map(die => {
-          const max = parseInt(die.type.replace('d', ''));
+          const dieNumber = parseInt(die.type.replace(/D/gi, ''), 10) || 20;
+          const max = Math.max(1, dieNumber);
+          
           return {
             ...die,
             value: Math.floor(Math.random() * max) + 1,
             rolling: false
           };
         });
-        const newTotal = newDice.reduce((sum, die) => sum + die.value, 0) + bonus;
+        
+        const validBonus = Number.isNaN(bonus) ? 0 : bonus;
+        const newTotal = newDice.reduce((sum, d) => sum + (d.value || 0), 0) + validBonus;
+        
         setHistory(prevHistory => [
           { 
-            dice: newDice.map(({ type, value }) => ({ type, value })), 
+            dice: newDice.map(({ type, value }) => ({ 
+              type, 
+              value: value || 0
+            })), 
             total: newTotal,
             timestamp: new Date() 
           },
           ...prevHistory
         ]);
+        
         return newDice;
       });
       setIsRollingAll(false);
@@ -74,7 +83,9 @@ export default function RollPage() {
   };
 
   useEffect(() => {
-    setTotal(dice.reduce((sum, die) => sum + die.value, 0) + bonus);
+    const validBonus = Number.isNaN(bonus) ? 0 : bonus;
+    const sum = dice.reduce((acc, die) => acc + (die.value || 0), 0);
+    setTotal(sum + validBonus);
   }, [dice, bonus]);
 
   return (
@@ -85,16 +96,16 @@ export default function RollPage() {
 
       {/* Dice Selector */}
       <div className="grid grid-cols-4 md:grid-cols-7 gap-4">
-        {(['d4', 'd6', 'd8', 'd10', 'd12', 'd20', 'd100'] as DieType[]).map((type) => (
+        {(['D4', 'D6', 'D8', 'D10', 'D12', 'D20', 'D100'] as DieType[]).map((type) => (
           <button
             key={type}
             onClick={() => addDie(type)}
             className="relative flex items-center justify-center p-2 hover:scale-105 transition-transform group"
           >
             <img 
-              src={`/dices/D${type.slice(1)}.png`} 
-              alt={type} 
-              className="h-20 w-20 mb-1 filter drop-shadow-dice"
+              src={`${import.meta.env.BASE_URL}dices/D${type.slice(1)}.png`}
+              alt={type}
+              className="h-24 w-24 filter drop-shadow-dice transition-transform hover:scale-110"
             />
             <div className="absolute inset-0 flex items-center justify-center">
               <span className="text-xl font-bold text-black mix-blend-hard-light">
@@ -111,22 +122,22 @@ export default function RollPage() {
         <div className="p-6 rounded-xl bg-white/20 backdrop-blur-sm h-48 flex items-center justify-center">
           <div className="flex flex-wrap gap-6 justify-center items-center">
             {dice.map((die) => (
-              <div
-                key={die.id}
+              <div 
+                key={die.id} 
+                onClick={() => removeDie(die.id)}
                 className={cn(
                   "relative flex items-center justify-center cursor-pointer",
                   die.rolling && 'animate-dice-roll'
                 )}
-                onClick={() => removeDie(die.id)}
               >
                 <img 
-                  src={`/dices/D${die.type.slice(1)}.png`} 
+                  src={`${import.meta.env.BASE_URL}dices/D${die.type.slice(1)}.png`}
                   alt={die.type} 
                   className="h-24 w-24 filter drop-shadow-dice transition-transform hover:scale-110"
                 />
                 <div className="absolute inset-0 flex items-center justify-center">
                   <span className="text-2xl font-bold text-black mix-blend-hard-light">
-                    {die.rolling ? '?' : die.value || ''}
+                    {die.rolling ? '' : (die.value || '')}
                   </span>
                 </div>
               </div>
@@ -143,7 +154,10 @@ export default function RollPage() {
             <input
               type="number"
               value={bonus}
-              onChange={(e) => setBonus(Number(e.target.value))}
+              onChange={(e) => {
+                const value = Number(e.target.value);
+                setBonus(Number.isNaN(value) ? 0 : value);
+              }}
               className="w-24 px-3 py-2 rounded-lg bg-black/30 border border-white/10 text-primary"
             />
           </div>
@@ -170,7 +184,10 @@ export default function RollPage() {
         <h2 className="text-2xl font-bold text-primary">Histórico</h2>
         <div className="max-h-64 overflow-y-auto space-y-2 pr-2">
           {history.map((entry, index) => (
-            <div key={index} className="p-4 rounded-lg bg-white/10 backdrop-blur-sm border border-white/10">
+            <div 
+              key={index} 
+              className="p-4 rounded-lg bg-white/10 backdrop-blur-sm border border-white/10"
+            >
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm text-muted-foreground">
                   {entry.timestamp.toLocaleTimeString()}
@@ -183,12 +200,12 @@ export default function RollPage() {
                 {entry.dice.map((die, dieIndex) => (
                   <div key={dieIndex} className="relative h-12 w-12">
                     <img 
-                      src={`/dices/D${die.type.slice(1)}.png`} 
+                      src={`${import.meta.env.BASE_URL}dices/D${die.type.slice(1)}.png`} 
                       alt={die.type} 
                       className="h-full w-full filter drop-shadow-dice"
                     />
                     <span className="absolute inset-0 flex items-center justify-center text-sm font-bold text-black">
-                      {die.value}
+                      {die.value || 0}
                     </span>
                   </div>
                 ))}

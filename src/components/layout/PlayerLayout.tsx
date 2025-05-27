@@ -69,7 +69,7 @@ export function PlayerLayout({ children }: PlayerLayoutProps) {
       </div>
 
       {/* Sidebar */}
-      <aside className={`${isMenuOpen ? 'flex' : 'hidden'} md:flex flex-col w-full md:w-64 bg-black/30 backdrop-blur-lg border-r border-white/10`}>
+      <aside className={`${isMenuOpen ? 'flex' : 'hidden'} md:flex flex-col w-full md:w-64 bg-black/30 backdrop-blur-lg border-r border-white/10 md:fixed md:h-screen md:top-0 md:left-0`}>
         <div className="hidden md:flex items-center gap-2 p-6 border-b border-white/10">
           <Sparkles className="h-6 w-6 text-primary" />
           <span className="font-serif text-xl font-bold bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent">
@@ -116,7 +116,7 @@ export function PlayerLayout({ children }: PlayerLayoutProps) {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-grow p-4 md:p-6 overflow-auto">{children}</main>
+      <main className="flex-grow p-4 md:p-6 overflow-auto md:ml-64">{children}</main>
     </div>
   );
 }

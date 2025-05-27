@@ -14,7 +14,7 @@ import {
   Camera, 
   Save, 
   AlertCircle, 
-  CheckCircle2, 
+  CheckCircle2,
   Settings,
   Eye,
   EyeOff,
@@ -171,215 +171,204 @@ const ConfigPage = () => {
                     formData.photoURL !== profile.photoURL;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black">
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent">
-            Configurações
-          </h1>
-          <p className="text-muted-foreground">
-            Personalize seu perfil e preferências
-          </p>
+    <div className="p-6 space-y-8">
+      {/* Header */}
+      <div className="space-y-2">
+        <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent">
+          Configurações
+        </h1>
+        <p className="text-muted-foreground">
+          Personalize seu perfil e preferências
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Preview do Perfil */}
+        <div className="lg:col-span-1">
+          <div className="bg-black/30 backdrop-blur-lg rounded-xl border border-white/10 p-6">
+            <div className="text-center space-y-4">
+              <h2 className="text-lg font-semibold text-primary flex items-center justify-center gap-2">
+                <User className="h-5 w-5" />
+                Preview do Perfil
+              </h2>
+              
+              <div className="relative inline-block">
+                <Avatar className="h-24 w-24 mx-auto border-2 border-primary/20">
+                  <AvatarImage 
+                    src={showPreview ? previewImage : profile.photoURL} 
+                    alt="Foto de perfil"
+                    className="object-cover"
+                  />
+                  <AvatarFallback className="bg-primary/20 text-primary text-xl">
+                    {(formData.displayName || profile.displayName || "U").charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="absolute -bottom-1 -right-1 bg-primary rounded-full p-1">
+                  <Camera className="h-3 w-3 text-white" />
+                </div>
+              </div>
+              
+              <div>
+                <h3 className="text-lg font-semibold text-white">
+                  {formData.displayName || "Seu Apelido"}
+                </h3>
+                <p className="text-sm text-muted-foreground">{profile.email}</p>
+              </div>
+
+              <Separator className="bg-white/10" />
+              
+              <div className="text-xs text-muted-foreground">
+                <p>Membro desde</p>
+                <p className="text-primary">
+                  {profile.createdAt.toLocaleDateString('pt-BR')}
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Preview do Perfil */}
-          <div className="lg:col-span-1">
-            <Card className="bg-black/30 backdrop-blur-lg border-white/10 sticky top-6">
-              <CardHeader className="text-center">
-                <CardTitle className="text-primary flex items-center justify-center gap-2">
-                  <User className="h-5 w-5" />
-                  Preview do Perfil
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="text-center space-y-4">
-                <div className="relative inline-block">
-                  <Avatar className="h-24 w-24 mx-auto border-2 border-primary/20">
-                    <AvatarImage 
-                      src={showPreview ? previewImage : profile.photoURL} 
-                      alt="Foto de perfil"
-                      className="object-cover"
-                    />
-                    <AvatarFallback className="bg-primary/20 text-primary text-xl">
-                      {(formData.displayName || profile.displayName || "U").charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="absolute -bottom-1 -right-1 bg-primary rounded-full p-1">
-                    <Camera className="h-3 w-3 text-white" />
-                  </div>
-                </div>
-                
-                <div>
-                  <h3 className="text-lg font-semibold text-white">
-                    {formData.displayName || "Seu Apelido"}
-                  </h3>
-                  <p className="text-sm text-muted-foreground">{profile.email}</p>
-                </div>
-
-                <Separator className="bg-white/10" />
-                
-                <div className="text-xs text-muted-foreground">
-                  <p>Membro desde</p>
-                  <p className="text-primary">
-                    {profile.createdAt.toLocaleDateString('pt-BR')}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Formulário de Configurações */}
-          <div className="lg:col-span-2 space-y-6">
-            <Card className="bg-black/30 backdrop-blur-lg border-white/10">
-              <CardHeader>
-                <CardTitle className="text-primary flex items-center gap-2">
-                  <Settings className="h-5 w-5" />
-                  Informações Pessoais
-                </CardTitle>
-                <CardDescription className="text-muted-foreground">
-                  Atualize suas informações de perfil
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Campo de Apelido */}
-                <div className="space-y-2">
-                  <Label htmlFor="displayName" className="text-white">
-                    Apelido *
-                  </Label>
-                  <Input
-                    id="displayName"
-                    placeholder="Digite seu apelido"
-                    value={formData.displayName}
-                    onChange={(e) => setFormData(prev => ({ 
-                      ...prev, 
-                      displayName: e.target.value 
-                    }))}
-                    className="bg-black/20 border-white/10 focus:border-primary/50 text-white"
-                    maxLength={30}
-                  />
-                  {errors.displayName && (
-                    <Alert className="border-red-500/20 bg-red-500/10">
-                      <AlertCircle className="h-4 w-4 text-red-400" />
-                      <AlertDescription className="text-red-400">
-                        {errors.displayName}
-                      </AlertDescription>
-                    </Alert>
-                  )}
-                  <p className="text-xs text-muted-foreground">
-                    {formData.displayName.length}/30 caracteres
-                  </p>
-                </div>
-
-                {/* Campo de URL da Foto */}
-                <div className="space-y-2">
-                  <Label htmlFor="photoURL" className="text-white">
-                    URL da Foto de Perfil
-                  </Label>
-                  <div className="flex gap-2">
-                    <Input
-                      id="photoURL"
-                      placeholder="https://exemplo.com/sua-foto.jpg"
-                      value={formData.photoURL}
-                      onChange={(e) => setFormData(prev => ({ 
-                        ...prev, 
-                        photoURL: e.target.value 
-                      }))}
-                      className="bg-black/20 border-white/10 focus:border-primary/50 text-white flex-1"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      onClick={handlePreviewImage}
-                      disabled={!formData.photoURL.trim()}
-                      className="bg-black/20 border-primary/30 hover:bg-primary/10"
-                    >
-                      {showPreview ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </Button>
-                  </div>
-                  {errors.photoURL && (
-                    <Alert className="border-red-500/20 bg-red-500/10">
-                      <AlertCircle className="h-4 w-4 text-red-400" />
-                      <AlertDescription className="text-red-400">
-                        {errors.photoURL}
-                      </AlertDescription>
-                    </Alert>
-                  )}
-                  <Alert className="border-blue-500/20 bg-blue-500/10">
-                    <AlertCircle className="h-4 w-4 text-blue-400" />
-                    <AlertDescription className="text-blue-400">
-                      Use URLs de imagens de serviços confiáveis como Imgur, GitHub ou Cloudinary
-                    </AlertDescription>
-                  </Alert>
-                </div>
-
-                <Separator className="bg-white/10" />
-
-                {/* Botões de Ação */}
-                <div className="flex justify-between">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleReset}
-                    disabled={!hasChanges || loading}
-                    className="bg-black/20 border-white/20 hover:bg-white/10"
-                  >
-                    <RefreshCw className="h-4 w-4 mr-2" />
-                    Resetar
-                  </Button>
-                  
-                  <Button
-                    onClick={handleSave}
-                    disabled={!hasChanges || loading || !!errors.displayName || !!errors.photoURL}
-                    className="bg-primary hover:bg-primary/90"
-                  >
-                    {loading ? (
-                      <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                    ) : (
-                      <Save className="h-4 w-4 mr-2" />
-                    )}
-                    Salvar Alterações
-                  </Button>
-                </div>
-
-                {hasChanges && (
-                  <Alert className="border-yellow-500/20 bg-yellow-500/10">
-                    <AlertCircle className="h-4 w-4 text-yellow-400" />
-                    <AlertDescription className="text-yellow-400">
-                      Você tem alterações não salvas
+        {/* Formulário de Configurações */}
+        <div className="lg:col-span-2 space-y-6">
+          <div className="bg-black/30 backdrop-blur-lg rounded-xl border border-white/10 p-6">
+            <div className="space-y-4 mb-6">
+              <h2 className="text-lg font-semibold text-primary flex items-center gap-2">
+                <Settings className="h-5 w-5" />
+                Informações Pessoais
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                Atualize suas informações de perfil
+              </p>
+            </div>
+            
+            <div className="space-y-6">
+              {/* Campo de Apelido */}
+              <div className="space-y-2">
+                <Label htmlFor="displayName" className="text-white">
+                  Apelido *
+                </Label>
+                <Input
+                  id="displayName"
+                  placeholder="Digite seu apelido"
+                  value={formData.displayName}
+                  onChange={(e) => setFormData(prev => ({ 
+                    ...prev, 
+                    displayName: e.target.value 
+                  }))}
+                  className="bg-black/20 border-white/10 focus:border-primary/50 text-white"
+                  maxLength={30}
+                />
+                {errors.displayName && (
+                  <Alert className="border-red-500/20 bg-red-500/10">
+                    <AlertCircle className="h-4 w-4 text-red-400" />
+                    <AlertDescription className="text-red-400">
+                      {errors.displayName}
                     </AlertDescription>
                   </Alert>
                 )}
-              </CardContent>
-            </Card>
+                <p className="text-xs text-muted-foreground">
+                  {formData.displayName.length}/30 caracteres
+                </p>
+              </div>
 
-            {/* Card de Informações da Conta */}
-            <Card className="bg-black/30 backdrop-blur-lg border-white/10">
-              <CardHeader>
-                <CardTitle className="text-primary">Informações da Conta</CardTitle>
-                <CardDescription className="text-muted-foreground">
-                  Dados da sua conta (somente leitura)
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label className="text-muted-foreground text-sm">Email</Label>
-                    <p className="text-white font-medium">{profile.email}</p>
-                  </div>
-                  <div>
-                    <Label className="text-muted-foreground text-sm">Membro desde</Label>
-                    <p className="text-white font-medium">
-                      {profile.createdAt.toLocaleDateString('pt-BR', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      })}
-                    </p>
-                  </div>
+              {/* Campo de URL da Foto */}
+              <div className="space-y-2">
+                <Label htmlFor="photoURL" className="text-white">
+                  URL da Foto de Perfil
+                </Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="photoURL"
+                    placeholder="https://exemplo.com/sua-foto.jpg"
+                    value={formData.photoURL}
+                    onChange={(e) => setFormData(prev => ({ 
+                      ...prev, 
+                      photoURL: e.target.value 
+                    }))}
+                    className="bg-black/20 border-white/10 focus:border-primary/50 text-white flex-1"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={handlePreviewImage}
+                    disabled={!formData.photoURL.trim()}
+                    className="bg-black/20 border-primary/30 hover:bg-primary/10"
+                  >
+                    {showPreview ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </Button>
                 </div>
-              </CardContent>
-            </Card>
+                {errors.photoURL && (
+                  <Alert className="border-red-500/20 bg-red-500/10">
+                    <AlertCircle className="h-4 w-4 text-red-400" />
+                    <AlertDescription className="text-red-400">
+                      {errors.photoURL}
+                    </AlertDescription>
+                  </Alert>
+                )}
+                <Alert className="border-blue-500/20 bg-blue-500/10">
+                  <AlertCircle className="h-4 w-4 text-blue-400" />
+                  <AlertDescription className="text-blue-400">
+                    Use URLs de imagens de serviços confiáveis como Imgur, GitHub ou Cloudinary
+                  </AlertDescription>
+                </Alert>
+              </div>
+
+              <Separator className="bg-white/10" />
+
+              {/* Botões de Ação */}
+              <div className="flex justify-between gap-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleReset}
+                  disabled={!hasChanges || loading}
+                  className="bg-black/20 border-white/20 hover:bg-white/10 flex-1"
+                >
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Resetar
+                </Button>
+                
+                <Button
+                  onClick={handleSave}
+                  disabled={!hasChanges || loading || !!errors.displayName || !!errors.photoURL}
+                  className="bg-primary/20 hover:bg-primary/30 border border-primary/30 hover:border-primary/50 flex-1"
+                >
+                  {loading ? (
+                    <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Save className="h-4 w-4 mr-2" />
+                  )}
+                  Salvar Alterações
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Card de Informações da Conta */}
+          <div className="bg-black/30 backdrop-blur-lg rounded-xl border border-white/10 p-6">
+            <div className="space-y-4 mb-6">
+              <h2 className="text-lg font-semibold text-primary">Informações da Conta</h2>
+              <p className="text-sm text-muted-foreground">
+                Dados da sua conta (somente leitura)
+              </p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label className="text-muted-foreground text-sm">Email</Label>
+                <p className="text-white font-medium">{profile.email}</p>
+              </div>
+              <div>
+                <Label className="text-muted-foreground text-sm">Membro desde</Label>
+                <p className="text-white font-medium">
+                  {profile.createdAt.toLocaleDateString('pt-BR', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  })}
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </div>

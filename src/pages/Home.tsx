@@ -182,7 +182,10 @@ export default function HomePage() {
           description: "Bem-vindo ao Extraplanar RPG!" 
         });
       }
-    } catch (error) {
+
+      navigate("/"); // Força recarregamento das rotas protegidas
+    
+  } catch (error) {
       console.error(`Erro no ${isLogin ? 'login' : 'registro'}:`, error);
       toast({ 
         title: `Erro no ${isLogin ? 'login' : 'registro'}`, 

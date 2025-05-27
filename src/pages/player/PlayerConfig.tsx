@@ -1,17 +1,11 @@
-
+// PlayerConfig.tsx
 import { PlayerLayout } from "@/components/layout/PlayerLayout";
+import ConfigPage from "../ConfigPage";
 
 const PlayerConfig = () => {
   return (
     <PlayerLayout>
-      <div className="space-y-4">
-        <h1 className="text-2xl font-serif font-bold">Configurações</h1>
-        <p>Gerencie suas preferências e configurações.</p>
-        
-        <div className="bg-card border rounded-lg p-6 mt-6">
-          <p className="text-muted-foreground">Configurações do perfil de Jogador</p>
-        </div>
-      </div>
+      <ConfigPage />
     </PlayerLayout>
   );
 };
