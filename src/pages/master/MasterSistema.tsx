@@ -22,6 +22,13 @@ import {
   ChevronUp
 } from "lucide-react";
 
+interface Section {
+  title: string;
+  details?: string[];
+  subsections?: any[]; // Replace 'any' with a more specific type if available
+  color?: string;
+}
+
 // Content display components
 const TableBlock = ({ data }) => (
   <div className="overflow-x-auto rounded-lg border border-white/10 text-sm">
@@ -214,20 +221,7 @@ const SidebarCategory = ({ category, activeCategory, activeSection, onSelectSect
   const [isOpen, setIsOpen] = useState(category.title === activeCategory);
   
   const getPlanColor = (title) => {
-    if (title === "Planos") {
-      return "#f97316";
-    }
-    
-    const defaultColors = {
-      "Barco": "#3b82f6",
-      "Personagens": "#10b981",
-      "Inventário": "#f59e0b",
-      "Cidades": "#8b5cf6",
-      "Perícias": "#ec4899",
-      "Ocupações": "#6366f1"
-    };
-    
-    return defaultColors[title] || "#6366f1";
+    return "#7c3aed"; // primary color
   };
   
   const categoryIcons = {
@@ -247,19 +241,20 @@ const SidebarCategory = ({ category, activeCategory, activeSection, onSelectSect
   }, [activeCategory, category.title]);
   
   return (
-    <div className="mb-2">
+    <div className="mb-1">
       <button 
         className={`w-full text-left p-2 rounded-md flex items-center justify-between text-sm ${
-          category.title === activeCategory ? 'bg-primary/10 font-medium' : 'hover:bg-white/5'
+          category.title === activeCategory ? 'bg-primary/20 text-primary' : 'hover:bg-white/5'
         }`}
         onClick={() => setIsOpen(!isOpen)}
-        style={{ color: sectionColor }}
       >
         <div className="flex items-center gap-2">
-          {categoryIcons[category.title]}
-          <span>{category.title}</span>
+          <span style={{ color: sectionColor }}>{categoryIcons[category.title]}</span>
+          <span className={category.title === activeCategory ? 'text-primary' : 'text-white'}>
+            {category.title}
+          </span>
         </div>
-        {isOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+        {isOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
       </button>
       
       {isOpen && (
@@ -282,16 +277,16 @@ const SidebarCategory = ({ category, activeCategory, activeSection, onSelectSect
 
 const Sidebar = ({ activeCategory, activeSection, onSelectSection, isSidebarOpen }) => {
   return (
-    <div className={`h-full overflow-y-auto custom-scrollbar bg-black/40 backdrop-blur-xl border-r border-white/10 w-64 fixed md:relative ${
-      isSidebarOpen ? 'block' : 'hidden md:block'
-    }`}>
+    <div className={`h-full overflow-y-auto custom-scrollbar bg-black/40 backdrop-blur-xl border border-white/10 rounded-xl w-64 fixed md:relative ${
+        isSidebarOpen ? 'block' : 'hidden md:block'
+      }`}>
       <div className="p-3">
         <div className="mb-4">
           <h2 className="text-md font-semibold flex items-center gap-2">
             <BookOpen size={18} className="text-primary" />
-            Compêndio Extraplanar
+            Sistema Extraplanar
           </h2>
-          <p className="text-xs text-muted-foreground">Navegação do Sistema</p>
+          <p className="text-xs text-muted-foreground">Guia do Sistema</p>
         </div>
         
         <div className="space-y-1">
@@ -312,7 +307,9 @@ const Sidebar = ({ activeCategory, activeSection, onSelectSection, isSidebarOpen
 
 // Main content display
 const ContentSection = ({ section, sectionColor, category }) => {
-  const displayColor = category === "Planos" && section.color ? section.color : sectionColor;
+  const displayColor = category === "Planos" && (section as Section).color 
+    ? (section as Section).color 
+    : sectionColor;
   
   return (
     <div className="space-y-4 animate-fadeIn">
@@ -351,13 +348,13 @@ const ContentSection = ({ section, sectionColor, category }) => {
 // Search component
 const SearchBar = ({ onSearch, searchResults, clearSearch, searchQuery, setSearchQuery }) => {
   const categoryIcons = {
-    "Barco": <Ship className="text-blue-400" size={16} />,
-    "Personagens": <Users className="text-emerald-400" size={16} />,
-    "Inventário": <Backpack className="text-amber-400" size={16} />,
-    "Cidades": <Globe className="text-purple-400" size={16} />,
-    "Planos": <Map className="text-orange-400" size={16} />,   
-    "Perícias": <Star className="text-pink-400" size={16} />,
-    "Ocupações": <Briefcase className="text-indigo-400" size={16} />,
+    "Barco": <Ship size={16} />,
+    "Personagens": <Users size={16} />,
+    "Inventário": <Backpack size={16} />,
+    "Cidades": <Globe size={16} />,
+    "Planos": <Map size={16} />,   
+    "Perícias": <Star size={16} />,
+    "Ocupações": <Briefcase size={16} />,
   };
 
   return (
@@ -368,7 +365,7 @@ const SearchBar = ({ onSearch, searchResults, clearSearch, searchQuery, setSearc
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Procurar no compêndio..."
+          placeholder="Pesquisar..."
           className="flex-1 py-2 px-3 bg-transparent outline-none placeholder:text-muted-foreground/50 text-sm"
         />
         {searchQuery && (
@@ -414,22 +411,10 @@ const MasterSistema = () => {
   const getCategoryColor = (categoryTitle, sectionIndex = 0) => {
     if (categoryTitle === "Planos") {
       const categoryObj = systemInfo.find(c => c.title === categoryTitle);
-      if (categoryObj?.sections[sectionIndex]?.color) {
-        return categoryObj.sections[sectionIndex].color;
-      }
+      const section = categoryObj?.sections[sectionIndex] as Section; // Type assertion
+      return section?.color || "#f97316";
     }
-    
-    const defaultColors = {
-      "Barco": "#3b82f6",
-      "Personagens": "#10b981",
-      "Inventário": "#f59e0b",
-      "Cidades": "#8b5cf6",
-      "Planos": "#f97316",
-      "Perícias": "#ec4899",
-      "Ocupações": "#6366f1"
-    };
-    
-    return defaultColors[categoryTitle] || "#6366f1";
+    return "#94a3b8";
   };
   
   const navigateTo = useCallback((category, sectionIndex) => {
@@ -525,7 +510,7 @@ const MasterSistema = () => {
                 Sistema Extraplanar
               </h1>
               <p className="text-muted-foreground text-sm md:text-base">
-                Compêndio completo de regras e informações
+                Guia completo de regras e informações
               </p>
             </div>
           </div>
