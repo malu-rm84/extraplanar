@@ -1,23 +1,16 @@
-export interface Experiencia {
+export interface Habilidades {
   nome: string;
   custo: string;
   descricao: string;
   efeito?: string;
 }
 
-export interface CategoriaExperiencia {
+export interface CategoriaHabilidades {
   categoria: string;
-  itens: Experiencia[];
+  itens: Habilidades[];
 }
 
-export const experiencia: CategoriaExperiencia[] = [
-  {
-    categoria: "Fundamentais",
-    itens: [
-      { nome: "PV", custo: "1 + Vigor + Bônus de Faixa Etária", descricao: "Some 1 + Vigor + Bônus de Faixa Etária nos seus PVs." },
-      { nome: "PE", custo: "1 + Vigor + Bônus de Faixa Etária", descricao: "Some 1 + Vigor + Bônus de Faixa Etária nos seus PEs." },
-    ],
-  },
+export const habilidades: CategoriaHabilidades[] = [
   {
     categoria: "Habilidades Básicas",
     itens: [

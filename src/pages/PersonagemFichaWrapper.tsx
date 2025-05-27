@@ -1,19 +1,31 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { PlayerLayout } from "@/components/layout/PlayerLayout";
 import { MasterLayout } from "@/components/layout/MasterLayout";
 import { Button } from "@/components/ui/button";
 import { PersonagemFicha } from "./PersonagemFicha";
 import { useAuth } from "@/contexts/AuthContext";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, deleteDoc } from "firebase/firestore";
 import { db } from "@/components/auth/firebase-config";
 import { useEffect, useState } from "react";
 import { Personagem } from "@/components/personagem/types";
+import { Link } from "react-router-dom";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Skull, Trash2 } from "lucide-react";
 
 export const PersonagemFichaWrapper = () => {
   const { id } = useParams<{ id: string }>();
-  const { userRole } = useAuth();
+  const { currentUser, userRole } = useAuth();
   const [personagem, setPersonagem] = useState<Personagem | null>(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
 
   useEffect(() => {
     const carregarPersonagem = async () => {
@@ -24,7 +36,8 @@ export const PersonagemFichaWrapper = () => {
         const docSnap = await getDoc(docRef);
         
         if (docSnap.exists()) {
-          setPersonagem(docSnap.data() as Personagem);
+          const data = docSnap.data() as Personagem;
+          setPersonagem({ ...data, id: docSnap.id });
         } else {
           console.log("Personagem não encontrado!");
         }
@@ -138,6 +151,21 @@ ${personagem.observacoes}` : ""}
     URL.revokeObjectURL(url);
   };
 
+  const handleDelete = async () => {
+    try {
+      if (!id || !currentUser) return;
+      
+      const docRef = doc(db, "personagens", id);
+      await deleteDoc(docRef);
+      navigate('/personagens');
+    } catch (error) {
+      console.error("Erro ao excluir personagem:", error);
+      alert("Erro ao excluir personagem!");
+    } finally {
+      setShowDeleteConfirmation(false);
+    }
+  };
+
   if (loading) return <div className="container mx-auto p-4">Carregando...</div>;
   
   if (!personagem || !personagem.atributos) {
@@ -149,6 +177,7 @@ ${personagem.observacoes}` : ""}
   }
 
   const Layout = userRole === 'master' ? MasterLayout : PlayerLayout;
+  const isDono = personagem.criadoPor === currentUser?.uid;
 
   return (
     <Layout>
@@ -166,8 +195,67 @@ ${personagem.observacoes}` : ""}
           >
             Exportar para MD
           </Button>
+          
+          {isDono && (
+            <>
+              <Link 
+                to={`/${userRole}/editar-personagem/${id}`}
+                className="inline-flex"
+              >
+                <Button 
+                  className="bg-amber-600 hover:bg-amber-700 text-white"
+                >
+                  Editar Personagem
+                </Button>
+              </Link>
+
+              <Button 
+                onClick={() => setShowDeleteConfirmation(true)}
+                className="bg-red-600 hover:bg-red-700 text-white"
+              >
+                Excluir Personagem
+              </Button>
+            </>
+          )}
         </div>
+        
         <PersonagemFicha personagem={personagem} />
+
+        {/* Diálogo de Confirmação de Exclusão */}
+        <Dialog open={showDeleteConfirmation} onOpenChange={setShowDeleteConfirmation}>
+          <DialogContent className="bg-black/90 border-primary/40 backdrop-blur-lg">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-bold text-red-500 text-center">
+                <Skull className="h-8 w-8 mx-auto mb-2" />
+                Excluir Personagem Permanentemente
+              </DialogTitle>
+              <DialogDescription className="text-center text-gray-300">
+                Esta ação não pode ser desfeita! Todos os dados do personagem serão permanentemente removidos.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="text-center text-lg text-primary">
+              "{personagem.nome}" será perdido para sempre
+            </div>
+
+            <DialogFooter className="flex justify-center gap-4">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowDeleteConfirmation(false)}
+                className="border-primary/40 text-gray-300 hover:bg-primary/20 hover:text-primary px-8"
+              >
+                Cancelar
+              </Button>
+              <Button 
+                onClick={handleDelete}
+                className="bg-red-600 hover:bg-red-700 text-white px-8 gap-2"
+              >
+                <Trash2 className="h-4 w-4" />
+                Confirmar Exclusão
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </Layout>
   );

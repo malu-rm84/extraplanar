@@ -1,7 +1,7 @@
 import { Plano } from "../../data/PlanosRacas";
 import { FaixaEtaria } from "../../data/FaixaEtaria";
 import { Lingua } from "../../data/Linguas";
-import { Experiencia, CategoriaExperiencia } from "../../data/Experiencia";
+import { Habilidades, CategoriaHabilidades } from "../../data/Habilidades";
 import { Pericia, CategoriaPericias } from "../../data/Pericias";
 import { Ocupacao, CategoriaOcupacoes } from "../../data/Ocupacoes";
 import { Capacidade, CategoriaCapacidades } from "../../data/Capacidades";
@@ -35,26 +35,32 @@ export type EtapaCriacao =
   | "capacidades"
   | "linguas" 
   | "inventario"
-  | "experiencia";
+  | "habilidades"
+  | "pontos-fundamentais";
 
 export interface Personagem {
+  // Identificação
   id?: string;
   criadoPor: string;
   criadorNome: string;
   dataCriacao: Date;
+  dataAtualizacao?: Date;
+
+  // Dados Básicos
   nome: string;
   idade: string;
   plano: string;
   raca: string;
+  faixaEtaria?: string;
+  habilidadeRacial: string;
+
+  // Descrição
   descricaoFisica?: string;
   personalidade?: string;
   historia?: string;
   observacoes?: string;
-  habilidadeRacial: string;
-  faixaEtaria?: string;
-  linguaMaterna: Lingua;
-  linguasAdquiridas: Lingua[];
-  dialectos?: Lingua[];
+
+  // Sistema Mecânico
   atributos: {
     agilidade: { base: number; racial: number };
     forca: { base: number; racial: number };
@@ -62,6 +68,7 @@ export interface Personagem {
     presenca: { base: number; racial: number };
     vigor: { base: number; racial: number };
   };
+  
   afinidades: {
     arcana: number;
     cosmica: number;
@@ -69,8 +76,8 @@ export interface Personagem {
     natural: number;
     necromante: number;
   };
-  magias: any[];
-  experiencia?: CategoriaExperiencia[];
+
+  // Progressão
   pericias?: CategoriaPericias[];
   ocupacoesSelecionadas?: Array<{
     nome: string;
@@ -80,6 +87,26 @@ export interface Personagem {
     nome: string;
     custo: number;
   }>;
+  habilidades?: CategoriaHabilidades[];
+
+  // Linguagens
+  linguaMaterna: Lingua;
+  linguasAdquiridas: Lingua[];
+  dialectos?: Lingua[];
+
+  // Recursos
+  magias: any[];
   inventario?: any[];
   extras?: Record<string, any>;
+
+  // Pontos de Desenvolvimento
+  ppComprados: number;
+  pdDisponivel: number;
+
+  // Atributos Derivados
+  pp: number;
+  pv: number;
+  pe: number;
+  dtTotal: number;
+  dtPassiva: number;
 }

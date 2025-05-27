@@ -132,6 +132,68 @@ export const PersonagemFicha = ({ personagem }: PersonagemFichaProps) => {
         </div>
       </div>
 
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-6 p-4 border border-primary/30 bg-black/50 backdrop-blur-sm shadow-lg print:bg-[#161616] print:border-primary/40">
+        {/* PD */}
+        <div className="col-span-1 text-center">
+          <div className="bg-gradient-to-r from-primary/80 to-primary/40 py-1 text-xs font-bold rounded-t-lg print:bg-gradient-to-r print:from-[#9333ea]/80 print:to-[#9333ea]/40">
+            Pontos de Desenvolvimento
+          </div>
+          <div className="border border-primary/40 rounded-b-lg bg-black/40 py-2 text-white text-xl font-bold print:bg-[#212121] print:border-primary/30">
+            {personagem.pdDisponivel}
+          </div>
+        </div>
+
+        {/* PP */}
+        <div className="col-span-1 text-center">
+          <div className="bg-gradient-to-r from-primary/80 to-primary/40 py-1 text-xs font-bold rounded-t-lg print:bg-gradient-to-r print:from-[#9333ea]/80 print:to-[#9333ea]/40">
+            Percepção Passiva
+          </div>
+          <div className="border border-primary/40 rounded-b-lg bg-black/40 py-2 text-white text-xl font-bold print:bg-[#212121] print:border-primary/30">
+            {personagem.pp}
+          </div>
+        </div>
+
+        {/* PE */}
+        <div className="col-span-1 text-center">
+          <div className="bg-gradient-to-r from-primary/80 to-primary/40 py-1 text-xs font-bold rounded-t-lg print:bg-gradient-to-r print:from-[#9333ea]/80 print:to-[#9333ea]/40">
+            Pontos de Experiência
+          </div>
+          <div className="border border-primary/40 rounded-b-lg bg-black/40 py-2 text-white text-xl font-bold print:bg-[#212121] print:border-primary/30">
+            {personagem.pe}
+          </div>
+        </div>
+
+        {/* PV */}
+        <div className="col-span-1 text-center">
+          <div className="bg-gradient-to-r from-primary/80 to-primary/40 py-1 text-xs font-bold rounded-t-lg print:bg-gradient-to-r print:from-[#9333ea]/80 print:to-[#9333ea]/40">
+            Pontos de Vida
+          </div>
+          <div className="border border-primary/40 rounded-b-lg bg-black/40 py-2 text-white text-xl font-bold print:bg-[#212121] print:border-primary/30">
+            {personagem.pv}
+          </div>
+        </div>
+
+        {/* DT Total */}
+        <div className="col-span-1 text-center">
+          <div className="bg-gradient-to-r from-primary/80 to-primary/40 py-1 text-xs font-bold rounded-t-lg print:bg-gradient-to-r print:from-[#9333ea]/80 print:to-[#9333ea]/40">
+            Defesa Total
+          </div>
+          <div className="border border-primary/40 rounded-b-lg bg-black/40 py-2 text-white text-xl font-bold print:bg-[#212121] print:border-primary/30">
+            {personagem.dtTotal}
+          </div>
+        </div>
+
+        {/* DT Passiva */}
+        <div className="col-span-1 text-center">
+          <div className="bg-gradient-to-r from-primary/80 to-primary/40 py-1 text-xs font-bold rounded-t-lg print:bg-gradient-to-r print:from-[#9333ea]/80 print:to-[#9333ea]/40">
+            Defesa Passiva
+          </div>
+          <div className="border border-primary/40 rounded-b-lg bg-black/40 py-2 text-white text-xl font-bold print:bg-[#212121] print:border-primary/30">
+            {personagem.dtPassiva}
+          </div>
+        </div>
+      </div>
+
       <div className="grid grid-cols-12 gap-4 p-4 print:p-4 print:gap-4">
         {/* Atributos */}
         <div className="col-span-6 border border-primary/30 rounded-lg bg-black/50 backdrop-blur-sm shadow-lg

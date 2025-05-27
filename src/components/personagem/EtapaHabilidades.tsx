@@ -1,24 +1,24 @@
 import { useState } from "react";
 import { Personagem } from "./types";
-import { CategoriaExperiencia, experiencia } from "@/data/Experiencia";
+import { CategoriaHabilidades, habilidades, Habilidades } from "@/data/Habilidades";
 import { Button } from "@/components/ui/button";
 import { parsePD } from "@/utils/pdHelpers";
 import { Info } from "lucide-react";
 
-interface EtapaExperienciaProps {
+interface EtapaHabilidadesProps {
   personagem: Personagem;
   setPersonagem: (personagem: Personagem) => void;
   calcularTotalPD: (personagem: Personagem) => number;
 }
 
-const EtapaExperiencia = ({ 
+const EtapaHabilidades = ({ 
   personagem, 
   setPersonagem,
   calcularTotalPD 
-}: EtapaExperienciaProps) => {
+}: EtapaHabilidadesProps) => {
   const [selecoes, setSelecoes] = useState<Record<string, Set<string>>>({});
 
-  const toggleExperiencia = (categoriaId: string, exp: string, custo: string) => {
+  const togglehabilidades = (categoriaId: string, exp: string, custo: string) => {
     const novoSelecoes = { ...selecoes };
     const pdCusto = parsePD(custo);
     
@@ -36,7 +36,7 @@ const EtapaExperiencia = ({
 
     setSelecoes(novoSelecoes);
     
-    const novaExperiencia = experiencia.map(categoria => ({
+    const novaHabilidade = habilidades.map(categoria => ({
       categoria: categoria.categoria,
       itens: categoria.itens.filter(item => 
             novoSelecoes[categoria.categoria]?.has(item.nome))
@@ -44,15 +44,15 @@ const EtapaExperiencia = ({
 
     setPersonagem({
       ...personagem,
-      experiencia: novaExperiencia
+      habilidades: novaHabilidade
     });
   };
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-primary mb-6">Experiência e Habilidades</h2>
+      <h2 className="text-2xl font-bold text-primary mb-6">Habilidades</h2>
 
-      {experiencia.map((categoria) => (
+      {habilidades.map((categoria) => (
         <div key={categoria.categoria} className="bg-black/30 backdrop-blur-sm p-6 rounded-lg border border-white/10">
           <h3 className="text-lg font-semibold text-primary mb-4 flex items-center gap-2">
             {categoria.categoria}
@@ -68,7 +68,7 @@ const EtapaExperiencia = ({
               return (
                 <button
                     key={exp.nome}
-                    onClick={() => toggleExperiencia(categoria.categoria, exp.nome, exp.custo)}
+                    onClick={() => togglehabilidades(categoria.categoria, exp.nome, exp.custo)}
                     disabled={pdCusto > pdDisponivel && !isSelecionada}
                     className={`p-4 text-left rounded-lg border transition-all 
                         ${isSelecionada 
@@ -102,4 +102,4 @@ const EtapaExperiencia = ({
   );
 };
 
-export default EtapaExperiencia;
+export default EtapaHabilidades;

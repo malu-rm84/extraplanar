@@ -19,6 +19,7 @@ import UserType from "./pages/UserType";
 import NotFound from "./pages/NotFound";
 import { PersonagensPage } from './pages/PersonagensPage';
 import { PersonagemFichaWrapper } from './pages/PersonagemFichaWrapper';
+import { EditarPersonagemPage } from "./pages/EditarPersonagemPage";
 
 // Master Pages
 import MasterDashboard from "./pages/master/MasterDashboard";
@@ -75,6 +76,7 @@ const App = () => (
                 <Route path="/master/sistema" element={<MasterSistema />} />
                 <Route path="/master/config" element={<MasterConfig />} />
                 <Route path="/personagens" element={<PersonagensPage />} />
+                <Route path="/editar-personagem/:id" element={<EditarPersonagemPage />} />
                 <Route path="/personagens/:id" element={<PersonagemFichaWrapper />} />
               </Route>
             </Route>
@@ -88,6 +90,7 @@ const App = () => (
                 <Route path="/player/notes" element={<PlayerNotes />} />
                 <Route path="/player/rolagem" element={<PlayerRoll />} />
                 <Route path="/player/personagens/:id" element={<PersonagemFichaWrapper />} />
+                <Route path="player/editar-personagem/:id" element={<EditarPersonagemPage />} />
                 <Route path="/player/campanhas" element={<PlayerCampanhas />} />
                 <Route path="/player/config" element={<PlayerConfig />} />
               </Route>
