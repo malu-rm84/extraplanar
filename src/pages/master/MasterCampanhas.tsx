@@ -4,11 +4,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SelectDropdown } from "@/utils/SelectDropdown";
-import { addDoc, collection, doc, updateDoc, onSnapshot, query, where, getDocs, arrayUnion, deleteDoc, arrayRemove, limit, orderBy } from "firebase/firestore";
+import { 
+  addDoc, collection, doc, updateDoc, onSnapshot, 
+  query, where, getDocs, arrayUnion, deleteDoc, arrayRemove, limit, orderBy 
+} from "firebase/firestore";
 import { db } from "@/components/auth/firebase-config";
 import { useAuth } from "@/contexts/AuthContext";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Copy } from 'lucide-react';
+import SessionPage from "./SessionPage";
 
 interface Participant {
   id: string;
@@ -31,7 +35,7 @@ export interface Campaign {
   mestreNome: string;
   createdAt: Date;
   proximaSessao?: Date;
-  sessoes?: Session[];
+  sessoes?: string[];
 }
 
 interface Session {
@@ -50,12 +54,12 @@ const MasterCampanhas = () => {
   const [newName, setNewName] = useState('');
   const [newDesc, setNewDesc] = useState('');
   const [newStatus, setNewStatus] = useState<Campaign['status']>('não iniciada');
-  const [selectedCmp, setSelectedCmp] = useState('');
   const [novaSessaoData, setNovaSessaoData] = useState('');
   const [filterStatus, setFilterStatus] = useState<Campaign['status']>('em andamento');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingCampaign, setEditingCampaign] = useState<Campaign | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!currentUser?.uid) return;
@@ -69,9 +73,9 @@ const MasterCampanhas = () => {
       const campaignsData = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
-        // Convert Firestore Timestamp to JS Date
         createdAt: doc.data().createdAt.toDate(),
-        proximaSessao: doc.data().proximaSessao?.toDate() || null
+        proximaSessao: doc.data().proximaSessao?.toDate() || null,
+        sessoes: doc.data().sessoes || []
       })) as Campaign[];
       setCampaigns(campaignsData);
     });
@@ -145,14 +149,12 @@ const MasterCampanhas = () => {
 
       if (!participant?.userId) throw new Error("ID do usuário não encontrado");
 
-      // 1. Atualizar status de aprovação
       await updateDoc(campaignRef, {
         participants: campaign?.participants.map(p => 
           p.id === pid ? { ...p, approved: true } : p
         )
       });
 
-      // 2. Criar pasta para o jogador
       const playerFolderRef = await addDoc(collection(db, "folders"), {
         name: campaign?.name || "Nova Campanha",
         userId: participant.userId,
@@ -160,7 +162,6 @@ const MasterCampanhas = () => {
         createdAt: new Date()
       });
 
-      // 3. Criar nota inicial na pasta
       await addDoc(collection(db, "lore"), {
         title: "Notas Iniciais",
         content: `# Bem-vindo à campanha ${campaign?.name}\n\n**Mestre:** ${campaign?.mestreNome}\n\nComece a registrar suas anotações aqui!`,
@@ -211,7 +212,6 @@ const MasterCampanhas = () => {
         return;
       }
 
-      // Converter e ajustar timezone
       const dataSessao = new Date(novaSessaoData);
       const timezoneOffset = dataSessao.getTimezoneOffset() * 60000;
       const adjustedDate = new Date(dataSessao.getTime() - timezoneOffset);
@@ -220,7 +220,6 @@ const MasterCampanhas = () => {
         throw new Error("Data inválida");
       }
 
-      // Obter pasta da campanha
       const foldersQuery = query(
         collection(db, "folders"),
         where("campaignId", "==", campaignId),
@@ -233,7 +232,6 @@ const MasterCampanhas = () => {
       }
       const folderId = folderSnapshot.docs[0].id;
 
-      // Determinar número da próxima sessão
       const sessionsQuery = query(
         collection(db, "lore"),
         where("campaignId", "==", campaignId),
@@ -249,7 +247,6 @@ const MasterCampanhas = () => {
         nextNumber = lastSession.number + 1;
       }
 
-      // Formatar data para exibição
       const formattedDate = adjustedDate.toLocaleDateString('pt-BR', {
         day: '2-digit',
         month: '2-digit',
@@ -259,8 +256,7 @@ const MasterCampanhas = () => {
         hour12: false
       });
 
-      // Criar documento da sessão
-      const sessionRef = await addDoc(collection(db, "lore"), {
+      const loreSessionRef = await addDoc(collection(db, "lore"), {
         title: `Sessão ${nextNumber} - ${formattedDate}`,
         content: `# Sessão ${nextNumber}\n\n## Data\n${formattedDate}`,
         folderId: folderId,
@@ -270,14 +266,24 @@ const MasterCampanhas = () => {
         date: adjustedDate
       });
 
-      // Atualizar campanha com nova data
+      const sessionRef = await addDoc(collection(db, "sessions"), {
+        campaignId,
+        status: 'agendada',
+        scheduledDate: adjustedDate,
+        diceRolls: 0,
+        xpAwarded: 0,
+        duration: 0,
+        notes: "",
+        mestreId: currentUser?.uid
+      });
+
       await updateDoc(doc(db, "campanhas", campaignId), {
+        sessoes: arrayUnion(sessionRef.id),
         proximaSessao: adjustedDate
       });
 
       alert(`Sessão ${nextNumber} agendada para ${formattedDate}!`);
-      setNovaSessaoData(''); // Limpar campo de input
-
+      setNovaSessaoData('');
     } catch (error) {
       console.error("Erro ao agendar sessão:", error);
       alert(error instanceof Error ? error.message : "Erro ao agendar sessão!");
@@ -287,7 +293,9 @@ const MasterCampanhas = () => {
   const deleteSessao = async (campaignId: string, sessionId: string) => {
     try {
       await deleteDoc(doc(db, "lore", sessionId));
+      await deleteDoc(doc(db, "sessions", sessionId));
       await updateDoc(doc(db, "campanhas", campaignId), {
+        sessoes: arrayRemove(sessionId),
         proximaSessao: null
       });
       alert("Sessão removida com sucesso!");
@@ -317,31 +325,10 @@ const MasterCampanhas = () => {
 
   const filteredCampaigns = campaigns.filter(c => c.status === filterStatus);
 
-  const updateCampaignInviteLink = async (campaignId: string, newLink: string) => {
-    try {
-      const campaignRef = doc(db, "campanhas", campaignId);
-      await updateDoc(campaignRef, { inviteLink: newLink });
-      alert("Link de convite atualizado com sucesso!");
-    } catch (error) {
-      console.error("Erro ao atualizar link:", error);
-      alert("Erro ao atualizar link de convite.");
-    }
-  };
-
-  const copyToClipboard = async (text: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      alert("Link copiado para a área de transferência!");
-    } catch (err) {
-      console.error("Falha ao copiar texto: ", err);
-      alert("Erro ao copiar link!");
-    }
-  };
-
   return (
     <MasterLayout>
       <div className="max-w-6xl mx-auto px-4 pb-16">
-        {/* Modal de Criação */}
+        {/* Modais */}
         <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
           <DialogContent className="bg-black/90 border-gray-700 backdrop-blur-lg">
             <DialogHeader>
@@ -387,7 +374,6 @@ const MasterCampanhas = () => {
           </DialogContent>
         </Dialog>
 
-        {/* Modal de Edição */}
         <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
           <DialogContent className="bg-black/90 border-gray-700 backdrop-blur-lg">
             <DialogHeader>
@@ -433,6 +419,18 @@ const MasterCampanhas = () => {
           </DialogContent>
         </Dialog>
 
+        <Dialog open={!!selectedSessionId} onOpenChange={(open) => !open && setSelectedSessionId(null)}>
+          <DialogContent className="max-w-4xl bg-black/90 border-gray-700 backdrop-blur-lg h-[90vh]">
+            {selectedSessionId && (
+              <SessionPage 
+                sessionId={selectedSessionId}
+                onClose={() => setSelectedSessionId(null)}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Conteúdo Principal */}
         <div className="text-center mb-12 pt-8">
           <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent">
             Gerenciar Campanhas
@@ -492,12 +490,12 @@ const MasterCampanhas = () => {
                         <div className="flex gap-2 mt-2 items-center">
                           <span className="text-sm text-muted-foreground">{c.inviteLink}</span>
                           <Copy 
-                            onClick={() => copyToClipboard(c.inviteLink)}
+                            onClick={() => navigator.clipboard.writeText(c.inviteLink)}
                             className="w-4 h-4 text-muted-foreground cursor-pointer hover:text-primary"
                           />
                         </div>
                       </div>
-                      <p className="font-medium">Participantes</p>
+                      <p className="font-medium mt-4">Participantes</p>
                       {c.participants.length === 0 ? (
                         <p className="text-sm text-muted-foreground">Nenhum participante</p>
                       ) : (
@@ -568,17 +566,28 @@ const MasterCampanhas = () => {
                           <Button
                             variant="link"
                             size="sm"
+                            className="text-primary hover:text-primary/80"
+                            onClick={() => {
+                              const latestSessionId = c.sessoes?.[0];
+                              if (latestSessionId) {
+                                setSelectedSessionId(latestSessionId);
+                              }
+                            }}
+                          >
+                            Gerenciar Sessão
+                          </Button>
+                          <Button
+                            variant="link"
+                            size="sm"
                             className="text-red-500 hover:text-red-400"
                             onClick={async () => {
                               try {
-                                // Buscar a sessão mais recente diretamente do Firestore
                                 const sessionsQuery = query(
                                   collection(db, "lore"),
                                   where("campaignId", "==", c.id),
                                   orderBy("number", "desc"),
                                   limit(1)
                                 );
-                                
                                 const querySnapshot = await getDocs(sessionsQuery);
                                 if (!querySnapshot.empty) {
                                   const latestSession = querySnapshot.docs[0];

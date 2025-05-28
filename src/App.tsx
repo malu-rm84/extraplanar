@@ -50,7 +50,7 @@ const App = () => (
       <AuthProvider>
         <Toaster />
         <Sonner />
-        <Router basename="/extraplanar">
+        <Router basename={import.meta.env.BASE_URL}>
           <Suspense fallback={<div className="flex items-center justify-center h-screen">Carregando...</div>}>
             <Routes>
               {/* Rotas Públicas */}

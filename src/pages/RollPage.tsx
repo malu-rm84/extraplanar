@@ -19,7 +19,11 @@ interface RollHistoryEntry {
   timestamp: Date;
 }
 
-export default function RollPage() {
+interface RollPageProps {
+  onRoll?: (rolls: number) => void;
+}
+
+export default function RollPage({ onRoll }: RollPageProps) {
   const [dice, setDice] = useState<Die[]>([]);
   const [total, setTotal] = useState(0);
   const [isRollingAll, setIsRollingAll] = useState(false);
@@ -45,6 +49,8 @@ export default function RollPage() {
   const rollAll = () => {
     if (isRollingAll) return;
     setIsRollingAll(true);
+    
+    if (onRoll) onRoll(dice.length);
 
     setDice(prev => prev.map(die => ({ ...die, rolling: true })));
 

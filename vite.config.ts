@@ -13,7 +13,7 @@ export default defineConfig(({ mode }) => ({
       }
     }
   },
-  base: mode === 'production' ? '/extraplanar/' : '/', // <-- Adicione esta linha
+  base: mode === 'production' ? '/extraplanar' : '/',
   server: {
     host: "::",
     port: 8080,

@@ -10,6 +10,13 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recha
 import { Skeleton } from "@/components/ui/skeleton";
 import { BookOpen, Settings, Users, TrendingUp, Calendar, Dice6, Crown } from "lucide-react";
 
+interface SessionData {
+  duration: number;
+  diceRolls: number;
+  xpAwarded: number;
+  scheduledDate: Date;
+}
+
 const MasterDashboard = () => {
   const { currentUser } = useAuth();
   const [loading, setLoading] = useState(true);
@@ -20,60 +27,112 @@ const MasterDashboard = () => {
     proximaSessao: null as Date | null,
   });
   const [campaignData, setCampaignData] = useState<Campaign[]>([]);
+  const [sessionsData, setSessionsData] = useState<SessionData[]>([]);
   const [rotatingStatIndex, setRotatingStatIndex] = useState(0);
-
-  // Estatísticas rotativas
-  const rotatingStats = [
+  const [rotatingStats, setRotatingStats] = useState([
     {
       icon: TrendingUp,
       title: "Sessões este Mês",
-      value: Math.floor(Math.random() * 15) + 5,
-      subtitle: "média de 2.5h cada",
+      value: 0,
+      subtitle: "Carregando...",
       color: "text-green-400"
     },
     {
       icon: Dice6,
       title: "Dados Rolados",
-      value: Math.floor(Math.random() * 500) + 200,
-      subtitle: "última sessão",
+      value: 0,
+      subtitle: "Carregando...",
       color: "text-blue-400"
     },
     {
       icon: Crown,
       title: "XP Distribuído",
-      value: `${Math.floor(Math.random() * 5000) + 1000}`,
-      subtitle: "últimas 2 semanas",
+      value: 0,
+      subtitle: "Carregando...",
       color: "text-yellow-400"
     },
     {
       icon: Calendar,
       title: "Tempo Jogado",
-      value: `${Math.floor(Math.random() * 50) + 20}h`,
-      subtitle: "este mês",
+      value: "0h 0m",
+      subtitle: "Carregando...",
       color: "text-purple-400"
     }
-  ];
+  ]);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       if (!currentUser?.uid) return;
 
       try {
-        // Carregar campanhas do mestre
-        const q = query(
+        // Buscar campanhas
+        const campaignsQuery = query(
           collection(db, "campanhas"),
           where("mestreId", "==", currentUser.uid)
         );
-        
-        const querySnapshot = await getDocs(q);
-        const campaigns = querySnapshot.docs.map(doc => ({
+        const campaignsSnapshot = await getDocs(campaignsQuery);
+        const campaigns = campaignsSnapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data(),
           createdAt: doc.data().createdAt.toDate(),
           proximaSessao: doc.data().proximaSessao?.toDate() || null
         })) as Campaign[];
 
-        // Calcular estatísticas
+        // Buscar sessões
+        const sessionsQuery = query(
+          collection(db, "sessions"),
+          where("mestreId", "==", currentUser.uid)
+        );
+        const sessionsSnapshot = await getDocs(sessionsQuery);
+        const sessions = sessionsSnapshot.docs.map(doc => ({
+          duration: doc.data().duration || 0,
+          diceRolls: doc.data().diceRolls || 0,
+          xpAwarded: doc.data().xpAwarded || 0,
+          scheduledDate: doc.data().scheduledDate.toDate()
+        }));
+
+        // Atualizar estatísticas
+        const currentMonth = new Date().getMonth();
+        const monthSessions = sessions.filter(s => 
+          s.scheduledDate.getMonth() === currentMonth
+        );
+
+        const totalDice = sessions.reduce((sum, s) => sum + s.diceRolls, 0);
+        const totalXP = sessions.reduce((sum, s) => sum + s.xpAwarded, 0);
+        const totalTime = sessions.reduce((sum, s) => sum + s.duration, 0);
+
+        setRotatingStats([
+          {
+            icon: TrendingUp,
+            title: "Sessões este Mês",
+            value: monthSessions.length,
+            subtitle: `Total: ${monthSessions.length} sessões`,
+            color: "text-green-400"
+          },
+          {
+            icon: Dice6,
+            title: "Dados Rolados",
+            value: totalDice,
+            subtitle: "desde o início",
+            color: "text-blue-400"
+          },
+          {
+            icon: Crown,
+            title: "XP Distribuído",
+            value: totalXP,
+            subtitle: "total acumulado",
+            color: "text-yellow-400"
+          },
+          {
+            icon: Calendar,
+            title: "Tempo Jogado",
+            value: `${Math.floor(totalTime / 3600)}h ${Math.floor((totalTime % 3600) / 60)}m`,
+            subtitle: "tempo total",
+            color: "text-purple-400"
+          }
+        ]);
+
+        // Calcular estatísticas de campanhas
         const uniquePlayers = new Set<string>();
         let nextSession: Date | null = null;
 
@@ -92,6 +151,8 @@ const MasterDashboard = () => {
         });
 
         setCampaignData(campaigns);
+        setSessionsData(sessions);
+
       } catch (error) {
         console.error("Erro ao carregar dados:", error);
       } finally {
@@ -102,14 +163,13 @@ const MasterDashboard = () => {
     fetchDashboardData();
   }, [currentUser]);
 
-  // Rotacionar estatísticas a cada 4 segundos
   useEffect(() => {
     const interval = setInterval(() => {
       setRotatingStatIndex((prev) => (prev + 1) % rotatingStats.length);
     }, 4000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [rotatingStats]);
 
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
@@ -153,7 +213,6 @@ const MasterDashboard = () => {
           </p>
         </div>
 
-        {/* Estatísticas Rápidas */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <div className="bg-black/30 backdrop-blur-lg rounded-xl p-6 border border-white/10 hover:border-primary/30 transition-all duration-300">
             <h3 className="text-sm font-medium mb-2 text-primary">Campanhas Totais</h3>
@@ -183,7 +242,6 @@ const MasterDashboard = () => {
             )}
           </div>
 
-          {/* Card de Estatística Rotativa */}
           <div className="bg-gradient-to-br from-black/40 to-black/20 backdrop-blur-lg rounded-xl p-6 border border-primary/20 hover:border-primary/40 transition-all duration-500 relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-purple-500/5 animate-pulse"></div>
             <div className="relative z-10">
@@ -199,7 +257,6 @@ const MasterDashboard = () => {
           </div>
         </div>
 
-        {/* Ações Rápidas */}
         <div className="bg-black/30 backdrop-blur-lg rounded-xl p-6 border border-white/10 mb-8">
           <h3 className="text-lg font-semibold mb-4 text-primary">Ações Rápidas</h3>
           <div className="flex flex-wrap gap-3">
@@ -215,7 +272,6 @@ const MasterDashboard = () => {
           </div>
         </div>
 
-        {/* Gráfico de Campanhas */}
         <div className="bg-black/30 backdrop-blur-lg rounded-xl p-6 border border-white/10 mb-8 hover:border-primary/20 transition-all duration-300">
           <h3 className="text-lg font-semibold mb-4 text-primary">Distribuição de Campanhas</h3>
           <div className="h-64">
@@ -253,7 +309,6 @@ const MasterDashboard = () => {
           </div>
         </div>
 
-        {/* Links Rápidos */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <Link 
             to="/master/personagens"
