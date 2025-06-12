@@ -254,12 +254,19 @@ useEffect(() => {
 
       <div className="max-w-6xl mx-auto px-4 pb-16">
         <div className="text-center mb-12 pt-8">
-          <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent">
-            Suas Campanhas
-          </h1>
-          <Button onClick={() => setShowJoinModal(true)} className="mb-4">
-            + Entrar em Nova Campanha
-          </Button>
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8">
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent">
+              Minhas Campanhas
+            </h1>
+            <div className="flex gap-4 items-center">
+              <Button onClick={() => setShowJoinModal(true)}
+                size="lg"
+                className="bg-primary/20 hover:bg-primary/30 border border-primary/30 hover:border-primary/50 transition-all shadow-glow hover:shadow-glow-lg"
+              >
+                + Nova Campanha
+              </Button>
+            </div>
+          </div>
         </div>
 
         <div className="space-y-8">
@@ -267,24 +274,48 @@ useEffect(() => {
             <div className="bg-black/30 backdrop-blur-lg rounded-xl p-6 border border-white/10">
               <h2 className="text-2xl font-bold mb-4 text-primary">Campanhas Ativas</h2>
               {campanhasAprovadas.map(c => (
-                <div key={c.id} className="space-y-4 mb-6">
+                <div 
+                  key={c.id} 
+                  className="bg-black/30 backdrop-blur-lg rounded-xl p-6 border border-white/10 hover:border-primary/30 transition-colors"
+                >
                   <div className="flex justify-between items-start">
-                    <div>
-                      <h3 className="text-xl font-semibold text-primary">{c.name}</h3>
-                      <p className="text-sm text-muted-foreground">{c.description}</p>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <h3 className="text-xl font-semibold text-white">
+                          {c.name}
+                        </h3>
+                      </div>
+                      
+                      <p className="text-muted-foreground mb-4">
+                        {c.description}
+                      </p>
+                      
+                      <div className="flex items-center gap-6 text-sm text-muted-foreground">
+                        
+                        {c.proximaSessao && (
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">Próxima Sessão:</span>
+                            <span className="text-green-400">
+                              {c.proximaSessao.toLocaleDateString('pt-BR', {
+                                day: '2-digit',
+                                month: '2-digit',
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </span>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    <Button variant="destructive" onClick={() => sairDaCampanha()}>
-                      Sair
+                    
+                    <Button 
+                      onClick={() => navigate(`/campanha/${c.id}`)}
+                      className="bg-primary hover:bg-primary/90"
+                    >
+                      Ver Detalhes
                     </Button>
                   </div>
-                  
-                  {c.proximaSessao && (
-                    <div className="bg-green-900/20 p-4 rounded-lg">
-                      <p className="text-green-400">
-                        Próxima sessão: {new Date(c.proximaSessao).toLocaleString()}
-                      </p>
-                    </div>
-                  )}
                 </div>
               ))}
             </div>

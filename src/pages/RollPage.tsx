@@ -95,35 +95,35 @@ export default function RollPage({ onRoll }: RollPageProps) {
   }, [dice, bonus]);
 
   return (
-    <div className="p-6 space-y-8">
-      <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent">
+    <div className="p-4 md:p-6 space-y-6 md:space-y-8">
+      <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent">
         Rolagem de Dados
       </h1>
 
-      {/* Dice Selector */}
-      <div className="grid grid-cols-4 md:grid-cols-7 gap-4">
+      {/* Dice Selector - Atualizado com classes responsivas */}
+      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-7 gap-2 sm:gap-4">
         {(['D4', 'D6', 'D8', 'D10', 'D12', 'D20', 'D100'] as DieType[]).map((type) => (
           <button
             key={type}
             onClick={() => addDie(type)}
-            className="relative flex items-center justify-center p-2 hover:scale-105 transition-transform group"
+            className="relative flex items-center justify-center p-1 sm:p-2 hover:scale-105 transition-transform group"
           >
             <img 
               src={`${import.meta.env.BASE_URL}dices/D${type.slice(1)}.png`}
               alt={type}
-              className="h-24 w-24 filter drop-shadow-dice transition-transform hover:scale-110"
+              className="h-16 w-16 sm:h-20 sm:w-20 md:h-24 md:w-24 filter drop-shadow-dice transition-transform hover:scale-110"
             />
             <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-xl font-bold text-black mix-blend-hard-light">
+              <span className="text-sm sm:text-base md:text-xl font-bold text-black mix-blend-hard-light">
                 {type.slice(1)}
               </span>
             </div>
-            <Plus className="h-6 w-6 text-primary absolute top-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+            <Plus className="h-4 w-4 sm:h-6 sm:w-6 text-primary absolute top-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity" />
           </button>
         ))}
       </div>
 
-      {/* Dice Pool */}
+      {/* Dice Pool - Atualizado com classes responsivas */}
       <div className="min-h-[300px]">
         <div className="p-6 rounded-xl bg-white/20 backdrop-blur-sm h-48 flex items-center justify-center">
           <div className="flex flex-wrap gap-6 justify-center items-center">
@@ -185,32 +185,32 @@ export default function RollPage({ onRoll }: RollPageProps) {
         </Button>
       </div>
 
-      {/* Roll History */}
+      {/* Roll History - Atualizado para telas menores */}
       <div className="space-y-4">
-        <h2 className="text-2xl font-bold text-primary">Histórico</h2>
+        <h2 className="text-xl md:text-2xl font-bold text-primary">Histórico</h2>
         <div className="max-h-64 overflow-y-auto space-y-2 pr-2">
           {history.map((entry, index) => (
             <div 
               key={index} 
-              className="p-4 rounded-lg bg-white/10 backdrop-blur-sm border border-white/10"
+              className="p-3 sm:p-4 rounded-lg bg-white/10 backdrop-blur-sm border border-white/10"
             >
               <div className="flex justify-between items-center mb-2">
-                <span className="text-sm text-muted-foreground">
+                <span className="text-xs sm:text-sm text-muted-foreground">
                   {entry.timestamp.toLocaleTimeString()}
                 </span>
-                <span className="text-lg font-bold text-primary">
+                <span className="text-base sm:text-lg font-bold text-primary">
                   {entry.total}
                 </span>
               </div>
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-wrap gap-2 sm:gap-3">
                 {entry.dice.map((die, dieIndex) => (
-                  <div key={dieIndex} className="relative h-12 w-12">
+                  <div key={dieIndex} className="relative h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12">
                     <img 
                       src={`${import.meta.env.BASE_URL}dices/D${die.type.slice(1)}.png`} 
                       alt={die.type} 
                       className="h-full w-full filter drop-shadow-dice"
                     />
-                    <span className="absolute inset-0 flex items-center justify-center text-sm font-bold text-black">
+                    <span className="absolute inset-0 flex items-center justify-center text-xs sm:text-sm font-bold text-black">
                       {die.value || 0}
                     </span>
                   </div>

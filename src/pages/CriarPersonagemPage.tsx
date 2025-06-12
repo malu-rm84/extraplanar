@@ -274,22 +274,31 @@ export const CriarPersonagemPage = ({
 
   return (
     <div className="container mx-auto px-4 py-8 min-h-screen">
-      <div className="text-center mb-8 pt-8">
-        <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent">
-          {id ? 'Editar Personagem' : 'Criar Novo Personagem'}
-        </h1>
-        <p className="text-muted-foreground text-lg">
-          Forje seu destino nas realidades extraplanares
-        </p>
-      </div>
-
-      <div className="sticky top-4 z-50 bg-black/80 backdrop-blur-md py-3 px-6 mb-8 border border-white/10 rounded-full max-w-md mx-auto">
-        <div className="flex justify-center items-center">
-          <div className="text-xl font-bold text-primary">
+      {/* Novo cabeçalho com estilo unificado */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8 pt-8">
+        <div>
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent">
+            {id ? 'Editar Personagem' : 'Criar Novo Personagem'}
+          </h1>
+          <p className="text-muted-foreground text-lg">
+            Forje seu destino nas realidades extraplanares
+          </p>
+        </div>
+        
+        <div className="flex items-center gap-4">
+          <div className="text-xl font-bold text-primary bg-black/20 p-3 rounded-lg border border-primary/20">
             PD Disponíveis: <span className={`${50 - calcularTotalPD(personagem) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
               {50 - calcularTotalPD(personagem)}
             </span>/50
           </div>
+          
+          <Button 
+            onClick={() => setShowConfirmation(true)}
+            size="lg"
+            className="bg-primary/20 hover:bg-primary/30 border border-primary/30 hover:border-primary/50 transition-all shadow-glow hover:shadow-glow-lg"
+          >
+            Salvar Personagem
+          </Button>
         </div>
       </div>
 

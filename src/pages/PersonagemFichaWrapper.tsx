@@ -18,6 +18,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Skull, Trash2 } from "lucide-react";
+import html2pdf from 'html2pdf.js';
 
 export const PersonagemFichaWrapper = () => {
   const { id } = useParams<{ id: string }>();
@@ -50,6 +51,54 @@ export const PersonagemFichaWrapper = () => {
 
     carregarPersonagem();
   }, [id]);
+
+  const exportarParaPDF = () => {
+    const element = document.getElementById('ficha-personagem');
+    
+    if (!element) {
+      alert('Elemento da ficha não encontrado!');
+      return;
+    }
+
+    // Clonar o elemento para modificar estilos temporariamente
+    const clone = element.cloneNode(true) as HTMLElement;
+    document.body.appendChild(clone);
+    clone.style.position = 'absolute';
+    clone.style.left = '-9999px';
+    
+    // Forçar estilos de impressão
+    clone.classList.add('printing');
+    
+    const opt = {
+      margin: 5,
+      filename: `${personagem?.nome.replace(/\s/g, '_')}_Ficha.pdf`,
+      image: { type: 'jpeg', quality: 1 },
+      html2canvas: { 
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#000000',
+        ignoreElements: (element) => {
+          // Remover elementos que não devem aparecer
+          return element.classList?.contains('no-print');
+        }
+      },
+      jsPDF: { 
+        unit: 'mm', 
+        format: 'a4', 
+        orientation: 'portrait',
+        compress: true
+      }
+    };
+
+    html2pdf()
+      .set(opt)
+      .from(clone)
+      .save()
+      .then(() => {
+        document.body.removeChild(clone);
+      });
+  };
 
   const exportarParaMD = () => {
     if (!personagem) return;
@@ -184,10 +233,10 @@ ${personagem.observacoes}` : ""}
       <div className="container mx-auto p-4">
         <div className="no-print mb-4 flex gap-2">
           <Button 
-            onClick={() => window.print()}
+            onClick={exportarParaPDF}
             className="bg-primary text-white"
           >
-            Imprimir Ficha
+            Exportar para PDF
           </Button>
           <Button 
             onClick={exportarParaMD}
@@ -219,7 +268,9 @@ ${personagem.observacoes}` : ""}
           )}
         </div>
         
-        <PersonagemFicha personagem={personagem} />
+        <div id="personagem-ficha">
+          <PersonagemFicha personagem={personagem} />
+        </div>
 
         {/* Diálogo de Confirmação de Exclusão */}
         <Dialog open={showDeleteConfirmation} onOpenChange={setShowDeleteConfirmation}>

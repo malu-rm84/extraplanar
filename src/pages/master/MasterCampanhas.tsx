@@ -5,14 +5,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SelectDropdown } from "@/utils/SelectDropdown";
 import { 
-  addDoc, collection, doc, updateDoc, onSnapshot, 
-  query, where, getDocs, arrayUnion, deleteDoc, arrayRemove, limit, orderBy 
+  addDoc, collection, doc, onSnapshot, 
+  query, where 
 } from "firebase/firestore";
 import { db } from "@/components/auth/firebase-config";
 import { useAuth } from "@/contexts/AuthContext";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Copy } from 'lucide-react';
-import SessionPage from "./SessionPage";
+import CampaignDetailPage from "./CampaingDetailPage";
 
 interface Participant {
   id: string;
@@ -38,37 +37,22 @@ export interface Campaign {
   sessoes?: string[];
 }
 
-interface Session {
-  id: string;
-  number: number;
-  date: Date;
-  title: string;
-  content: string;
-  folderId: string;
-  userId: string;
-}
-
 const MasterCampanhas = () => {
   const { currentUser } = useAuth();
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [newName, setNewName] = useState('');
   const [newDesc, setNewDesc] = useState('');
   const [newStatus, setNewStatus] = useState<Campaign['status']>('não iniciada');
-  const [novaSessaoData, setNovaSessaoData] = useState('');
   const [filterStatus, setFilterStatus] = useState<Campaign['status']>('em andamento');
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [editingCampaign, setEditingCampaign] = useState<Campaign | null>(null);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
+  const [selectedCampaignId, setSelectedCampaignId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!currentUser?.uid) return;
-
     const q = query(
       collection(db, "campanhas"),
       where("mestreId", "==", currentUser.uid)
     );
-
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const campaignsData = snapshot.docs.map(doc => ({
         id: doc.id,
@@ -79,13 +63,11 @@ const MasterCampanhas = () => {
       })) as Campaign[];
       setCampaigns(campaignsData);
     });
-
     return () => unsubscribe();
   }, [currentUser]);
 
   const addCampaign = async () => {
     if (!currentUser) return;
-
     const newCampaign = {
       name: newName,
       description: newDesc,
@@ -97,23 +79,25 @@ const MasterCampanhas = () => {
       mestreNome: currentUser.displayName || "Mestre Anônimo",
       createdAt: new Date()
     };
-
     try {
       const campaignRef = await addDoc(collection(db, "campanhas"), newCampaign);
+      
+      // Criar pasta da campanha
       const folderRef = await addDoc(collection(db, "folders"), {
         name: newCampaign.name,
         userId: currentUser.uid,
         campaignId: campaignRef.id,
         parentFolderId: null
       });
-
+      
+      // Criar nota inicial
       await addDoc(collection(db, "lore"), {
         title: `Notas de ${newCampaign.name}`,
-        content: `# Campanha: ${newCampaign.name}\n\n## Descrição\n${newCampaign.description}\n\n## Status\n${newCampaign.status}`,
+        content: `# Campanha: ${newCampaign.name}\n## Descrição\n${newCampaign.description}\n## Status\n${newCampaign.status}`,
         folderId: folderRef.id,
         userId: currentUser.uid
       });
-
+      
       setNewName('');
       setNewDesc('');
       setNewStatus('não iniciada');
@@ -124,211 +108,50 @@ const MasterCampanhas = () => {
     }
   };
 
-  const updateCampaign = async () => {
-    if (!editingCampaign) return;
-
-    try {
-      const campaignRef = doc(db, "campanhas", editingCampaign.id);
-      await updateDoc(campaignRef, {
-        name: editingCampaign.name,
-        description: editingCampaign.description,
-        status: editingCampaign.status
-      });
-      setShowEditModal(false);
-    } catch (error) {
-      console.error("Erro ao atualizar campanha:", error);
-      alert("Erro ao atualizar campanha!");
-    }
-  };
-
-  const approveParticipant = async (cmpId: string, pid: string) => {
-    try {
-      const campaignRef = doc(db, "campanhas", cmpId);
-      const campaign = campaigns.find(c => c.id === cmpId);
-      const participant = campaign?.participants.find(p => p.id === pid);
-
-      if (!participant?.userId) throw new Error("ID do usuário não encontrado");
-
-      await updateDoc(campaignRef, {
-        participants: campaign?.participants.map(p => 
-          p.id === pid ? { ...p, approved: true } : p
-        )
-      });
-
-      const playerFolderRef = await addDoc(collection(db, "folders"), {
-        name: campaign?.name || "Nova Campanha",
-        userId: participant.userId,
-        campaignId: cmpId,
-        createdAt: new Date()
-      });
-
-      await addDoc(collection(db, "lore"), {
-        title: "Notas Iniciais",
-        content: `# Bem-vindo à campanha ${campaign?.name}\n\n**Mestre:** ${campaign?.mestreNome}\n\nComece a registrar suas anotações aqui!`,
-        folderId: playerFolderRef.id,
-        userId: participant.userId,
-        campaignId: cmpId,
-        createdAt: new Date()
-      });
-
-    } catch (error) {
-      console.error("Erro na aprovação:", error);
-      alert("Erro ao criar estrutura de notas: " + (error as Error).message);
-    }
-  };
-
-  const deleteCampaign = async (campaignId: string) => {
-    try {
-      await deleteDoc(doc(db, "campanhas", campaignId));
-      alert("Campanha excluída com sucesso!");
-    } catch (error) {
-      console.error("Erro ao excluir campanha:", error);
-      alert("Erro ao excluir campanha!");
-    }
-  };
-
-  const removeParticipant = async (cmpId: string, pid: string) => {
-    try {
-      const campaignRef = doc(db, "campanhas", cmpId);
-      const campaign = campaigns.find(c => c.id === cmpId);
-      
-      if (campaign) {
-        await updateDoc(campaignRef, {
-          participants: campaign.participants.filter(p => p.id !== pid),
-          participantUserIds: arrayRemove(...campaign.participants
-            .filter(p => p.id === pid)
-            .map(p => p.userId || ''))
-        });
-      }
-    } catch (error) {
-      console.error("Erro ao remover participante:", error);
-    }
-  };
-
-  const agendarSessao = async (campaignId: string) => {
-    try {
-      if (!novaSessaoData) {
-        alert("Selecione uma data válida!");
-        return;
-      }
-
-      const dataSessao = new Date(novaSessaoData);
-      const timezoneOffset = dataSessao.getTimezoneOffset() * 60000;
-      const adjustedDate = new Date(dataSessao.getTime() - timezoneOffset);
-
-      if (isNaN(adjustedDate.getTime())) {
-        throw new Error("Data inválida");
-      }
-
-      const foldersQuery = query(
-        collection(db, "folders"),
-        where("campaignId", "==", campaignId),
-        where("userId", "==", currentUser?.uid)
-      );
-      
-      const folderSnapshot = await getDocs(foldersQuery);
-      if (folderSnapshot.empty) {
-        throw new Error("Pasta da campanha não encontrada!");
-      }
-      const folderId = folderSnapshot.docs[0].id;
-
-      const sessionsQuery = query(
-        collection(db, "lore"),
-        where("campaignId", "==", campaignId),
-        orderBy("number", "desc"),
-        limit(1)
-      );
-
-      const sessionsSnapshot = await getDocs(sessionsQuery);
-      let nextNumber = 1;
-      
-      if (!sessionsSnapshot.empty) {
-        const lastSession = sessionsSnapshot.docs[0].data() as Session;
-        nextNumber = lastSession.number + 1;
-      }
-
-      const formattedDate = adjustedDate.toLocaleDateString('pt-BR', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false
-      });
-
-      const loreSessionRef = await addDoc(collection(db, "lore"), {
-        title: `Sessão ${nextNumber} - ${formattedDate}`,
-        content: `# Sessão ${nextNumber}\n\n## Data\n${formattedDate}`,
-        folderId: folderId,
-        userId: currentUser?.uid,
-        campaignId: campaignId,
-        number: nextNumber,
-        date: adjustedDate
-      });
-
-      const sessionRef = await addDoc(collection(db, "sessions"), {
-        campaignId,
-        status: 'agendada',
-        scheduledDate: adjustedDate,
-        diceRolls: 0,
-        xpAwarded: 0,
-        duration: 0,
-        notes: "",
-        mestreId: currentUser?.uid
-      });
-
-      await updateDoc(doc(db, "campanhas", campaignId), {
-        sessoes: arrayUnion(sessionRef.id),
-        proximaSessao: adjustedDate
-      });
-
-      alert(`Sessão ${nextNumber} agendada para ${formattedDate}!`);
-      setNovaSessaoData('');
-    } catch (error) {
-      console.error("Erro ao agendar sessão:", error);
-      alert(error instanceof Error ? error.message : "Erro ao agendar sessão!");
-    }
-  };
-
-  const deleteSessao = async (campaignId: string, sessionId: string) => {
-    try {
-      await deleteDoc(doc(db, "lore", sessionId));
-      await deleteDoc(doc(db, "sessions", sessionId));
-      await updateDoc(doc(db, "campanhas", campaignId), {
-        sessoes: arrayRemove(sessionId),
-        proximaSessao: null
-      });
-      alert("Sessão removida com sucesso!");
-    } catch (error) {
-      console.error("Erro ao remover sessão:", error);
-      alert("Erro ao remover sessão!");
-    }
-  };
-
-  const editarSessao = async (session: Session, newDate: Date) => {
-    try {
-      const formattedDate = newDate.toLocaleDateString('pt-BR');
-      const newTitle = `Sessão ${session.number} - ${formattedDate}`;
-
-      await updateDoc(doc(db, "lore", session.id), {
-        title: newTitle,
-        date: newDate,
-        content: `# Sessão ${session.number}\n\n## Data\n${formattedDate}`
-      });
-
-      alert("Sessão atualizada com sucesso!");
-    } catch (error) {
-      console.error("Erro ao editar sessão:", error);
-      alert("Erro ao atualizar sessão!");
-    }
-  };
-
   const filteredCampaigns = campaigns.filter(c => c.status === filterStatus);
+
+  const getStatusBadgeColor = (status: Campaign['status']) => {
+    switch (status) {
+      case 'em andamento':
+        return 'bg-green-500/20 text-green-400 border-green-500/30';
+      case 'não iniciada':
+        return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
+      case 'concluída':
+        return 'bg-gray-500/20 text-gray-400 border-gray-500/30';
+      default:
+        return 'bg-gray-500/20 text-gray-400 border-gray-500/30';
+    }
+  };
+
+  const formatStatus = (status: Campaign['status']) => {
+    switch (status) {
+      case 'em andamento':
+        return 'Em Andamento';
+      case 'não iniciada':
+        return 'Não Iniciada';
+      case 'concluída':
+        return 'Concluída';
+      default:
+        return status;
+    }
+  };
+
+  // Se uma campanha está selecionada, mostrar a página de detalhes
+  if (selectedCampaignId) {
+    return (
+      <MasterLayout>
+        <CampaignDetailPage 
+          campaignId={selectedCampaignId}
+          onBack={() => setSelectedCampaignId(null)}
+        />
+      </MasterLayout>
+    );
+  }
 
   return (
     <MasterLayout>
       <div className="max-w-6xl mx-auto px-4 pb-16">
-        {/* Modais */}
+        {/* Modal de Criar Campanha */}
         <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
           <DialogContent className="bg-black/90 border-gray-700 backdrop-blur-lg">
             <DialogHeader>
@@ -341,6 +164,7 @@ const MasterCampanhas = () => {
                   id="name" 
                   value={newName} 
                   onChange={e => setNewName(e.target.value)} 
+                  placeholder="Digite o nome da campanha"
                 />
               </div>
               <div>
@@ -349,6 +173,7 @@ const MasterCampanhas = () => {
                   id="description" 
                   value={newDesc} 
                   onChange={e => setNewDesc(e.target.value)} 
+                  placeholder="Breve descrição da campanha"
                 />
               </div>
               <div>
@@ -367,247 +192,110 @@ const MasterCampanhas = () => {
               <Button variant="outline" onClick={() => setShowCreateModal(false)}>
                 Cancelar
               </Button>
-              <Button onClick={addCampaign}>
+              <Button onClick={addCampaign} disabled={!newName.trim()}>
                 Criar Campanha
               </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
 
-        <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
-          <DialogContent className="bg-black/90 border-gray-700 backdrop-blur-lg">
-            <DialogHeader>
-              <DialogTitle className="text-white text-xl">Editar Campanha</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="editName">Nome da Campanha</Label>
-                <Input 
-                  id="editName" 
-                  value={editingCampaign?.name || ''} 
-                  onChange={e => setEditingCampaign(prev => prev ? {...prev, name: e.target.value} : null)} 
-                />
-              </div>
-              <div>
-                <Label htmlFor="editDesc">Descrição</Label>
-                <Input 
-                  id="editDesc" 
-                  value={editingCampaign?.description || ''} 
-                  onChange={e => setEditingCampaign(prev => prev ? {...prev, description: e.target.value} : null)} 
-                />
-              </div>
-              <div>
-                <Label htmlFor="editStatus">Status</Label>
+        {/* Cabeçalho */}
+        <div className="text-center mb-12 pt-8">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8">
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent">
+              Minhas Campanhas
+            </h1>
+            <div className="flex gap-4 items-center">
+              <div className="bg-black/30 backdrop-blur-lg rounded-lg p-2 border border-white/10">
                 <SelectDropdown 
-                  value={editingCampaign?.status || 'não iniciada'} 
-                  onChange={e => setEditingCampaign(prev => prev ? {...prev, status: e.target.value as Campaign['status']} : null)}
+                  value={filterStatus} 
+                  onChange={e => setFilterStatus(e.target.value as Campaign['status'])}
+                  className="bg-transparent border-none text-white"
                 >
-                  <option value="não iniciada">Não Iniciada</option>
                   <option value="em andamento">Em Andamento</option>
-                  <option value="concluída">Concluída</option>
+                  <option value="não iniciada">Não Iniciadas</option>
+                  <option value="concluída">Concluídas</option>
                 </SelectDropdown>
               </div>
+              <Button 
+                onClick={() => setShowCreateModal(true)}
+                size="lg"
+                className="bg-primary/20 hover:bg-primary/30 border border-primary/30 hover:border-primary/50 transition-all shadow-glow hover:shadow-glow-lg"
+              >
+                + Nova Campanha
+              </Button>
             </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setShowEditModal(false)}>
-                Cancelar
-              </Button>
-              <Button onClick={updateCampaign}>
-                Salvar Alterações
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-
-        <Dialog open={!!selectedSessionId} onOpenChange={(open) => !open && setSelectedSessionId(null)}>
-          <DialogContent className="max-w-4xl bg-black/90 border-gray-700 backdrop-blur-lg h-[90vh]">
-            {selectedSessionId && (
-              <SessionPage 
-                sessionId={selectedSessionId}
-                onClose={() => setSelectedSessionId(null)}
-              />
-            )}
-          </DialogContent>
-        </Dialog>
-
-        {/* Conteúdo Principal */}
-        <div className="text-center mb-12 pt-8">
-          <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent">
-            Gerenciar Campanhas
-          </h1>
-          <div className="flex justify-center gap-4 mb-4">
-            <Button onClick={() => setShowCreateModal(true)}>
-              + Nova Campanha
-            </Button>
-            <SelectDropdown 
-              value={filterStatus} 
-              onChange={e => setFilterStatus(e.target.value as Campaign['status'])}
-            >
-              <option value="em andamento">Em Andamento</option>
-              <option value="não iniciada">Não Iniciadas</option>
-              <option value="concluída">Concluídas</option>
-            </SelectDropdown>
           </div>
         </div>
-
-        <div className="space-y-8">
-          <div className="bg-black/30 backdrop-blur-lg rounded-xl p-6 border border-white/10">
-            {filteredCampaigns.length === 0 ? (
-              <p className="text-center text-muted-foreground">Nenhuma campanha encontrada.</p>
-            ) : (
-              <div className="space-y-6">
-                {filteredCampaigns.map(c => (
-                  <div key={c.id} className="space-y-2">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h3 className="text-xl font-semibold text-primary">{c.name}</h3>
-                        <p className="text-sm text-muted-foreground">{c.description}</p>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button 
-                          variant="secondary" 
-                          size="sm"
-                          onClick={() => {
-                            setEditingCampaign(c);
-                            setShowEditModal(true);
-                          }}
-                        >
-                          Editar
-                        </Button>
-                        <Button 
-                          variant="destructive" 
-                          size="sm"
-                          onClick={() => deleteCampaign(c.id)}
-                        >
-                          Excluir
-                        </Button>
-                      </div>
+        
+        {/* Lista de Campanhas */}
+        <div className="space-y-4">
+          {filteredCampaigns.length === 0 ? (
+            <div className="bg-black/30 backdrop-blur-lg rounded-xl p-12 border border-white/10 text-center">
+              <p className="text-muted-foreground text-lg">
+                Nenhuma campanha {filterStatus === 'em andamento' ? 'em andamento' : 
+                filterStatus === 'não iniciada' ? 'não iniciada' : 'concluída'} encontrada.
+              </p>
+              <p className="text-muted-foreground text-sm mt-2">
+                Que tal criar uma nova campanha?
+              </p>
+            </div>
+          ) : (
+            filteredCampaigns.map(campaign => (
+              <div 
+                key={campaign.id} 
+                className="bg-black/30 backdrop-blur-lg rounded-xl p-6 border border-white/10 hover:border-primary/30 transition-colors"
+              >
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <h3 className="text-xl font-semibold text-white">
+                        {campaign.name}
+                      </h3>
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusBadgeColor(campaign.status)}`}>
+                        {formatStatus(campaign.status)}
+                      </span>
                     </div>
                     
-                    <div>
-                      <div className="mt-4">
-                        <Label>Link de Convite</Label>
-                        <div className="flex gap-2 mt-2 items-center">
-                          <span className="text-sm text-muted-foreground">{c.inviteLink}</span>
-                          <Copy 
-                            onClick={() => navigator.clipboard.writeText(c.inviteLink)}
-                            className="w-4 h-4 text-muted-foreground cursor-pointer hover:text-primary"
-                          />
-                        </div>
+                    <p className="text-muted-foreground mb-4">
+                      {campaign.description}
+                    </p>
+                    
+                    <div className="flex items-center gap-6 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">Participantes:</span>
+                        <span className="text-primary">
+                          {campaign.participants.filter(p => p.approved).length}
+                        </span>
                       </div>
-                      <p className="font-medium mt-4">Participantes</p>
-                      {c.participants.length === 0 ? (
-                        <p className="text-sm text-muted-foreground">Nenhum participante</p>
-                      ) : (
-                        c.participants.map(p => (
-                          <div key={p.id} className="flex items-center justify-between py-1">
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm text-muted-foreground">
-                                {p.name} ({p.type === 'character' ? 'Personagem' : 'Player'}) - {p.approved ? 'Aprovado' : 'Pendente'}
-                              </span>
-                              {p.approved && p.type === 'character' && (
-                                <Button
-                                  variant="link"
-                                  size="sm"
-                                  className="text-primary hover:text-primary/80"
-                                  onClick={() => window.open(`/master/personagens/${p.characterId}`, '_blank')}
-                                >
-                                  Ver Ficha
-                                </Button>
-                              )}
-                            </div>
-                            <div className="flex gap-2">
-                              {!p.approved && (
-                                <Button size="sm" onClick={() => approveParticipant(c.id, p.id)}>
-                                  Aprovar
-                                </Button>
-                              )}
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                onClick={() => removeParticipant(c.id, p.id)}
-                              >
-                                Remover
-                              </Button>
-                            </div>
-                          </div>
-                        ))
-                      )}
-                    </div>
-
-                    <div className="mt-4">
-                      <Label>Agendar Próxima Sessão</Label>
-                      <div className="flex gap-2 mt-2">
-                        <Input
-                          type="datetime-local"
-                          value={novaSessaoData}
-                          min={new Date().toISOString().slice(0, 16)}
-                          onChange={(e) => setNovaSessaoData(e.target.value)}
-                          className="bg-black/50 border-gray-600 text-white"
-                        />
-                        <Button 
-                          onClick={() => agendarSessao(c.id)}
-                          className="bg-primary hover:bg-primary/90"
-                        >
-                          Agendar
-                        </Button>
-                      </div>
-                      {c.proximaSessao && (
-                        <div className="flex items-center gap-2 mt-2">
-                          <p className="text-sm text-green-400">
-                            Próxima sessão: {new Date(c.proximaSessao).toLocaleString('pt-BR', {
+                      
+                      {campaign.proximaSessao && (
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium">Próxima Sessão:</span>
+                          <span className="text-green-400">
+                            {campaign.proximaSessao.toLocaleDateString('pt-BR', {
                               day: '2-digit',
                               month: '2-digit',
                               year: 'numeric',
                               hour: '2-digit',
                               minute: '2-digit'
                             })}
-                          </p>
-                          <Button
-                            variant="link"
-                            size="sm"
-                            className="text-primary hover:text-primary/80"
-                            onClick={() => {
-                              const latestSessionId = c.sessoes?.[0];
-                              if (latestSessionId) {
-                                setSelectedSessionId(latestSessionId);
-                              }
-                            }}
-                          >
-                            Gerenciar Sessão
-                          </Button>
-                          <Button
-                            variant="link"
-                            size="sm"
-                            className="text-red-500 hover:text-red-400"
-                            onClick={async () => {
-                              try {
-                                const sessionsQuery = query(
-                                  collection(db, "lore"),
-                                  where("campaignId", "==", c.id),
-                                  orderBy("number", "desc"),
-                                  limit(1)
-                                );
-                                const querySnapshot = await getDocs(sessionsQuery);
-                                if (!querySnapshot.empty) {
-                                  const latestSession = querySnapshot.docs[0];
-                                  deleteSessao(c.id, latestSession.id);
-                                }
-                              } catch (error) {
-                                console.error("Erro ao buscar sessão:", error);
-                              }
-                            }}
-                          >
-                            Remover Agendamento
-                          </Button>
+                          </span>
                         </div>
                       )}
                     </div>
                   </div>
-                ))}
+                  
+                  <Button 
+                    onClick={() => setSelectedCampaignId(campaign.id)}
+                    className="bg-primary hover:bg-primary/90"
+                  >
+                    Ver Detalhes
+                  </Button>
+                </div>
               </div>
-            )}
-          </div>
+            ))
+          )}
         </div>
       </div>
     </MasterLayout>

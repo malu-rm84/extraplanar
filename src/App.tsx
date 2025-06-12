@@ -37,6 +37,7 @@ import MasterConfig from "./pages/master/MasterConfig";
 import PlayerDashboard from "./pages/player/PlayerDashboard";
 import { PlayerCriarPersonagens } from "./pages/player/PlayerCriarPersonagens";
 import PlayerCampanhas from "./pages/player/PlayerCampanhas";
+import { PlayerCampaignDetailPage } from "./pages/player/PlayerCampaignDetailPage";
 import PlayerNotes from "./pages/player/PlayerNotes";
 import { PlayerRoll } from "./pages/player/PlayerRoll";
 import PlayerConfig from "./pages/player/PlayerConfig";
@@ -94,6 +95,7 @@ const App = () => (
                   <Route path="/player/personagens/:id" element={<PersonagemFichaWrapper />} />
                   <Route path="/player/editar-personagem/:id" element={<EditarPersonagemPage />} />
                   <Route path="/player/campanhas" element={<PlayerCampanhas />} />
+                  <Route path="/campanha/:campaignId" element={<PlayerCampaignDetailPage />} />
                   <Route path="/player/config" element={<PlayerConfig />} />
                 </Route>
               </Route>

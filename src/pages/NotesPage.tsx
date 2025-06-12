@@ -45,9 +45,15 @@ interface NotesPageProps {
   role: 'master' | 'player';
   collectionName: string;
   foldersCollection: string;
+  campaignId?: string;
 }
 
-const NotesPage = ({ role, collectionName, foldersCollection }: NotesPageProps) => {
+const NotesPage = ({ 
+  role, 
+  collectionName, 
+  foldersCollection, 
+  campaignId
+}: NotesPageProps) => {
   const [notes, setNotes] = useState<Note[]>([]);
   const [folders, setFolders] = useState<Folder[]>([]);
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
@@ -61,32 +67,59 @@ const NotesPage = ({ role, collectionName, foldersCollection }: NotesPageProps) 
   const [newFolderName, setNewFolderName] = useState("");
   const [isCreatingTopLevelFolder, setIsCreatingTopLevelFolder] = useState(false);
   const [showNewFolderInput, setShowNewFolderInput] = useState(false);
+  const [isNewItemDropdownOpen, setIsNewItemDropdownOpen] = useState(false);
+
+  // Efeito para fechar dropdown ao clicar fora
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (isNewItemDropdownOpen && !(e.target as HTMLElement).closest('.dropdown-container')) {
+        setIsNewItemDropdownOpen(false);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isNewItemDropdownOpen]);
 
   // Carregar notas
   useEffect(() => {
     if (!auth.currentUser?.uid) return;
-    const notesQuery = query(
+
+    let notesQuery = query(
       collection(db, collectionName),
       where("userId", "==", auth.currentUser.uid)
     );
+
+    if (campaignId) {
+      notesQuery = query(notesQuery, where("campaignId", "==", campaignId));
+    }
+
     const unsubscribe = onSnapshot(notesQuery, (snapshot) => {
       setNotes(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Note)));
     });
+
     return unsubscribe;
-  }, [auth.currentUser, collectionName]);
+  }, [auth.currentUser, collectionName, campaignId]);
 
   // Carregar pastas
   useEffect(() => {
     if (!auth.currentUser?.uid) return;
-    const foldersQuery = query(
+
+    let foldersQuery = query(
       collection(db, foldersCollection),
       where("userId", "==", auth.currentUser.uid)
     );
+
+    if (campaignId) {
+      foldersQuery = query(foldersQuery, where("campaignId", "==", campaignId));
+    }
+
     const unsubscribe = onSnapshot(foldersQuery, (snapshot) => {
       setFolders(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Folder)));
     });
+
     return unsubscribe;
-  }, [auth.currentUser, foldersCollection]);
+  }, [auth.currentUser, foldersCollection, campaignId]);
 
   const handleCreateNote = async () => {
     if (!auth.currentUser) return;
@@ -95,6 +128,7 @@ const NotesPage = ({ role, collectionName, foldersCollection }: NotesPageProps) 
       content: "# Escreva aqui...",
       folderId: currentFolderId || 'root',
       userId: auth.currentUser.uid,
+      ...(campaignId && { campaignId })
     };
     try {
       const docRef = await addDoc(collection(db, collectionName), newNote);
@@ -142,21 +176,17 @@ const NotesPage = ({ role, collectionName, foldersCollection }: NotesPageProps) 
     try {
       setDeletingFolderId(folderId);
       const deleteFolderRecursively = async (id: string) => {
-        // Deletar notas
         const notesQuery = query(collection(db, collectionName), where("folderId", "==", id));
         const notesSnapshot = await getDocs(notesQuery);
         await Promise.all(notesSnapshot.docs.map(d => deleteDoc(d.ref)));
-        
-        // Deletar subpastas
+
         const foldersQuery = query(collection(db, foldersCollection), where("parentFolderId", "==", id));
         const foldersSnapshot = await getDocs(foldersQuery);
         await Promise.all(foldersSnapshot.docs.map(d => deleteFolderRecursively(d.id)));
-        
-        // Deletar pasta principal
+
         await deleteDoc(doc(db, foldersCollection, id));
       };
       await deleteFolderRecursively(folderId);
-      
       if (folderId === currentFolderId) {
         setCurrentFolderId(null);
       }
@@ -175,12 +205,12 @@ const NotesPage = ({ role, collectionName, foldersCollection }: NotesPageProps) 
         name: name || "Nova Pasta",
         userId: auth.currentUser.uid,
         parentFolderId: parentId,
+        ...(campaignId && { campaignId })
       };
       await addDoc(collection(db, foldersCollection), newFolder);
       setNewFolderName("");
       setShowNewFolderInput(false);
       setIsCreatingTopLevelFolder(false);
-      
       if (parentId) {
         setExpandedFolders(prev => ({ ...prev, [parentId]: true }));
       }
@@ -221,7 +251,6 @@ const NotesPage = ({ role, collectionName, foldersCollection }: NotesPageProps) 
       }
       return path;
     };
-    
     return (
       <div className="flex items-center gap-1 mb-4 text-sm text-muted-foreground bg-black/20 p-2 rounded-md border border-white/10">
         <button
@@ -250,7 +279,6 @@ const NotesPage = ({ role, collectionName, foldersCollection }: NotesPageProps) 
   const FolderTree = ({ parentId = null }: { parentId?: string | null }) => {
     const subfolders = folders.filter(f => f.parentFolderId === parentId);
     if (subfolders.length === 0) return null;
-    
     return (
       <div className={`${parentId ? 'pl-4 ml-2 border-l border-white/10' : ''}`}>
         {subfolders.map(folder => {
@@ -258,7 +286,6 @@ const NotesPage = ({ role, collectionName, foldersCollection }: NotesPageProps) 
           const notesInFolder = notes.filter(n => n.folderId === folder.id);
           const hasSubfolders = folders.some(f => f.parentFolderId === folder.id);
           const hasContent = notesInFolder.length > 0 || hasSubfolders;
-          
           return (
             <div key={folder.id} className="my-1">
               <div 
@@ -526,11 +553,9 @@ const NotesPage = ({ role, collectionName, foldersCollection }: NotesPageProps) 
   const NoteView = ({ note }: { note: Note }) => {
     const [isEditing, setIsEditing] = useState(false);
     const [editedNote, setEditedNote] = useState(note);
-
     useEffect(() => {
       setEditedNote(note);
     }, [note]);
-
     return (
       <div className="bg-black/30 backdrop-blur-lg border border-white/10 rounded-xl p-6">
         <div className="flex justify-between items-center mb-6">
@@ -614,7 +639,6 @@ const NotesPage = ({ role, collectionName, foldersCollection }: NotesPageProps) 
   const ContentGrid = () => {
     const currentNotes = notes.filter(n => n.folderId === (currentFolderId || 'root'));
     const subFolders = folders.filter(f => f.parentFolderId === currentFolderId);
-    
     return (
       <div className="bg-black/30 backdrop-blur-lg border border-white/10 rounded-xl p-4">
         <div className="flex items-center justify-between mb-4 border-b border-white/10 pb-2">
@@ -626,13 +650,6 @@ const NotesPage = ({ role, collectionName, foldersCollection }: NotesPageProps) 
                 : "Todos os Arquivos"}
             </span>
           </div>
-          <button
-            onClick={handleCreateNote}
-            className="bg-primary/20 hover:bg-primary/30 text-primary px-4 py-1.5 rounded-md flex items-center text-sm"
-          >
-            <Plus size={16} className="mr-1" />
-            Nova Anotação
-          </button>
         </div>
         <div className="grid grid-cols-12 text-xs font-medium text-muted-foreground border-b border-white/10 pb-2 px-2">
           <div className="col-span-6">Nome</div>
@@ -739,7 +756,50 @@ const NotesPage = ({ role, collectionName, foldersCollection }: NotesPageProps) 
   };
 
   return (
-    <div className="p-6">
+    <div className="p-6 space-y-6">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent">
+          Anotações
+        </h1>
+        
+        <div className="relative dropdown-container">
+          <button 
+            onClick={() => setIsNewItemDropdownOpen(!isNewItemDropdownOpen)}
+            className="bg-primary/20 hover:bg-primary/30 border border-primary/30 hover:border-primary/50 transition-all shadow-glow hover:shadow-glow-lg flex items-center px-4 py-2 rounded-lg"
+          >
+            <Plus className="h-5 w-5 mr-2" />
+            <span>Novo Item</span>
+          </button>
+          
+          {isNewItemDropdownOpen && (
+            <div className="absolute right-0 mt-2 w-48 bg-black/70 backdrop-blur-lg border border-white/10 rounded-lg shadow-glow z-10 overflow-hidden">
+              <button
+                onClick={() => {
+                  setIsCreatingTopLevelFolder(true);
+                  setShowNewFolderInput(true);
+                  setCurrentFolderId(null);
+                  setIsNewItemDropdownOpen(false);
+                }}
+                className="w-full text-left px-4 py-3 hover:bg-primary/20 flex items-center gap-2"
+              >
+                <Folder className="h-4 w-4 text-primary" />
+                <span>Pasta</span>
+              </button>
+              <button
+                onClick={() => {
+                  handleCreateNote();
+                  setIsNewItemDropdownOpen(false);
+                }}
+                className="w-full text-left px-4 py-3 hover:bg-primary/20 flex items-center gap-2"
+              >
+                <FileText className="h-4 w-4 text-primary" />
+                <span>Anotação</span>
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
       <div className="flex space-x-4">
         <Sidebar />
         <div className="flex-1">

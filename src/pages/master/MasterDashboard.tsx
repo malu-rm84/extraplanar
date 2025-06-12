@@ -13,7 +13,10 @@ import { BookOpen, Settings, Users, TrendingUp, Calendar, Dice6, Crown } from "l
 interface SessionData {
   duration: number;
   diceRolls: number;
-  xpAwarded: number;
+  xpAwarded: Array<{
+    date: Date;
+    awards: { [key: string]: number };
+  }>;
   scheduledDate: Date;
 }
 
@@ -84,12 +87,15 @@ const MasterDashboard = () => {
           where("mestreId", "==", currentUser.uid)
         );
         const sessionsSnapshot = await getDocs(sessionsQuery);
-        const sessions = sessionsSnapshot.docs.map(doc => ({
-          duration: doc.data().duration || 0,
-          diceRolls: doc.data().diceRolls || 0,
-          xpAwarded: doc.data().xpAwarded || 0,
-          scheduledDate: doc.data().scheduledDate.toDate()
-        }));
+       const sessions = sessionsSnapshot.docs.map(doc => {
+          const data = doc.data();
+          return {
+            duration: data.duration || 0,
+            diceRolls: data.diceRolls || 0,
+            xpAwarded: data.xpAwarded || [],
+            scheduledDate: data.scheduledDate.toDate()
+          };
+        });
 
         // Atualizar estatísticas
         const currentMonth = new Date().getMonth();
@@ -98,7 +104,14 @@ const MasterDashboard = () => {
         );
 
         const totalDice = sessions.reduce((sum, s) => sum + s.diceRolls, 0);
-        const totalXP = sessions.reduce((sum, s) => sum + s.xpAwarded, 0);
+        const totalXP = sessions.reduce((sum, session) => {
+          session.xpAwarded.forEach(distribution => {
+            const awards: { [key: string]: number } = distribution.awards; // Especificar tipo aqui
+            const sessionXP = Object.values(awards).reduce((a, b) => a + b, 0);
+            sum += sessionXP;
+          });
+          return sum;
+        }, 0);
         const totalTime = sessions.reduce((sum, s) => sum + s.duration, 0);
 
         setRotatingStats([

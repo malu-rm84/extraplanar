@@ -114,13 +114,11 @@ export const PersonagemFicha = ({ personagem }: PersonagemFichaProps) => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto bg-black/70 text-gray-200 border border-primary/30 rounded-xl shadow-lg backdrop-blur-md
-                    print:bg-[#0a0a0a] print:border-primary/30 print:shadow-xl">
-      <div className="border-b border-primary/50 bg-gradient-to-r from-black/80 to-primary/20 p-4 flex items-center justify-between rounded-t-xl
-                      print:bg-gradient-to-r print:from-[#1a1a1a] print:to-[#2e1b3b]">
+    <div className="personagem-ficha-container max-w-6xl mx-auto bg-black text-gray-200 border border-primary/30 rounded-xl">
+    <div className="max-w-6xl mx-auto bg-black/70 text-gray-200 border border-primary/30 rounded-xl shadow-lg backdrop-blur-md print:bg-[#0a0a0a] print:border-primary/30 print:shadow-xl">
+      <div className="border-b border-primary/50 bg-gradient-to-r from-black/80 to-primary/20 p-4 flex items-center justify-between rounded-t-xl print:bg-gradient-to-r print:from-[#1a1a1a] print:to-[#2e1b3b]">
         <div className="flex-1">
-          <h1 className="text-4xl font-semibold text-center mb-1 bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent font-serif
-                         print:bg-clip-text print:text-transparent print:from-[#9333ea] print:to-[#d8b4fe]">
+          <h1 className="text-4xl font-semibold text-center mb-1 text-primary font-serif">
             {personagem.nome}
           </h1>
           <div className="flex justify-center space-x-4 text-lg text-gray-300 print:text-gray-300">
@@ -240,7 +238,7 @@ export const PersonagemFicha = ({ personagem }: PersonagemFichaProps) => {
                   <span>{attr.charAt(0).toUpperCase() + attr.slice(1)}</span>
                 </div>
                 <div className="border border-primary/40 rounded-lg bg-black/40 py-1 text-white 
-                               print:bg-[#212121] print:border-primary/30">
+                              print:bg-[#212121] print:border-primary/30">
                   {calcularTotal(values.base, values.racial)}
                 </div>
                 <div className="text-xs mt-1 print:text-gray-400">
@@ -299,7 +297,7 @@ export const PersonagemFicha = ({ personagem }: PersonagemFichaProps) => {
                   <span>{afinidade.charAt(0).toUpperCase() + afinidade.slice(1)}</span>
                 </div>
                 <div className="border border-primary/40 rounded-lg bg-black/40 py-1 px-3 text-white 
-                               print:bg-[#212121] print:border-primary/30">
+                              print:bg-[#212121] print:border-primary/30">
                   {nivel}
                 </div>
               </div>
@@ -503,43 +501,7 @@ export const PersonagemFicha = ({ personagem }: PersonagemFichaProps) => {
           <div className="text-primary/80 text-sm"><Shield className="h-4 w-4" /></div>
         </div>
       </div>
-
-      <style>{`
-        @media print {
-          @page {
-            size: A4 portrait;
-            margin: 1cm;
-          }
-
-          body {
-            -webkit-print-color-adjust: exact !important;
-            color-adjust: exact !important;
-            background: #0a0a0a !important;
-          }
-
-          .text-primary {
-            color: #9333ea !important;
-          }
-
-          .bg-gradient-to-r {
-            background-image: linear-gradient(to right, var(--tw-gradient-stops)) !important;
-          }
-
-          svg {
-            color: inherit !important;
-          }
-
-          .recharts-polar-grid-angle line {
-            stroke: #333 !important;
-          }
-
-          .recharts-radar-polygon {
-            stroke: var(--chart-color) !important;
-            fill: var(--chart-color) !important;
-            fill-opacity: 0.2 !important;
-          }
-        }
-      `}</style>
+    </div>
     </div>
   );
 };

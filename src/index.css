@@ -183,3 +183,64 @@
     animation: dice-roll 0.8s ease-in-out;
   }
 }
+
+@media print {
+  body, html, #ficha-personagem, .personagem-ficha-container {
+    background-color: #000 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    color: #fff !important;
+  }
+  
+  .personagem-ficha-container {
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+    background: #000 !important;
+  }
+  
+  .no-print {
+    display: none !important;
+  }
+  
+  .bg-black, .bg-black\/50, .bg-black\/70, .bg-black\/80, .bg-black\/30 {
+    background-color: #000 !important;
+  }
+  
+  .text-primary {
+    color: #d8b4fe !important;
+  }
+  
+  .border-primary\/30, .border-primary\/40, .border-primary\/50 {
+    border-color: #9333ea !important;
+  }
+  
+  .bg-gradient-to-r {
+    background-image: none !important;
+    background-color: #1a1a1a !important;
+  }
+  
+  /* Forçar todas as cores de texto para branco */
+  * {
+    color: #fff !important;
+  }
+  
+  /* Corrigir ícones */
+  svg {
+    color: #d8b4fe !important;
+    fill: #d8b4fe !important;
+  }
+  
+  /* Corrigir gráficos */
+  .recharts-polar-grid-angle line {
+    stroke: #444 !important;
+  }
+  
+  .recharts-radar-polygon {
+    stroke: var(--chart-color) !important;
+    fill: var(--chart-color) !important;
+    fill-opacity: 0.2 !important;
+  }
+}

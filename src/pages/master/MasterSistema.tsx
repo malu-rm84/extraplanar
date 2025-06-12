@@ -289,13 +289,6 @@ const Sidebar = ({ activeCategory, activeSection, onSelectSection, isSidebarOpen
           <X size={20} />
         </button>
       <div className="p-3">
-        <div className="mb-4">
-          <h2 className="text-md font-semibold flex items-center gap-2">
-            <BookOpen size={18} className="text-primary" />
-            Sistema Extraplanar
-          </h2>
-          <p className="text-xs text-muted-foreground">Guia do Sistema</p>
-        </div>
         
         <div className="space-y-1">
           {systemInfo.map((category, i) => (
@@ -514,38 +507,42 @@ const MasterSistema = () => {
           toggleSidebar={toggleSidebar}
         />
         
-        {/* Div principal do conteúdo - ESTRUTURA RESTAURADA */}
+        {/* Div principal do conteúdo */}
         <div className="flex-1 overflow-y-auto custom-scrollbar relative">
-          <div className="sticky top-0 z-10 bg-black/60 backdrop-blur-lg border-b border-white/10 p-3 flex items-center">
-            {/* Botão do menu mobile */}
-            <button 
-              className="p-1.5 rounded-md hover:bg-white/10 md:hidden mr-2"
-              onClick={toggleSidebar}
-            >
-              <Menu size={18} />
-            </button>
-            
-            {/* Cabeçalho */}
-            <div className="flex-1">
-              <h1 className="text-2xl md:text-3xl font-bold mb-0.5 bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent">
-                Sistema Extraplanar
-              </h1>
-              <p className="text-muted-foreground text-sm md:text-base">
-                Guia completo de regras e informações
-              </p>
+          {/* Novo cabeçalho com estilo unificado */}
+          <div className="sticky top-0 z-10 bg-black/60 backdrop-blur-lg border-b border-white/10 p-4">
+            <div className="max-w-6xl mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <button 
+                  className="p-1.5 rounded-md hover:bg-white/10 md:hidden"
+                  onClick={toggleSidebar}
+                >
+                  <Menu size={18} />
+                </button>
+                <div>
+                  <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent">
+                    Sistema Extraplanar
+                  </h1>
+                  <p className="text-muted-foreground text-sm md:text-base">
+                    Guia completo de regras e informações
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex-1 max-w-2xl">
+                <SearchBar 
+                  onSearch={navigateTo}
+                  searchResults={searchResults}
+                  clearSearch={clearSearch}
+                  searchQuery={searchQuery}
+                  setSearchQuery={setSearchQuery}
+                />
+              </div>
             </div>
           </div>
 
-          {/* Container do conteúdo - ESTRUTURA ORIGINAL */}
+          {/* Container do conteúdo */}
           <div className="max-w-4xl mx-auto px-3 md:px-4 py-4 pb-12">
-            <SearchBar 
-              onSearch={navigateTo}
-              searchResults={searchResults}
-              clearSearch={clearSearch}
-              searchQuery={searchQuery}
-              setSearchQuery={setSearchQuery}
-            />
-            
             {activeCategoryObject?.sections.map((section, i) => (
               activeSection === i && (
                 <ContentSection 

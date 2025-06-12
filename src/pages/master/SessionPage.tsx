@@ -3,8 +3,11 @@ import { useState, useEffect } from "react";
 import { doc, getDoc, updateDoc, arrayUnion } from "firebase/firestore";
 import { db } from "@/components/auth/firebase-config";
 import { Button } from "@/components/ui/button";
-import { Timer, Save } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Timer, Save, Eye, Dice6, Users, FileText } from "lucide-react";
 import RollPage from "../RollPage";
+import NotesPage from "../NotesPage"; // Import adicionado conforme solicitado
 
 export interface Session {
   id: string;
@@ -14,10 +17,20 @@ export interface Session {
   endTime?: Date;
   duration: number;
   diceRolls: number;
-  xpAwarded: number;
   notes: string;
   status: 'agendada' | 'em-andamento' | 'concluída';
   mestreId: string;
+  number: number;
+  title: string;
+  xpAwarded?: Array<{
+    date: Date;
+    awards: {[key: string]: number};
+  }>;
+}
+
+interface Character {
+  id: string;
+  name: string;
 }
 
 interface SessionPageProps {
@@ -27,18 +40,23 @@ interface SessionPageProps {
 
 const SessionPage = ({ sessionId, onClose }: SessionPageProps) => {
   const [session, setSession] = useState<Session | null>(null);
+  const [characters, setCharacters] = useState<Character[]>([]);
+  const [xpValues, setXpValues] = useState<{[key: string]: number}>({});
   const [timer, setTimer] = useState(0);
   const [isActive, setIsActive] = useState(false);
   const [rollCount, setRollCount] = useState(0);
+  const [notes, setNotes] = useState('');
+  const [showSummary, setShowSummary] = useState(false);
+  // Estado adicionado para controlar a aba ativa
+  const [activeTab, setActiveTab] = useState<'dados' | 'anotacoes'>('dados');
 
   useEffect(() => {
     const loadSession = async () => {
       const docRef = doc(db, "sessions", sessionId);
       const docSnap = await getDoc(docRef);
-      
       if (docSnap.exists()) {
         const data = docSnap.data();
-        setSession({
+        const sessionData: Session = {
           id: docSnap.id,
           campaignId: data.campaignId,
           scheduledDate: data.scheduledDate.toDate(),
@@ -46,20 +64,45 @@ const SessionPage = ({ sessionId, onClose }: SessionPageProps) => {
           endTime: data.endTime?.toDate(),
           duration: data.duration,
           diceRolls: data.diceRolls,
-          xpAwarded: data.xpAwarded,
-          notes: data.notes,
+          notes: data.notes || '',
           status: data.status,
-          mestreId: data.mestreId
-        });
-        
+          mestreId: data.mestreId,
+          number: data.number || 1,
+          title: data.title || `Sessão ${data.number || 1}`,
+          xpAwarded: data.xpAwarded || []
+        };
+        setSession(sessionData);
+        setNotes(sessionData.notes);
+        setRollCount(sessionData.diceRolls);
+        if (data.campaignId) {
+          const campaignRef = doc(db, "campanhas", data.campaignId);
+          const campaignSnap = await getDoc(campaignRef);
+          if (campaignSnap.exists()) {
+            const campaignData = campaignSnap.data();
+            const chars = campaignData.participants
+              .filter((p: any) => p.type === 'character' && p.approved)
+              .map((p: any) => ({
+                id: p.id,
+                name: p.name
+              }));
+            setCharacters(chars);
+            const initialXp: {[key: string]: number} = {};
+            chars.forEach((char: Character) => {
+              initialXp[char.id] = 0;
+            });
+            setXpValues(initialXp);
+          }
+        }
         if (data.status === 'em-andamento') {
           setIsActive(true);
           const elapsed = Math.floor((Date.now() - data.startTime.toDate().getTime()) / 1000);
           setTimer(elapsed);
+        } else if (data.status === 'concluída') {
+          setTimer(data.duration);
+          setShowSummary(true);
         }
       }
     };
-
     loadSession();
   }, [sessionId]);
 
@@ -76,10 +119,23 @@ const SessionPage = ({ sessionId, onClose }: SessionPageProps) => {
       status: 'concluída',
       endTime: new Date(),
       duration: timer,
-      diceRolls: rollCount
+      diceRolls: rollCount,
+      notes: notes
     });
     setIsActive(false);
-    onClose();
+    setShowSummary(true);
+  };
+
+  const saveNotes = async () => {
+    try {
+      await updateDoc(doc(db, "sessions", sessionId), {
+        notes: notes
+      });
+      alert("Anotações salvas!");
+    } catch (error) {
+      console.error("Erro ao salvar anotações:", error);
+      alert("Erro ao salvar anotações!");
+    }
   };
 
   useEffect(() => {
@@ -96,64 +152,214 @@ const SessionPage = ({ sessionId, onClose }: SessionPageProps) => {
     setRollCount(prev => prev + rolls);
   };
 
-  const awardXP = async (amount: number) => {
-    await updateDoc(doc(db, "sessions", sessionId), {
-      xpAwarded: arrayUnion(amount)
-    });
+  const handleXpChange = (charId: string, value: string) => {
+    const xp = parseInt(value) || 0;
+    setXpValues(prev => ({
+      ...prev,
+      [charId]: xp
+    }));
+  };
+
+  const distributeXP = async () => {
+    try {
+      await updateDoc(doc(db, "sessions", sessionId), {
+        xpAwarded: arrayUnion({
+          date: new Date(),
+          awards: xpValues
+        })
+      });
+      alert("PD distribuído com sucesso!");
+      // Reset XP values
+      const resetXp: {[key: string]: number} = {};
+      characters.forEach(char => {
+        resetXp[char.id] = 0;
+      });
+      setXpValues(resetXp);
+    } catch (error) {
+      console.error("Erro ao distribuir PD:", error);
+      alert("Erro ao distribuir PD!");
+    }
   };
 
   if (!session) return <div className="text-center p-8">Carregando sessão...</div>;
 
+  const sessionDate = session.scheduledDate.toLocaleDateString('pt-BR');
+
+  const formatTime = (seconds: number) => {
+    return `${Math.floor(seconds / 3600).toString().padStart(2, '0')}:${Math.floor((seconds % 3600) / 60).toString().padStart(2, '0')}:${(seconds % 60).toString().padStart(2, '0')}`;
+  };
+
+  const getLastXpDistribution = () => {
+    if (!session.xpAwarded || session.xpAwarded.length === 0) return null;
+    return session.xpAwarded[session.xpAwarded.length - 1];
+  };
+
   return (
-    <div className="p-6 space-y-8 h-full overflow-y-auto">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Sessão {sessionId.slice(0, 5)}</h1>
-        <Button 
-          variant="ghost" 
-          onClick={onClose}
-          className="text-gray-400 hover:text-white"
-        >
-          Fechar
-        </Button>
-      </div>
-
-      <div className="flex justify-between items-center">
-        <div className="flex gap-4 items-center">
-          <div className="flex items-center gap-2 bg-black/30 p-4 rounded-lg">
-            <Timer className="text-primary" />
-            <span className="text-xl font-mono">
-              {Math.floor(timer / 3600).toString().padStart(2, '0')}:
-              {Math.floor((timer % 3600) / 60).toString().padStart(2, '0')}:
-              {(timer % 60).toString().padStart(2, '0')}
-            </span>
-          </div>
-          {!isActive && <Button onClick={startSession}>Iniciar Sessão</Button>}
-          {isActive && <Button variant="destructive" onClick={stopSession}>Encerrar Sessão</Button>}
+    <div className="flex h-screen">
+      {/* Sidebar menor */}
+      <div className="w-60 bg-black/30 backdrop-blur-lg border-r border-white/10 p-4 space-y-4 overflow-y-auto">
+        <div className="flex justify-between items-center">
+          <h2 className="text-lg font-bold">Controles</h2>
+          <Button 
+            variant="ghost" 
+            size="sm"
+            onClick={onClose}
+            className="text-gray-400 hover:text-white"
+          >
+            ✕
+          </Button>
         </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-black/30 p-6 rounded-lg">
-          <h3 className="text-xl font-bold mb-4">Controles</h3>
-          <div className="space-y-4">
-            <div className="flex gap-2">
-              <input
-                type="number"
-                placeholder="PD para distribuir"
-                className="bg-black/50 p-2 rounded flex-1 text-white"
-                onChange={(e) => awardXP(Number(e.target.value))}
-              />
-              <Button variant="outline">
-                <Save className="mr-2" />
-                Salvar PD
+        {/* Timer e Status */}
+        <div className="bg-black/40 p-4 rounded-lg">
+          <div className="flex items-center gap-2 mb-2">
+            <Timer className="w-4 h-4 text-primary" />
+            <span className="text-sm text-muted-foreground">Duração</span>
+          </div>
+          <div className="text-xl font-mono text-center">
+            {formatTime(timer)}
+          </div>
+          <div className="flex gap-2 mt-3">
+            {session.status === 'agendada' && (
+              <Button onClick={startSession} size="sm" className="flex-1">
+                Iniciar
+              </Button>
+            )}
+            {session.status === 'em-andamento' && (
+              <Button 
+                variant="destructive" 
+                onClick={stopSession} 
+                size="sm" 
+                className="flex-1"
+              >
+                Encerrar
+              </Button>
+            )}
+            {session.status === 'concluída' && (
+              <Button 
+                variant="outline" 
+                onClick={() => setShowSummary(!showSummary)}
+                size="sm" 
+                className="flex-1"
+              >
+                <Eye className="w-4 h-4 mr-1" />
+                {showSummary ? 'Ocultar' : 'Ver'} Resumo
+              </Button>
+            )}
+          </div>
+        </div>
+        {/* Resumo da Sessão Concluída */}
+        {session.status === 'concluída' && showSummary && (
+          <div className="bg-black/40 p-4 rounded-lg space-y-3">
+            <h3 className="text-sm font-semibold text-primary">Resumo da Sessão</h3>
+            <div className="flex items-center gap-2">
+              <Dice6 className="w-4 h-4 text-blue-400" />
+              <span className="text-sm">Dados rolados: {session.diceRolls}</span>
+            </div>
+            {getLastXpDistribution() && (
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <Users className="w-4 h-4 text-green-400" />
+                  <span className="text-sm">PD Distribuído:</span>
+                </div>
+                <div className="space-y-1 text-xs">
+                  {Object.entries(getLastXpDistribution()!.awards).map(([charId, xp]) => {
+                    const char = characters.find(c => c.id === charId);
+                    return (
+                      <div key={charId} className="flex justify-between">
+                        <span className="truncate">{char?.name || 'Desconhecido'}</span>
+                        <span className="text-green-400">{xp} PD</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+            {session.notes && (
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <FileText className="w-4 h-4 text-yellow-400" />
+                  <span className="text-sm">Anotações:</span>
+                </div>
+                <div className="text-xs text-muted-foreground bg-black/30 p-2 rounded max-h-20 overflow-y-auto">
+                  {session.notes}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+        {/* Distribuir PD - Apenas para sessões ativas */}
+        {session.status !== 'concluída' && (
+          <div className="bg-black/40 p-4 rounded-lg">
+            <h3 className="text-sm font-semibold mb-3">Distribuir PD</h3>
+            <div className="space-y-2 max-h-48 overflow-y-auto">
+              {characters.map(char => (
+                <div key={char.id} className="flex items-center gap-2">
+                  <span className="text-xs flex-1 truncate">{char.name}</span>
+                  <input
+                    type="number"
+                    min="0"
+                    value={xpValues[char.id] || 0}
+                    onChange={(e) => handleXpChange(char.id, e.target.value)}
+                    className="w-16 bg-black/50 p-1 rounded text-center text-xs text-white"
+                  />
+                </div>
+              ))}
+              <Button 
+                onClick={distributeXP}
+                size="sm"
+                className="w-full mt-2 bg-green-600 hover:bg-green-700"
+              >
+                Distribuir PD
               </Button>
             </div>
           </div>
+        )}
+      </div>
+      {/* Conteúdo Principal */}
+      <div className="flex-1 p-6 space-y-6 overflow-y-auto">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold">
+              {session.title || `Sessão ${session.number}`}
+            </h1>
+            <p className="text-muted-foreground">
+              {sessionDate} • Status: {
+                session.status === 'agendada' ? 'Agendada' :
+                session.status === 'em-andamento' ? 'Em Andamento' :
+                'Concluída'
+              }
+            </p>
+          </div>
         </div>
 
-        <div className="md:col-span-2">
-          <RollPage onRoll={handleRoll} />
-        </div>
+        {/* Sistema de abas adicionado conforme solicitado */}
+        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as any)}>
+          <TabsList className="bg-black/30 backdrop-blur-lg border border-white/10">
+            <TabsTrigger value="dados" className="data-[state=active]:bg-primary/20">
+              <Dice6 className="w-4 h-4 mr-2" /> Dados
+            </TabsTrigger>
+            <TabsTrigger value="anotacoes" className="data-[state=active]:bg-primary/20">
+              <FileText className="w-4 h-4 mr-2" /> Anotações
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="dados">
+            <div className="bg-black/30 backdrop-blur-lg rounded-xl p-6 border border-white/10">
+              <RollPage onRoll={handleRoll} />
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="anotacoes">
+            <div className="bg-black/30 backdrop-blur-lg rounded-xl p-6 border border-white/10">
+              <NotesPage 
+                role="master" 
+                collectionName="lore" 
+                foldersCollection="folders" 
+                campaignId= {session.campaignId}
+              />
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
