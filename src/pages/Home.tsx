@@ -223,15 +223,24 @@ export default function HomePage() {
       <main className="flex-grow relative z-10">
         {/* Hero + Auth Section */}
         <section id="inicio" className="py-16 md:py-24 relative overflow-hidden">
-          <div className="container px-4 md:px-6 grid gap-6 lg:grid-cols-2 lg:gap-12 items-center">
-            <div className="space-y-4">
-              <PlaneBadge plane="ethereal" className="animate-pulse">
-                <Flame className="h-3.5 w-3.5 mr-1" />Sistema de RPG
-              </PlaneBadge>
-              <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/70">
-                Extraplanar
-                <span className="block text-foreground">Aventuras entre mundos</span>
-              </h1>
+          <div className="container px-4 md:px-6 grid gap-6 lg:grid-cols-3 lg:gap-12 items-center">
+            <div className="space-y-4 lg:col-span-2">
+              <div className="flex items-center gap-2">
+                <PlaneBadge plane="ethereal" className="animate-pulse">
+                  Sistema de RPG
+                </PlaneBadge>
+              </div>
+              <div className="flex items-center gap-4 mb-4">
+                <img 
+                  src="/logo-improvisado.png" 
+                  alt="Logo Extraplanar RPG" 
+                  className="w-16 h-16 md:w-20 md:h-20 object-contain filter drop-shadow-lg"
+                />
+                <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/70">
+                  Extraplanar
+                  <span className="block text-foreground">Aventuras entre mundos</span>
+                </h1>
+              </div>
               <p className="text-lg text-muted-foreground md:text-xl max-w-[600px]">
                 Explore planos místicos, crie personagens únicos e embarque em aventuras épicas em um universo de possibilidades ilimitadas.
               </p>

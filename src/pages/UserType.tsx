@@ -59,15 +59,22 @@ const UserType = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-black via-gray-900 to-black">
-      <Header />
-      
-      <main className="flex-grow flex items-center justify-center py-12 px-4">
-        <Card className="bg-black/30 backdrop-blur-lg border border-white/10 rounded-xl p-8 w-full max-w-md">
-          <div className="space-y-2 text-center mb-6">
-            <h1 className="font-serif text-3xl font-bold bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent">
-              Escolha seu perfil
-            </h1>
+      <div className="min-h-screen flex flex-col bg-gradient-to-br from-black via-gray-900 to-black">
+        <Header />
+        
+        <main className="flex-grow flex items-center justify-center py-12 px-4">
+          <Card className="bg-black/30 backdrop-blur-lg border border-white/10 rounded-xl p-8 w-full max-w-md">
+            <div className="space-y-2 text-center mb-6">
+              <div className="flex justify-center">
+                <img 
+                  src="/logo-improvisado.png" 
+                  alt="Logo" 
+                  className="h-12 w-12"
+                />
+              </div>
+              <h1 className="font-serif text-3xl font-bold bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent">
+                Escolha seu perfil
+              </h1>
             <p className="text-muted-foreground text-sm">
               Defina seu papel no multiverso extraplanar
             </p>

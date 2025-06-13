@@ -64,7 +64,11 @@ export function PlayerLayout({ children }: PlayerLayoutProps) {
       {/* Mobile Header */}
       <div className="md:hidden flex items-center justify-between border-b border-white/10 p-4 bg-black/30 backdrop-blur-lg">
         <Link to="/player/dashboard" className="flex items-center gap-2">
-          <Sparkles className="h-6 w-6 text-primary" />
+          <img 
+            src="/logo-improvisado.png" 
+            alt="Logo" 
+            className="h-6 w-6"
+          />
           <span className="font-serif text-xl font-bold bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent">
             Extraplanar
           </span>
@@ -83,7 +87,11 @@ export function PlayerLayout({ children }: PlayerLayoutProps) {
       {/* Sidebar */}
       <aside className={`${isMenuOpen ? 'flex' : 'hidden'} md:flex flex-col w-full md:w-64 bg-black/30 backdrop-blur-lg border-r border-white/10 md:fixed md:h-screen md:top-0 md:left-0`}>
         <div className="hidden md:flex items-center gap-2 p-6 border-b border-white/10">
-          <Sparkles className="h-6 w-6 text-primary" />
+          <img 
+            src="/logo-improvisado.png" 
+            alt="Logo" 
+            className="h-6 w-6"
+          />
           <span className="font-serif text-xl font-bold bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent">
             Extraplanar
           </span>

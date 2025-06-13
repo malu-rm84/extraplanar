@@ -62,10 +62,11 @@ export function Header() {
       <div className="container flex h-16 items-center justify-between">
         <div className="flex items-center gap-2">
           <Link to="/" className="flex items-center gap-2 group">
-            <div className="relative">
-              <Sparkles className="h-6 w-6 text-primary animate-pulse group-hover:opacity-0 transition-opacity duration-300" />
-              <Wand2 className="h-6 w-6 text-primary absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-            </div>
+            <img 
+              src="/logo-improvisado.png" 
+              alt="Logo" 
+              className="h-6 w-6"
+            />
             <span className={`font-serif text-xl font-bold tracking-tight transition-all duration-300 ${
               scrollPosition > 50 
                 ? "bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/70" 
