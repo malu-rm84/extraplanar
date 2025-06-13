@@ -5,11 +5,17 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
   doc, getDoc, onSnapshot, updateDoc, collection, 
-  query, where, orderBy 
+  query, where, orderBy, getDocs 
 } from "firebase/firestore";
 import { db } from "@/components/auth/firebase-config";
 import { useAuth } from "@/contexts/AuthContext";
 import { ArrowLeft, Calendar, Users, User, Check, X, Award } from "lucide-react";
+
+interface UserProfile {
+  displayName: string;
+  photoURL: string;
+  email: string;
+}
 
 interface Participant {
   id: string;
@@ -18,6 +24,7 @@ interface Participant {
   type: 'player' | 'character';
   approved: boolean;
   userId?: string;
+  userProfile?: UserProfile; // Adicionado perfil do usuário
 }
 
 interface Session {
@@ -36,7 +43,9 @@ interface Campaign {
   id: string;
   name: string;
   description: string;
+  mestreId: string; // Adicionado ID do mestre
   mestreNome: string;
+  mestreFoto: string; // Adicionado foto do mestre
   participants: Participant[];
 }
 
@@ -48,21 +57,68 @@ export const PlayerCampaignDetailPage = () => {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(true);
   const [playerCharacter, setPlayerCharacter] = useState<Participant | null>(null);
+  const [userProfiles, setUserProfiles] = useState<Record<string, UserProfile>>({});
+
+  // Buscar perfis de usuários
+  const fetchUserProfiles = async (userIds: string[]) => {
+    if (userIds.length === 0) return;
+    
+    try {
+      const usersQuery = query(
+        collection(db, "users"),
+        where("uid", "in", userIds)
+      );
+      
+      const snapshot = await getDocs(usersQuery);
+      const profiles: Record<string, UserProfile> = {};
+      
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        profiles[data.uid] = {
+          displayName: data.displayName,
+          photoURL: data.photoURL,
+          email: data.email
+        };
+      });
+      
+      setUserProfiles(profiles);
+    } catch (error) {
+      console.error("Erro ao buscar perfis:", error);
+    }
+  };
 
   useEffect(() => {
     if (!campaignId || !currentUser) return;
 
     // Carregar campanha
-    const unsubscribeCampaign = onSnapshot(doc(db, "campanhas", campaignId), (doc) => {
-      if (doc.exists()) {
-        const data = doc.data();
-        const campaignData: Campaign = {
-          id: doc.id,
-          name: data.name,
-          description: data.description,
-          mestreNome: data.mestreNome,
-          participants: data.participants || []
-        };
+    const unsubscribeCampaign = onSnapshot(
+      doc(db, "campanhas", campaignId),
+      async (campaignDoc) => {
+        if (campaignDoc.exists()) {
+          const data = campaignDoc.data();
+          
+          // Buscar perfil do mestre
+          let mestreFoto = "";
+          try {
+            const mestreDoc = await getDoc(doc(db, "users", data.mestreId));
+            if (mestreDoc.exists()) {
+              const userData = mestreDoc.data() as UserProfile; // Type assertion
+              mestreFoto = userData.photoURL || "";
+            }
+          } catch (error) {
+            console.error("Erro ao buscar foto do mestre:", error);
+          }
+
+          const campaignData: Campaign = {
+            id: campaignDoc.id,
+            name: data.name,
+            description: data.description,
+            mestreId: data.mestreId,
+            mestreNome: data.mestreNome,
+            mestreFoto,
+            participants: data.participants || []
+          };
+        
         setCampaign(campaignData);
 
         // Encontrar o personagem do jogador atual
@@ -70,6 +126,16 @@ export const PlayerCampaignDetailPage = () => {
           p.userId === currentUser.uid && p.type === 'character' && p.approved
         );
         setPlayerCharacter(playerChar || null);
+        
+        // Coletar IDs de usuários para buscar perfis
+        const userIds = [
+          data.mestreId,
+          ...campaignData.participants
+            .filter(p => p.userId)
+            .map(p => p.userId as string)
+        ].filter((id, index, self) => id && self.indexOf(id) === index);
+        
+        fetchUserProfiles(userIds);
       }
     });
 
@@ -108,7 +174,6 @@ export const PlayerCampaignDetailPage = () => {
     
     let totalXp = 0;
     session.xpAwarded.forEach(distribution => {
-      // Usar ID do usuário como chave
       const xp = distribution.awards[currentUser.uid] || 0;
       totalXp += xp;
     });
@@ -124,7 +189,6 @@ export const PlayerCampaignDetailPage = () => {
     return <div className="text-center p-8">Campanha não encontrada.</div>;
   }
 
-  // CORREÇÃO AQUI: Usar status em vez de data
   const upcomingSessions = sessions.filter(s => s.status !== 'concluída');
   const pastSessions = sessions.filter(s => s.status === 'concluída');
 
@@ -148,9 +212,30 @@ export const PlayerCampaignDetailPage = () => {
             <p className="text-muted-foreground text-lg mb-4">
               {campaign.description}
             </p>
-            <p className="text-gray-400">
-              Mestre: {campaign.mestreNome}
-            </p>
+            
+            {/* Mestre com foto */}
+            <div className="flex items-center gap-3 mb-6">
+              <div className="relative">
+                {campaign.mestreFoto ? (
+                  <img 
+                    src={campaign.mestreFoto} 
+                    alt={campaign.mestreNome} 
+                    className="w-10 h-10 rounded-full object-cover border-2 border-primary"
+                  />
+                ) : (
+                  <div className="bg-gray-700 rounded-full w-10 h-10 flex items-center justify-center border-2 border-primary">
+                    <User className="w-5 h-5" />
+                  </div>
+                )}
+                <div className="absolute -bottom-1 -right-1 bg-primary rounded-full p-1">
+                  <Award className="h-3 w-3 text-white" />
+                </div>
+              </div>
+              <div>
+                <p className="text-gray-400">Mestre</p>
+                <p className="text-white font-medium">{campaign.mestreNome}</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -163,32 +248,53 @@ export const PlayerCampaignDetailPage = () => {
             <h2 className="text-2xl font-bold">Jogadores</h2>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-4">
             {campaign.participants
-              .filter(p => p.approved)
-              .map(participant => (
-                <div 
-                  key={participant.id}
-                  className="bg-black/40 rounded-lg p-4 flex items-center gap-3 hover:bg-black/60 transition-colors"
-                >
-                  <div className="bg-gray-700 rounded-full w-10 h-10 flex items-center justify-center">
-                    <User className="w-5 h-5" />
+              .filter(p => p.approved && p.type === 'character' && p.userId)
+              .map(participant => {
+                const userProfile = userProfiles[participant.userId!];
+                
+                return (
+                  <div 
+                    key={participant.id}
+                    className="bg-black/40 rounded-lg p-4 flex items-center gap-4 hover:bg-black/60 transition-colors"
+                  >
+                    {/* Foto do usuário */}
+                    {userProfile?.photoURL ? (
+                      <img 
+                        src={userProfile.photoURL} 
+                        alt={userProfile.displayName} 
+                        className="w-12 h-12 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="bg-gray-700 rounded-full w-12 h-12 flex items-center justify-center">
+                        <User className="w-5 h-5" />
+                      </div>
+                    )}
+                    
+                    <div className="flex-1">
+                      {/* Apelido do usuário */}
+                      <h4 className="font-semibold text-white">
+                        {userProfile?.displayName || "Usuário"}
+                      </h4>
+                      
+                      {/* Nome do personagem */}
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-xs text-muted-foreground">Personagem:</span>
+                        <Badge variant="secondary" className="text-primary">
+                          {participant.name}
+                        </Badge>
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="font-semibold text-white">
-                      {participant.name}
-                    </h4>
-                    <p className="text-sm text-muted-foreground">
-                      {participant.type === 'character' ? 'Personagem' : 'Jogador'}
-                    </p>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
           </div>
         </div>
 
-        {/* Sessões Futuras */}
+        {/* Restante do código permanece igual... */}
         <div className="space-y-8">
+          {/* Sessões Futuras */}
           <div className="bg-black/30 backdrop-blur-lg rounded-xl p-6 border border-white/10">
             <div className="flex items-center gap-3 mb-6">
               <Calendar className="w-6 h-6 text-green-400" />

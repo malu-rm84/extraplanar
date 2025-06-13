@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { doc, updateDoc, getDoc } from "firebase/firestore";
-import { db } from "@/components/auth/firebase-config";
+import { auth, db } from "@/components/auth/firebase-config";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,25 +19,32 @@ import {
   Settings,
   Eye,
   EyeOff,
-  RefreshCw
+  RefreshCw,
+  Swords,
+  ScrollText,
+  LogOut
 } from "lucide-react";
 import { toast } from "sonner";
+import { signOut } from "firebase/auth";
 
 interface UserProfile {
   displayName: string;
   photoURL: string;
   email: string;
   createdAt: Date;
+  role: "player" | "master";
 }
 
 const ConfigPage = () => {
   const { currentUser } = useAuth();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [profile, setProfile] = useState<UserProfile>({
     displayName: "",
     photoURL: "",
     email: "",
-    createdAt: new Date()
+    createdAt: new Date(),
+    role: "player"
   });
   const [formData, setFormData] = useState({
     displayName: "",
@@ -48,6 +56,17 @@ const ConfigPage = () => {
     displayName: "",
     photoURL: ""
   });
+  const [showRoleModal, setShowRoleModal] = useState(false);
+    const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      toast.success("Logout realizado com sucesso!");
+      navigate("/");
+    } catch (error) {
+      console.error("Erro ao sair:", error);
+      toast.error("Erro ao realizar logout");
+    }
+  };
 
   useEffect(() => {
     const loadUserProfile = async () => {
@@ -61,7 +80,8 @@ const ConfigPage = () => {
             displayName: userData.displayName || currentUser.displayName || "",
             photoURL: userData.photoURL || currentUser.photoURL || "",
             email: currentUser.email || "",
-            createdAt: userData.createdAt?.toDate() || new Date()
+            createdAt: userData.createdAt?.toDate() || new Date(),
+            role: userData.role || "player"
           };
           
           setProfile(userProfile);
@@ -167,6 +187,32 @@ const ConfigPage = () => {
     setShowPreview(false);
   };
 
+  const handleChangeRole = async (newRole: "player" | "master") => {
+    if (!currentUser?.uid) return;
+
+    setLoading(true);
+    try {
+      await updateDoc(doc(db, "users", currentUser.uid), {
+        role: newRole
+      });
+
+      setProfile(prev => ({ ...prev, role: newRole }));
+      toast.success(`Agora você é um ${newRole === 'player' ? 'Jogador' : 'Mestre'}!`);
+      
+      // Redirecionar após 1.5s para mostrar o toast
+      setTimeout(() => {
+        navigate(`/${newRole}/dashboard`);
+      }, 1500);
+      
+    } catch (error) {
+      console.error("Erro ao trocar tipo de conta:", error);
+      toast.error("Erro ao trocar tipo de conta");
+    } finally {
+      setLoading(false);
+      setShowRoleModal(false);
+    }
+  };
+
   const hasChanges = formData.displayName !== profile.displayName || 
                     formData.photoURL !== profile.photoURL;
 
@@ -183,8 +229,9 @@ const ConfigPage = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Preview do Perfil */}
-        <div className="lg:col-span-1">
+        {/* Coluna Esquerda */}
+        <div className="lg:col-span-1 space-y-6">
+          {/* Preview do Perfil */}
           <div className="bg-black/30 backdrop-blur-lg rounded-xl border border-white/10 p-6">
             <div className="text-center space-y-4">
               <h2 className="text-lg font-semibold text-primary flex items-center justify-center gap-2">
@@ -225,10 +272,50 @@ const ConfigPage = () => {
               </div>
             </div>
           </div>
+
+          {/* Card de Informações da Conta (novo posicionamento) */}
+          <div className="bg-black/30 backdrop-blur-lg rounded-xl border border-white/10 p-6">
+            <div className="space-y-4 mb-6">
+              <h2 className="text-lg font-semibold text-primary">Informações da Conta</h2>
+              <p className="text-sm text-muted-foreground">
+                Dados da sua conta (somente leitura)
+              </p>
+            </div>
+            
+            <div className="grid grid-cols-1 gap-4 mb-6">
+              <div>
+                <Label className="text-muted-foreground text-sm">Email</Label>
+                <p className="text-white font-medium">{profile.email}</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 mb-6">
+              <div>
+                <Label className="text-muted-foreground text-sm">Membro desde</Label>
+                <p className="text-white font-medium">
+                  {profile.createdAt.toLocaleDateString('pt-BR', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  })}
+                </p>
+              </div>
+            </div>
+            
+            <Button
+              onClick={handleLogout}
+              variant="outline"
+              className="w-full bg-red-500/10 border-red-500/20 text-red-400 hover:bg-red-500/20 hover:text-white"
+            >
+              <LogOut className="h-4 w-4 mr-2" />
+              Sair da Conta
+            </Button>
+          </div>
         </div>
 
-        {/* Formulário de Configurações */}
+        {/* Coluna Direita */}
         <div className="lg:col-span-2 space-y-6">
+          {/* Formulário de Configurações */}
           <div className="bg-black/30 backdrop-blur-lg rounded-xl border border-white/10 p-6">
             <div className="space-y-4 mb-6">
               <h2 className="text-lg font-semibold text-primary flex items-center gap-2">
@@ -344,34 +431,75 @@ const ConfigPage = () => {
             </div>
           </div>
 
-          {/* Card de Informações da Conta */}
+          {/* Card de Troca de Tipo de Conta */}
           <div className="bg-black/30 backdrop-blur-lg rounded-xl border border-white/10 p-6">
             <div className="space-y-4 mb-6">
-              <h2 className="text-lg font-semibold text-primary">Informações da Conta</h2>
+              <h2 className="text-lg font-semibold text-primary flex items-center gap-2">
+                {profile.role === 'player' ? 
+                  <Swords className="h-5 w-5" /> : 
+                  <ScrollText className="h-5 w-5" />
+                }
+                Tipo de Conta
+              </h2>
               <p className="text-sm text-muted-foreground">
-                Dados da sua conta (somente leitura)
+                Alterar entre Jogador e Mestre
               </p>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label className="text-muted-foreground text-sm">Email</Label>
-                <p className="text-white font-medium">{profile.email}</p>
-              </div>
-              <div>
-                <Label className="text-muted-foreground text-sm">Membro desde</Label>
-                <p className="text-white font-medium">
-                  {profile.createdAt.toLocaleDateString('pt-BR', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                  })}
-                </p>
-              </div>
+            <div className="flex flex-col gap-4">
+              <p className="text-white">
+                Atualmente você é: 
+                <span className="text-primary ml-2">
+                  {profile.role === 'player' ? 'Jogador' : 'Mestre'}
+                </span>
+              </p>
+              <Button
+                onClick={() => setShowRoleModal(true)}
+                variant="outline"
+                className="bg-black/20 border-white/20 hover:bg-white/10"
+                disabled={loading}
+              >
+                Trocar para {profile.role === 'player' ? 'Mestre' : 'Jogador'}
+              </Button>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Modal de Confirmação de Troca de Conta */}
+      {showRoleModal && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+          <div className="bg-black/70 backdrop-blur-lg border border-white/10 rounded-xl p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold text-white mb-4">
+              Confirmar troca de tipo de conta
+            </h3>
+            <p className="text-muted-foreground mb-6">
+              Ao trocar para {profile.role === 'player' ? 'Mestre' : 'Jogador'}, você será redirecionado para o dashboard {profile.role === 'player' ? 'do Mestre' : 'do Jogador'}. 
+              <span className="block mt-2 text-primary">
+                Todos os seus dados (personagens, anotações e configurações) serão mantidos!
+              </span>
+            </p>
+            <div className="flex justify-end gap-3">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowRoleModal(false)}
+                className="bg-black/20 border-white/20 hover:bg-white/10"
+              >
+                Cancelar
+              </Button>
+              <Button 
+                onClick={() => handleChangeRole(profile.role === 'player' ? 'master' : 'player')}
+                className="bg-primary/20 hover:bg-primary/30 border border-primary/30 hover:border-primary/50"
+                disabled={loading}
+              >
+                {loading ? (
+                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                ) : "Confirmar Troca"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

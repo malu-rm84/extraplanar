@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { 
   LayoutDashboard, 
@@ -13,9 +13,11 @@ import {
   Sparkles
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { auth } from "@/components/auth/firebase-config";
-import { signOut } from "firebase/auth";
 import { useToast } from "@/components/ui/use-toast";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "@/components/auth/firebase-config";
+import { useAuth } from "@/contexts/AuthContext";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface PlayerLayoutProps {
   children: React.ReactNode;
@@ -26,26 +28,36 @@ export function PlayerLayout({ children }: PlayerLayoutProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { currentUser } = useAuth();
+  const [userProfile, setUserProfile] = useState({
+    displayName: "",
+    photoURL: "",
+    role: "player"
+  });
   
   const isActive = (path: string) => location.pathname === path;
 
-  const handleLogout = async () => {
-    try {
-      await signOut(auth);
-      toast({
-        title: "Logout realizado",
-        description: "Você saiu da sua conta."
-      });
-      navigate("/");
-    } catch (error) {
-      console.error("Erro ao sair:", error);
-      toast({
-        title: "Erro ao sair",
-        description: "Não foi possível realizar o logout.",
-        variant: "destructive"
-      });
-    }
-  };
+  useEffect(() => {
+    const loadUserProfile = async () => {
+      if (!currentUser?.uid) return;
+
+      try {
+        const userDoc = await getDoc(doc(db, "users", currentUser.uid));
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          setUserProfile({
+            displayName: userData.displayName || currentUser.displayName || "",
+            photoURL: userData.photoURL || currentUser.photoURL || "",
+            role: userData.role || "player"
+          });
+        }
+      } catch (error) {
+        console.error("Erro ao carregar perfil:", error);
+      }
+    };
+
+    loadUserProfile();
+  }, [currentUser]);
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-gradient-to-br from-black to-[#0f0f1f]">
@@ -77,6 +89,24 @@ export function PlayerLayout({ children }: PlayerLayoutProps) {
           </span>
         </div>
 
+        {/* User Profile Section */}
+        <div className="p-4 border-b border-white/10 flex items-center gap-3">
+          <Avatar className="h-10 w-10">
+            <AvatarImage src={userProfile.photoURL} alt="User Avatar" />
+            <AvatarFallback className="bg-primary/20 text-primary">
+              {userProfile.displayName?.charAt(0).toUpperCase() || "U"}
+            </AvatarFallback>
+          </Avatar>
+          <div>
+            <p className="font-medium text-white truncate max-w-[150px]">
+              {userProfile.displayName || "Usuário"}
+            </p>
+            <span className="text-xs text-muted-foreground">
+              {userProfile.role === "master" ? "Mestre" : "Jogador"}
+            </span>
+          </div>
+        </div>
+
         <nav className="flex-grow p-4 space-y-2">
           {[
             { path: "/player/dashboard", icon: <LayoutDashboard />, label: "Dashboard" },
@@ -102,17 +132,6 @@ export function PlayerLayout({ children }: PlayerLayoutProps) {
             </Link>
           ))}
         </nav>
-
-        <div className="p-4 border-t border-white/10">
-          <Button
-            variant="outline"
-            className="w-full flex items-center gap-2 bg-black/30 border-white/10 hover:bg-primary/20 hover:text-primary"
-            onClick={handleLogout}
-          >
-            <LogOut className="h-4 w-4" />
-            <span>Sair</span>
-          </Button>
-        </div>
       </aside>
 
       {/* Main Content */}

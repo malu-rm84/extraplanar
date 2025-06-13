@@ -5,13 +5,19 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { 
   doc, getDoc, updateDoc, collection, addDoc, 
-  onSnapshot, query, where, deleteDoc, arrayRemove
+  onSnapshot, query, where, deleteDoc, arrayRemove, getDocs
 } from "firebase/firestore";
 import { db } from "@/components/auth/firebase-config";
 import { useAuth } from "@/contexts/AuthContext";
-import { ArrowLeft, Users, Calendar, Play, Edit, Trash2, UserMinus, Eye, Check, X, Copy, Link } from "lucide-react";
+import { ArrowLeft, Users, Calendar, Play, Edit, Trash2, UserMinus, Eye, Check, X, Copy, Link, User } from "lucide-react";
 import SessionPage from "./SessionPage";
 import type { Campaign } from "./MasterCampanhas";
+
+interface UserProfile {
+  displayName: string;
+  photoURL: string;
+  email: string;
+}
 
 interface Participant {
   id: string;
@@ -52,23 +58,57 @@ const CampaignDetailPage = ({ campaignId, onBack }: CampaignDetailPageProps) => 
   const [sessionDate, setSessionDate] = useState('');
   const [sessionTime, setSessionTime] = useState('');
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
-  const [showCharacterSheet, setShowCharacterSheet] = useState<string | null>(null);
-  const [copySuccess, setCopySuccess] = useState(false);
+  const [userProfiles, setUserProfiles] = useState<Record<string, UserProfile>>({});
+  const [copySuccess, setCopySuccess] = useState(false)
+
+  // Buscar perfis de usuários
+  const fetchUserProfiles = async (userIds: string[]) => {
+    if (userIds.length === 0) return;
+    try {
+      const usersQuery = query(
+        collection(db, "users"),
+        where("uid", "in", userIds)
+      );
+      const snapshot = await getDocs(usersQuery);
+      const profiles: Record<string, UserProfile> = {};
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        profiles[data.uid] = {
+          displayName: data.displayName,
+          photoURL: data.photoURL,
+          email: data.email
+        };
+      });
+      setUserProfiles(profiles);
+    } catch (error) {
+      console.error("Erro ao buscar perfis:", error);
+    }
+  };
 
   useEffect(() => {
     if (!campaignId) return;
-
     // Carregar campanha
-    const unsubscribeCampaign = onSnapshot(doc(db, "campanhas", campaignId), (doc) => {
+    const unsubscribeCampaign = onSnapshot(doc(db, "campanhas", campaignId), async (doc) => {
       if (doc.exists()) {
         const data = doc.data();
-        setCampaign({
+        const campaignData = {
           id: doc.id,
           ...data,
           createdAt: data.createdAt.toDate(),
           proximaSessao: data.proximaSessao?.toDate() || null,
           sessoes: data.sessoes || []
-        } as Campaign);
+        } as Campaign;
+        setCampaign(campaignData);
+        
+        // Coletar IDs de usuários para buscar perfis
+        const userIds = [
+          data.mestreId,
+          ...campaignData.participants
+            .filter(p => p.userId)
+            .map(p => p.userId as string)
+        ].filter((id, index, self) => id && self.indexOf(id) === index);
+        
+        fetchUserProfiles(userIds);
       }
     });
 
@@ -96,18 +136,17 @@ const CampaignDetailPage = ({ campaignId, onBack }: CampaignDetailPageProps) => 
 
   const approveParticipant = async (participantId: string) => {
     if (!campaign || !currentUser) return;
-
     try {
       const participant = campaign.participants.find(p => p.id === participantId);
       if (!participant?.userId) throw new Error("ID do usuário não encontrado");
-
+      
       // Atualizar status de aprovação
       await updateDoc(doc(db, "campanhas", campaignId), {
         participants: campaign.participants.map(p => 
           p.id === participantId ? { ...p, approved: true } : p
         )
       });
-
+      
       // Criar pasta para o jogador
       const playerFolderRef = await addDoc(collection(db, "folders"), {
         name: campaign.name || "Nova Campanha",
@@ -115,7 +154,7 @@ const CampaignDetailPage = ({ campaignId, onBack }: CampaignDetailPageProps) => 
         campaignId: campaignId,
         createdAt: new Date()
       });
-
+      
       // Criar nota inicial
       await addDoc(collection(db, "lore"), {
         title: "Notas Iniciais",
@@ -127,7 +166,6 @@ Comece a registrar suas anotações aqui!`,
         campaignId: campaignId,
         createdAt: new Date()
       });
-
     } catch (error) {
       console.error("Erro na aprovação:", error);
       alert("Erro ao aprovar jogador: " + (error as Error).message);
@@ -136,14 +174,13 @@ Comece a registrar suas anotações aqui!`,
 
   const rejectParticipant = async (participantId: string) => {
     if (!campaign || !currentUser) return;
-    
     const confirmReject = window.confirm("Tem certeza que deseja rejeitar este jogador?");
     if (!confirmReject) return;
-
+    
     try {
       const participantToReject = campaign.participants.find(p => p.id === participantId);
       if (!participantToReject) return;
-
+      
       await updateDoc(doc(db, "campanhas", campaignId), {
         participants: arrayRemove(participantToReject),
         participantUserIds: arrayRemove(participantToReject.userId)
@@ -156,14 +193,13 @@ Comece a registrar suas anotações aqui!`,
 
   const removePlayer = async (participantId: string) => {
     if (!campaign || !currentUser) return;
-    
     const confirmRemove = window.confirm("Tem certeza que deseja remover este jogador?");
     if (!confirmRemove) return;
-
+    
     try {
       const participantToRemove = campaign.participants.find(p => p.id === participantId);
       if (!participantToRemove) return;
-
+      
       await updateDoc(doc(db, "campanhas", campaignId), {
         participants: arrayRemove(participantToRemove),
         participantUserIds: arrayRemove(participantToRemove.userId)
@@ -192,7 +228,6 @@ Comece a registrar suas anotações aqui!`,
 
   const createOrUpdateSession = async () => {
     if (!sessionTitle.trim() || !sessionDate || !sessionTime || !currentUser) return;
-
     const scheduledDateTime = new Date(`${sessionDate}T${sessionTime}`);
     
     try {
@@ -205,7 +240,6 @@ Comece a registrar suas anotações aqui!`,
       } else {
         // Criar nova sessão
         const nextNumber = Math.max(...sessions.map(s => s.number), 0) + 1;
-        
         await addDoc(collection(db, "sessions"), {
           campaignId,
           title: sessionTitle,
@@ -218,7 +252,6 @@ Comece a registrar suas anotações aqui!`,
           notes: ''
         });
       }
-
       setShowSessionModal(false);
       setEditingSession(null);
       setSessionTitle('');
@@ -233,7 +266,7 @@ Comece a registrar suas anotações aqui!`,
   const deleteSession = async (sessionId: string) => {
     const confirmDelete = window.confirm("Tem certeza que deseja excluir esta sessão?");
     if (!confirmDelete) return;
-
+    
     try {
       await deleteDoc(doc(db, "sessions", sessionId));
     } catch (error) {
@@ -273,14 +306,10 @@ Comece a registrar suas anotações aqui!`,
 
   const formatStatus = (status: Session['status']) => {
     switch (status) {
-      case 'em-andamento':
-        return 'Em Andamento';
-      case 'agendada':
-        return 'Agendada';
-      case 'concluída':
-        return 'Concluída';
-      default:
-        return status;
+      case 'em-andamento': return 'Em Andamento';
+      case 'agendada': return 'Agendada';
+      case 'concluída': return 'Concluída';
+      default: return status;
     }
   };
 
@@ -346,7 +375,10 @@ Comece a registrar suas anotações aqui!`,
             <Button variant="outline" onClick={() => setShowSessionModal(false)}>
               Cancelar
             </Button>
-            <Button onClick={createOrUpdateSession} disabled={!sessionTitle.trim() || !sessionDate || !sessionTime}>
+            <Button 
+              onClick={createOrUpdateSession} 
+              disabled={!sessionTitle.trim() || !sessionDate || !sessionTime}
+            >
               {editingSession ? 'Atualizar' : 'Criar'} Sessão
             </Button>
           </DialogFooter>
@@ -363,7 +395,6 @@ Comece a registrar suas anotações aqui!`,
           <ArrowLeft className="w-4 h-4 mr-2" />
           Voltar para Campanhas
         </Button>
-        
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
             <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent">
@@ -373,7 +404,6 @@ Comece a registrar suas anotações aqui!`,
               {campaign.description}
             </p>
           </div>
-          
           {/* Link da Campanha */}
           <div className="flex items-center gap-2 bg-black/30 backdrop-blur-lg rounded-lg p-3 border border-white/10">
             <Link className="w-5 h-5 text-primary" />
@@ -401,55 +431,70 @@ Comece a registrar suas anotações aqui!`,
               {approvedPlayers.length}
             </span>
           </div>
-
+          
           {/* Jogadores Pendentes */}
           {pendingPlayers.length > 0 && (
             <div className="mb-6">
               <h3 className="text-lg font-semibold mb-3 text-yellow-400">Pendentes de Aprovação</h3>
               <div className="space-y-3">
-                {pendingPlayers.map(participant => (
-                  <div 
-                    key={participant.id}
-                    className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="font-semibold text-white">
-                          {participant.name}
-                        </h4>
-                        <p className="text-sm text-muted-foreground">
-                          {participant.type === 'character' ? 'Personagem' : 'Jogador'}
-                        </p>
-                      </div>
-                      
-                      <div className="flex gap-2">
-                        {participant.type === 'character' && participant.characterId && (
+                {pendingPlayers.map(participant => {
+                  const userProfile = userProfiles[participant.userId!];
+                  return (
+                    <div 
+                      key={participant.id}
+                      className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          {userProfile?.photoURL ? (
+                            <img 
+                              src={userProfile.photoURL} 
+                              alt={userProfile.displayName}
+                              className="w-10 h-10 rounded-full object-cover"
+                            />
+                          ) : (
+                            <div className="bg-gray-700 rounded-full w-10 h-10 flex items-center justify-center">
+                              <User className="w-5 h-5" />
+                            </div>
+                          )}
+                          <div>
+                            <h4 className="font-semibold text-white">
+                              {userProfile?.displayName || "Usuário"}
+                            </h4>
+                            <p className="text-sm text-muted-foreground">
+                              {participant.type === 'character' ? `Personagem: ${participant.name}` : 'Jogador'}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          {participant.type === 'character' && participant.characterId && (
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => viewCharacterSheet(participant.characterId!)}
+                            >
+                              <Eye className="w-4 h-4" />
+                            </Button>
+                          )}
                           <Button 
                             size="sm" 
-                            variant="outline"
-                            onClick={() => viewCharacterSheet(participant.characterId!)}
+                            onClick={() => approveParticipant(participant.id)}
+                            className="bg-green-600 hover:bg-green-700"
                           >
-                            <Eye className="w-4 h-4" />
+                            <Check className="w-4 h-4" />
                           </Button>
-                        )}
-                        <Button 
-                          size="sm" 
-                          onClick={() => approveParticipant(participant.id)}
-                          className="bg-green-600 hover:bg-green-700"
-                        >
-                          <Check className="w-4 h-4" />
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          variant="destructive"
-                          onClick={() => rejectParticipant(participant.id)}
-                        >
-                          <X className="w-4 h-4" />
-                        </Button>
+                          <Button 
+                            size="sm" 
+                            variant="destructive"
+                            onClick={() => rejectParticipant(participant.id)}
+                          >
+                            <X className="w-4 h-4" />
+                          </Button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
@@ -463,40 +508,55 @@ Comece a registrar suas anotações aqui!`,
                   Nenhum jogador aprovado ainda.
                 </p>
               ) : (
-                approvedPlayers.map(participant => (
-                  <div 
-                    key={participant.id}
-                    className="bg-black/40 rounded-lg p-4 flex items-center justify-between hover:bg-black/60 transition-colors"
-                  >
-                    <div>
-                      <h4 className="font-semibold text-white">
-                        {participant.name}
-                      </h4>
-                      <p className="text-sm text-muted-foreground">
-                        {participant.type === 'character' ? 'Personagem' : 'Jogador'}
-                      </p>
-                    </div>
-                    
-                    <div className="flex gap-2">
-                      {participant.type === 'character' && participant.characterId && (
+                approvedPlayers.map(participant => {
+                  const userProfile = userProfiles[participant.userId!];
+                  return (
+                    <div 
+                      key={participant.id}
+                      className="bg-black/40 rounded-lg p-4 flex items-center justify-between hover:bg-black/60 transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        {userProfile?.photoURL ? (
+                          <img 
+                            src={userProfile.photoURL} 
+                            alt={userProfile.displayName}
+                            className="w-10 h-10 rounded-full object-cover"
+                          />
+                        ) : (
+                          <div className="bg-gray-700 rounded-full w-10 h-10 flex items-center justify-center">
+                            <User className="w-5 h-5" />
+                          </div>
+                        )}
+                        <div>
+                          <h4 className="font-semibold text-white">
+                            {userProfile?.displayName || "Usuário"}
+                          </h4>
+                          <p className="text-sm text-muted-foreground">
+                            {participant.type === 'character' ? `${participant.name}` : 'Jogador'}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        {participant.type === 'character' && participant.characterId && (
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => viewCharacterSheet(participant.characterId!)}
+                          >
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                        )}
                         <Button 
                           size="sm" 
-                          variant="outline"
-                          onClick={() => viewCharacterSheet(participant.characterId!)}
+                          variant="destructive"
+                          onClick={() => removePlayer(participant.id)}
                         >
-                          <Eye className="w-4 h-4" />
+                          <UserMinus className="w-4 h-4" />
                         </Button>
-                      )}
-                      <Button 
-                        size="sm" 
-                        variant="destructive"
-                        onClick={() => removePlayer(participant.id)}
-                      >
-                        <UserMinus className="w-4 h-4" />
-                      </Button>
+                      </div>
                     </div>
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
           </div>
@@ -513,7 +573,6 @@ Comece a registrar suas anotações aqui!`,
               + Nova Sessão
             </Button>
           </div>
-
           <div className="space-y-3 max-h-[500px] overflow-y-auto">
             {sessions.length === 0 ? (
               <p className="text-muted-foreground text-center py-8">
@@ -546,48 +605,44 @@ Comece a registrar suas anotações aqui!`,
                       </p>
                     </div>
                   </div>
-
                   <div className="flex gap-2 flex-wrap">
                     {session.status === 'agendada' && (
-                        <Button 
+                      <Button 
                         size="sm" 
                         onClick={() => setActiveSessionId(session.id)}
                         className="bg-green-600 hover:bg-green-700"
-                        >
+                      >
                         <Play className="w-4 h-4 mr-1" />
                         Iniciar Sessão
-                        </Button>
+                      </Button>
                     )}
-                    
                     {session.status === 'concluída' && (
-                        <Button 
+                      <Button 
                         size="sm" 
                         variant="outline"
                         onClick={() => setActiveSessionId(session.id)}
-                        >
+                      >
                         <Eye className="w-4 h-4 mr-1" />
                         Ver Detalhes
-                        </Button>
+                      </Button>
                     )}
-                    
                     {session.status !== 'concluída' && (
-                        <Button 
+                      <Button 
                         size="sm" 
                         variant="outline"
                         onClick={() => startEditSession(session)}
-                        >
+                      >
                         <Edit className="w-4 h-4" />
-                        </Button>
+                      </Button>
                     )}
-                    
                     <Button 
-                        size="sm" 
-                        variant="destructive"
-                        onClick={() => deleteSession(session.id)}
+                      size="sm" 
+                      variant="destructive"
+                      onClick={() => deleteSession(session.id)}
                     >
-                        <Trash2 className="w-4 h-4" />
+                      <Trash2 className="w-4 h-4" />
                     </Button>
-                    </div>
+                  </div>
                 </div>
               ))
             )}
@@ -603,21 +658,18 @@ Comece a registrar suas anotações aqui!`,
           </div>
           <div className="text-muted-foreground">Sessões Concluídas</div>
         </div>
-        
         <div className="bg-black/30 backdrop-blur-lg rounded-xl p-6 border border-white/10 text-center">
           <div className="text-3xl font-bold text-green-400 mb-2">
             {sessions.filter(s => s.status === 'agendada').length}
           </div>
           <div className="text-muted-foreground">Sessões Agendadas</div>
         </div>
-        
         <div className="bg-black/30 backdrop-blur-lg rounded-xl p-6 border border-white/10 text-center">
           <div className="text-3xl font-bold text-blue-400 mb-2">
             {approvedPlayers.length}
           </div>
           <div className="text-muted-foreground">Jogadores Ativos</div>
         </div>
-
         <div className="bg-black/30 backdrop-blur-lg rounded-xl p-6 border border-white/10 text-center">
           <div className="text-3xl font-bold text-yellow-400 mb-2">
             {pendingPlayers.length}
