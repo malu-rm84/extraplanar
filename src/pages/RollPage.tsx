@@ -109,7 +109,7 @@ export default function RollPage({ onRoll }: RollPageProps) {
             className="relative flex items-center justify-center p-1 sm:p-2 hover:scale-105 transition-transform group"
           >
             <img 
-              src={`${import.meta.env.BASE_URL}dices/D${type.slice(1)}.png`}
+              src={`${import.meta.env.BASE_URL}/dices/D${type.slice(1)}.png`}
               alt={type}
               className="h-16 w-16 sm:h-20 sm:w-20 md:h-24 md:w-24 filter drop-shadow-dice transition-transform hover:scale-110"
             />
@@ -137,7 +137,7 @@ export default function RollPage({ onRoll }: RollPageProps) {
                 )}
               >
                 <img 
-                  src={`${import.meta.env.BASE_URL}dices/D${die.type.slice(1)}.png`}
+                  src={`${import.meta.env.BASE_URL}/dices/D${die.type.slice(1)}.png`}
                   alt={die.type} 
                   className="h-24 w-24 filter drop-shadow-dice transition-transform hover:scale-110"
                 />
@@ -206,7 +206,7 @@ export default function RollPage({ onRoll }: RollPageProps) {
                 {entry.dice.map((die, dieIndex) => (
                   <div key={dieIndex} className="relative h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12">
                     <img 
-                      src={`${import.meta.env.BASE_URL}dices/D${die.type.slice(1)}.png`} 
+                      src={`${import.meta.env.BASE_URL}/dices/D${die.type.slice(1)}.png`}
                       alt={die.type} 
                       className="h-full w-full filter drop-shadow-dice"
                     />
