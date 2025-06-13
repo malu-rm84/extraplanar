@@ -57,7 +57,8 @@ const ConfigPage = () => {
     photoURL: ""
   });
   const [showRoleModal, setShowRoleModal] = useState(false);
-    const handleLogout = async () => {
+  
+  const handleLogout = async () => {
     try {
       await signOut(auth);
       toast.success("Logout realizado com sucesso!");
@@ -217,22 +218,22 @@ const ConfigPage = () => {
                     formData.photoURL !== profile.photoURL;
 
   return (
-    <div className="p-6 space-y-8">
+    <div className="p-4 sm:p-6 space-y-6 md:space-y-8">
       {/* Header */}
       <div className="space-y-2">
-        <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent">
+        <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent">
           Configurações
         </h1>
-        <p className="text-muted-foreground">
+        <p className="text-sm sm:text-base text-muted-foreground">
           Personalize seu perfil e preferências
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Coluna Esquerda */}
-        <div className="lg:col-span-1 space-y-6">
+        <div className="lg:col-span-1 space-y-4 sm:space-y-6">
           {/* Preview do Perfil */}
-          <div className="bg-black/30 backdrop-blur-lg rounded-xl border border-white/10 p-6">
+          <div className="bg-black/30 backdrop-blur-lg rounded-xl border border-white/10 p-4 sm:p-6">
             <div className="text-center space-y-4">
               <h2 className="text-lg font-semibold text-primary flex items-center justify-center gap-2">
                 <User className="h-5 w-5" />
@@ -240,7 +241,7 @@ const ConfigPage = () => {
               </h2>
               
               <div className="relative inline-block">
-                <Avatar className="h-24 w-24 mx-auto border-2 border-primary/20">
+                <Avatar className="h-20 w-20 sm:h-24 sm:w-24 mx-auto border-2 border-primary/20">
                   <AvatarImage 
                     src={showPreview ? previewImage : profile.photoURL} 
                     alt="Foto de perfil"
@@ -259,7 +260,9 @@ const ConfigPage = () => {
                 <h3 className="text-lg font-semibold text-white">
                   {formData.displayName || "Seu Apelido"}
                 </h3>
-                <p className="text-sm text-muted-foreground">{profile.email}</p>
+                <p className="text-sm text-muted-foreground truncate max-w-[90%] mx-auto">
+                  {profile.email}
+                </p>
               </div>
 
               <Separator className="bg-white/10" />
@@ -273,26 +276,28 @@ const ConfigPage = () => {
             </div>
           </div>
 
-          {/* Card de Informações da Conta (novo posicionamento) */}
-          <div className="bg-black/30 backdrop-blur-lg rounded-xl border border-white/10 p-6">
-            <div className="space-y-4 mb-6">
+          {/* Card de Informações da Conta */}
+          <div className="bg-black/30 backdrop-blur-lg rounded-xl border border-white/10 p-4 sm:p-6">
+            <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6">
               <h2 className="text-lg font-semibold text-primary">Informações da Conta</h2>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 Dados da sua conta (somente leitura)
               </p>
             </div>
             
-            <div className="grid grid-cols-1 gap-4 mb-6">
+            <div className="grid grid-cols-1 gap-3 sm:gap-4 mb-4 sm:mb-6">
               <div>
-                <Label className="text-muted-foreground text-sm">Email</Label>
-                <p className="text-white font-medium">{profile.email}</p>
+                <Label className="text-muted-foreground text-xs sm:text-sm">Email</Label>
+                <p className="text-white font-medium break-all text-sm sm:text-base">
+                  {profile.email}
+                </p>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-4 mb-6">
+            <div className="grid grid-cols-1 gap-3 sm:gap-4 mb-4 sm:mb-6">
               <div>
-                <Label className="text-muted-foreground text-sm">Membro desde</Label>
-                <p className="text-white font-medium">
+                <Label className="text-muted-foreground text-xs sm:text-sm">Membro desde</Label>
+                <p className="text-white font-medium text-sm sm:text-base">
                   {profile.createdAt.toLocaleDateString('pt-BR', {
                     year: 'numeric',
                     month: 'long',
@@ -305,7 +310,7 @@ const ConfigPage = () => {
             <Button
               onClick={handleLogout}
               variant="outline"
-              className="w-full bg-red-500/10 border-red-500/20 text-red-400 hover:bg-red-500/20 hover:text-white"
+              className="w-full bg-red-500/10 border-red-500/20 text-red-400 hover:bg-red-500/20 hover:text-white text-sm sm:text-base"
             >
               <LogOut className="h-4 w-4 mr-2" />
               Sair da Conta
@@ -314,23 +319,23 @@ const ConfigPage = () => {
         </div>
 
         {/* Coluna Direita */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 space-y-4 sm:space-y-6">
           {/* Formulário de Configurações */}
-          <div className="bg-black/30 backdrop-blur-lg rounded-xl border border-white/10 p-6">
-            <div className="space-y-4 mb-6">
+          <div className="bg-black/30 backdrop-blur-lg rounded-xl border border-white/10 p-4 sm:p-6">
+            <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6">
               <h2 className="text-lg font-semibold text-primary flex items-center gap-2">
                 <Settings className="h-5 w-5" />
                 Informações Pessoais
               </h2>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 Atualize suas informações de perfil
               </p>
             </div>
             
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {/* Campo de Apelido */}
               <div className="space-y-2">
-                <Label htmlFor="displayName" className="text-white">
+                <Label htmlFor="displayName" className="text-white text-sm sm:text-base">
                   Apelido *
                 </Label>
                 <Input
@@ -341,13 +346,13 @@ const ConfigPage = () => {
                     ...prev, 
                     displayName: e.target.value 
                   }))}
-                  className="bg-black/20 border-white/10 focus:border-primary/50 text-white"
+                  className="bg-black/20 border-white/10 focus:border-primary/50 text-white text-sm sm:text-base"
                   maxLength={30}
                 />
                 {errors.displayName && (
                   <Alert className="border-red-500/20 bg-red-500/10">
                     <AlertCircle className="h-4 w-4 text-red-400" />
-                    <AlertDescription className="text-red-400">
+                    <AlertDescription className="text-red-400 text-xs sm:text-sm">
                       {errors.displayName}
                     </AlertDescription>
                   </Alert>
@@ -359,10 +364,10 @@ const ConfigPage = () => {
 
               {/* Campo de URL da Foto */}
               <div className="space-y-2">
-                <Label htmlFor="photoURL" className="text-white">
+                <Label htmlFor="photoURL" className="text-white text-sm sm:text-base">
                   URL da Foto de Perfil
                 </Label>
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-2">
                   <Input
                     id="photoURL"
                     placeholder="https://exemplo.com/sua-foto.jpg"
@@ -371,30 +376,20 @@ const ConfigPage = () => {
                       ...prev, 
                       photoURL: e.target.value 
                     }))}
-                    className="bg-black/20 border-white/10 focus:border-primary/50 text-white flex-1"
+                    className="bg-black/20 border-white/10 focus:border-primary/50 text-white text-sm sm:text-base flex-1"
                   />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    onClick={handlePreviewImage}
-                    disabled={!formData.photoURL.trim()}
-                    className="bg-black/20 border-primary/30 hover:bg-primary/10"
-                  >
-                    {showPreview ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </Button>
                 </div>
                 {errors.photoURL && (
                   <Alert className="border-red-500/20 bg-red-500/10">
                     <AlertCircle className="h-4 w-4 text-red-400" />
-                    <AlertDescription className="text-red-400">
+                    <AlertDescription className="text-red-400 text-xs sm:text-sm">
                       {errors.photoURL}
                     </AlertDescription>
                   </Alert>
                 )}
                 <Alert className="border-blue-500/20 bg-blue-500/10">
                   <AlertCircle className="h-4 w-4 text-blue-400" />
-                  <AlertDescription className="text-blue-400">
+                  <AlertDescription className="text-blue-400 text-xs sm:text-sm">
                     Use URLs de imagens de serviços confiáveis como Imgur, GitHub ou Cloudinary
                   </AlertDescription>
                 </Alert>
@@ -403,13 +398,13 @@ const ConfigPage = () => {
               <Separator className="bg-white/10" />
 
               {/* Botões de Ação */}
-              <div className="flex justify-between gap-4">
+              <div className="flex flex-col sm:flex-row justify-between gap-3">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={handleReset}
                   disabled={!hasChanges || loading}
-                  className="bg-black/20 border-white/20 hover:bg-white/10 flex-1"
+                  className="bg-black/20 border-white/20 hover:bg-white/10 flex-1 text-sm sm:text-base"
                 >
                   <RefreshCw className="h-4 w-4 mr-2" />
                   Resetar
@@ -418,7 +413,7 @@ const ConfigPage = () => {
                 <Button
                   onClick={handleSave}
                   disabled={!hasChanges || loading || !!errors.displayName || !!errors.photoURL}
-                  className="bg-primary/20 hover:bg-primary/30 border border-primary/30 hover:border-primary/50 flex-1"
+                  className="bg-primary/20 hover:bg-primary/30 border border-primary/30 hover:border-primary/50 flex-1 mt-2 sm:mt-0 text-sm sm:text-base"
                 >
                   {loading ? (
                     <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
@@ -432,8 +427,8 @@ const ConfigPage = () => {
           </div>
 
           {/* Card de Troca de Tipo de Conta */}
-          <div className="bg-black/30 backdrop-blur-lg rounded-xl border border-white/10 p-6">
-            <div className="space-y-4 mb-6">
+          <div className="bg-black/30 backdrop-blur-lg rounded-xl border border-white/10 p-4 sm:p-6">
+            <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6">
               <h2 className="text-lg font-semibold text-primary flex items-center gap-2">
                 {profile.role === 'player' ? 
                   <Swords className="h-5 w-5" /> : 
@@ -441,13 +436,13 @@ const ConfigPage = () => {
                 }
                 Tipo de Conta
               </h2>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 Alterar entre Jogador e Mestre
               </p>
             </div>
             
-            <div className="flex flex-col gap-4">
-              <p className="text-white">
+            <div className="flex flex-col gap-3 sm:gap-4">
+              <p className="text-sm sm:text-base text-white">
                 Atualmente você é: 
                 <span className="text-primary ml-2">
                   {profile.role === 'player' ? 'Jogador' : 'Mestre'}
@@ -456,7 +451,7 @@ const ConfigPage = () => {
               <Button
                 onClick={() => setShowRoleModal(true)}
                 variant="outline"
-                className="bg-black/20 border-white/20 hover:bg-white/10"
+                className="bg-black/20 border-white/20 hover:bg-white/10 text-sm sm:text-base"
                 disabled={loading}
               >
                 Trocar para {profile.role === 'player' ? 'Mestre' : 'Jogador'}
@@ -468,14 +463,14 @@ const ConfigPage = () => {
 
       {/* Modal de Confirmação de Troca de Conta */}
       {showRoleModal && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-          <div className="bg-black/70 backdrop-blur-lg border border-white/10 rounded-xl p-6 w-full max-w-md">
-            <h3 className="text-lg font-semibold text-white mb-4">
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-2 sm:p-4">
+          <div className="bg-black/70 backdrop-blur-lg border border-white/10 rounded-xl p-4 sm:p-6 w-full max-w-xs md:max-w-md">
+            <h3 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4">
               Confirmar troca de tipo de conta
             </h3>
-            <p className="text-muted-foreground mb-6">
+            <p className="text-muted-foreground mb-4 sm:mb-6 text-sm sm:text-base">
               Ao trocar para {profile.role === 'player' ? 'Mestre' : 'Jogador'}, você será redirecionado para o dashboard {profile.role === 'player' ? 'do Mestre' : 'do Jogador'}. 
-              <span className="block mt-2 text-primary">
+              <span className="block mt-2 text-primary text-xs sm:text-sm">
                 Todos os seus dados (personagens, anotações e configurações) serão mantidos!
               </span>
             </p>
@@ -483,13 +478,13 @@ const ConfigPage = () => {
               <Button 
                 variant="outline" 
                 onClick={() => setShowRoleModal(false)}
-                className="bg-black/20 border-white/20 hover:bg-white/10"
+                className="bg-black/20 border-white/20 hover:bg-white/10 text-sm sm:text-base"
               >
                 Cancelar
               </Button>
               <Button 
                 onClick={() => handleChangeRole(profile.role === 'player' ? 'master' : 'player')}
-                className="bg-primary/20 hover:bg-primary/30 border border-primary/30 hover:border-primary/50"
+                className="bg-primary/20 hover:bg-primary/30 border border-primary/30 hover:border-primary/50 text-sm sm:text-base"
                 disabled={loading}
               >
                 {loading ? (

@@ -1,6 +1,7 @@
 // PlayerCampaignDetailPage.tsx
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { PlayerLayout } from "@/components/layout/PlayerLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
@@ -9,7 +10,7 @@ import {
 } from "firebase/firestore";
 import { db } from "@/components/auth/firebase-config";
 import { useAuth } from "@/contexts/AuthContext";
-import { ArrowLeft, Calendar, Users, User, Check, X, Award } from "lucide-react";
+import { ArrowLeft, Calendar, Users, User, Award, Copy, Link } from "lucide-react";
 
 interface UserProfile {
   displayName: string;
@@ -24,7 +25,7 @@ interface Participant {
   type: 'player' | 'character';
   approved: boolean;
   userId?: string;
-  userProfile?: UserProfile; // Adicionado perfil do usuário
+  userProfile?: UserProfile;
 }
 
 interface Session {
@@ -43,9 +44,9 @@ interface Campaign {
   id: string;
   name: string;
   description: string;
-  mestreId: string; // Adicionado ID do mestre
+  mestreId: string;
   mestreNome: string;
-  mestreFoto: string; // Adicionado foto do mestre
+  mestreFoto: string;
   participants: Participant[];
 }
 
@@ -58,6 +59,7 @@ export const PlayerCampaignDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [playerCharacter, setPlayerCharacter] = useState<Participant | null>(null);
   const [userProfiles, setUserProfiles] = useState<Record<string, UserProfile>>({});
+  const [copySuccess, setCopySuccess] = useState(false);
 
   // Buscar perfis de usuários
   const fetchUserProfiles = async (userIds: string[]) => {
@@ -102,7 +104,7 @@ export const PlayerCampaignDetailPage = () => {
           try {
             const mestreDoc = await getDoc(doc(db, "users", data.mestreId));
             if (mestreDoc.exists()) {
-              const userData = mestreDoc.data() as UserProfile; // Type assertion
+              const userData = mestreDoc.data() as UserProfile;
               mestreFoto = userData.photoURL || "";
             }
           } catch (error) {
@@ -181,202 +183,251 @@ export const PlayerCampaignDetailPage = () => {
     return totalXp;
   };
 
+  const copyCampaignLink = async () => {
+    const campaignLink = `${window.location.origin}/campanha/${campaignId}`;
+    try {
+      await navigator.clipboard.writeText(campaignLink);
+      setCopySuccess(true);
+      setTimeout(() => setCopySuccess(false), 2000);
+    } catch (error) {
+      console.error("Erro ao copiar link:", error);
+      alert("Erro ao copiar link da campanha!");
+    }
+  };
+
   if (loading) {
-    return <div className="text-center p-8">Carregando...</div>;
+    return (
+      <PlayerLayout>
+        <div className="text-center p-8">Carregando...</div>
+      </PlayerLayout>
+    );
   }
 
   if (!campaign) {
-    return <div className="text-center p-8">Campanha não encontrada.</div>;
+    return (
+      <PlayerLayout>
+        <div className="text-center p-8">Campanha não encontrada.</div>
+      </PlayerLayout>
+    );
   }
 
   const upcomingSessions = sessions.filter(s => s.status !== 'concluída');
   const pastSessions = sessions.filter(s => s.status === 'concluída');
+  const approvedPlayers = campaign.participants.filter(p => p.approved);
 
   return (
-    <div className="max-w-6xl mx-auto px-4 pb-16">
-      <div className="pt-8 mb-8">
-        <Button 
-          variant="ghost" 
-          onClick={() => navigate(-1)}
-          className="mb-4 text-gray-400 hover:text-white"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Voltar
-        </Button>
-        
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex-1">
-            <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent">
-              {campaign.name}
-            </h1>
-            <p className="text-muted-foreground text-lg mb-4">
-              {campaign.description}
-            </p>
-            
-            {/* Mestre com foto */}
-            <div className="flex items-center gap-3 mb-6">
-              <div className="relative">
-                {campaign.mestreFoto ? (
-                  <img 
-                    src={campaign.mestreFoto} 
-                    alt={campaign.mestreNome} 
-                    className="w-10 h-10 rounded-full object-cover border-2 border-primary"
-                  />
-                ) : (
-                  <div className="bg-gray-700 rounded-full w-10 h-10 flex items-center justify-center border-2 border-primary">
-                    <User className="w-5 h-5" />
+    <PlayerLayout>
+      <div className="max-w-6xl mx-auto px-4 pb-16">
+        {/* Cabeçalho */}
+        <div className="pt-8 mb-8">
+          <Button 
+            variant="ghost" 
+            onClick={() => navigate('/player/campanhas')}
+            className="mb-4 text-gray-400 hover:text-white"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Voltar para Campanhas
+          </Button>
+          
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex-1">
+              <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent">
+                {campaign.name}
+              </h1>
+              <p className="text-muted-foreground text-lg mb-4">
+                {campaign.description}
+              </p>
+              
+              {/* Mestre com foto */}
+              <div className="flex items-center gap-3 mb-6">
+                <div className="relative">
+                  {campaign.mestreFoto ? (
+                    <img 
+                      src={campaign.mestreFoto} 
+                      alt={campaign.mestreNome} 
+                      className="w-10 h-10 rounded-full object-cover border-2 border-primary"
+                    />
+                  ) : (
+                    <div className="bg-gray-700 rounded-full w-10 h-10 flex items-center justify-center border-2 border-primary">
+                      <User className="w-5 h-5" />
+                    </div>
+                  )}
+                  <div className="absolute -bottom-1 -right-1 bg-primary rounded-full p-1">
+                    <Award className="h-3 w-3 text-white" />
                   </div>
-                )}
-                <div className="absolute -bottom-1 -right-1 bg-primary rounded-full p-1">
-                  <Award className="h-3 w-3 text-white" />
+                </div>
+                <div>
+                  <p className="text-gray-400">Mestre</p>
+                  <p className="text-white font-medium">{campaign.mestreNome}</p>
                 </div>
               </div>
-              <div>
-                <p className="text-gray-400">Mestre</p>
-                <p className="text-white font-medium">{campaign.mestreNome}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Lista de Jogadores */}
-        <div className="bg-black/30 backdrop-blur-lg rounded-xl p-6 border border-white/10">
-          <div className="flex items-center gap-3 mb-6">
-            <Users className="w-6 h-6 text-primary" />
-            <h2 className="text-2xl font-bold">Jogadores</h2>
-          </div>
-
-          <div className="space-y-4">
-            {campaign.participants
-              .filter(p => p.approved && p.type === 'character' && p.userId)
-              .map(participant => {
-                const userProfile = userProfiles[participant.userId!];
-                
-                return (
-                  <div 
-                    key={participant.id}
-                    className="bg-black/40 rounded-lg p-4 flex items-center gap-4 hover:bg-black/60 transition-colors"
-                  >
-                    {/* Foto do usuário */}
-                    {userProfile?.photoURL ? (
-                      <img 
-                        src={userProfile.photoURL} 
-                        alt={userProfile.displayName} 
-                        className="w-12 h-12 rounded-full object-cover"
-                      />
-                    ) : (
-                      <div className="bg-gray-700 rounded-full w-12 h-12 flex items-center justify-center">
-                        <User className="w-5 h-5" />
-                      </div>
-                    )}
-                    
-                    <div className="flex-1">
-                      {/* Apelido do usuário */}
-                      <h4 className="font-semibold text-white">
-                        {userProfile?.displayName || "Usuário"}
-                      </h4>
-                      
-                      {/* Nome do personagem */}
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="text-xs text-muted-foreground">Personagem:</span>
-                        <Badge variant="secondary" className="text-primary">
-                          {participant.name}
-                        </Badge>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+            </div>    
           </div>
         </div>
 
-        {/* Restante do código permanece igual... */}
-        <div className="space-y-8">
-          {/* Sessões Futuras */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Lista de Jogadores */}
           <div className="bg-black/30 backdrop-blur-lg rounded-xl p-6 border border-white/10">
             <div className="flex items-center gap-3 mb-6">
-              <Calendar className="w-6 h-6 text-green-400" />
-              <h2 className="text-2xl font-bold">Próximas Sessões</h2>
+              <Users className="w-6 h-6 text-primary" />
+              <h2 className="text-2xl font-bold">Jogadores</h2>
+              <span className="bg-primary/20 text-primary px-3 py-1 rounded-full text-sm">
+                {approvedPlayers.length}
+              </span>
             </div>
 
-            {upcomingSessions.length === 0 ? (
-              <p className="text-muted-foreground text-center py-4">
-                Nenhuma sessão agendada.
-              </p>
-            ) : (
-              <div className="space-y-4">
-                {upcomingSessions.map(session => {
-                  return (
-                    <div 
-                      key={session.id}
-                      className="bg-black/40 rounded-lg p-4"
-                    >
-                      <h3 className="font-semibold text-white mb-2">
-                        {session.title}
-                      </h3>
-                      <p className="text-sm text-muted-foreground mb-3">
-                        {session.scheduledDate.toLocaleString('pt-BR', {
-                          day: '2-digit',
-                          month: '2-digit',
-                          year: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
-                      </p>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-
-          {/* Sessões Passadas */}
-          <div className="bg-black/30 backdrop-blur-lg rounded-xl p-6 border border-white/10">
-            <div className="flex items-center gap-3 mb-6">
-              <Calendar className="w-6 h-6 text-gray-400" />
-              <h2 className="text-2xl font-bold">Sessões Anteriores</h2>
-            </div>
-
-            {pastSessions.length === 0 ? (
-              <p className="text-muted-foreground text-center py-4">
-                Nenhuma sessão anterior.
-              </p>
-            ) : (
-              <div className="space-y-4">
-                {pastSessions.map(session => {
-                  const playerXp = getPlayerXpForSession(session);
+            <div className="space-y-4">
+              {campaign.participants
+                .filter(p => p.approved && p.type === 'character' && p.userId)
+                .map(participant => {
+                  const userProfile = userProfiles[participant.userId!];
                   
                   return (
                     <div 
-                      key={session.id}
-                      className="bg-black/40 rounded-lg p-4"
+                      key={participant.id}
+                      className="bg-black/40 rounded-lg p-4 flex items-center gap-4 hover:bg-black/60 transition-colors"
                     >
-                      <h3 className="font-semibold text-white mb-2">
-                        {session.title}
-                      </h3>
-                      <p className="text-sm text-muted-foreground mb-1">
-                        {session.scheduledDate.toLocaleString('pt-BR', {
-                          day: '2-digit',
-                          month: '2-digit',
-                          year: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
-                      </p>
-                      <div className="flex items-center gap-2 text-yellow-400">
-                        <Award className="w-4 h-4" />
-                        <span>PDs recebidos: {playerXp}</span>
+                      {/* Foto do usuário */}
+                      {userProfile?.photoURL ? (
+                        <img 
+                          src={userProfile.photoURL} 
+                          alt={userProfile.displayName} 
+                          className="w-12 h-12 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="bg-gray-700 rounded-full w-12 h-12 flex items-center justify-center">
+                          <User className="w-5 h-5" />
+                        </div>
+                      )}
+                      
+                      <div className="flex-1">
+                        {/* Apelido do usuário */}
+                        <h4 className="font-semibold text-white">
+                          {userProfile?.displayName || "Usuário"}
+                        </h4>
+                        
+                        {/* Nome do personagem */}
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-xs text-muted-foreground">Personagem:</span>
+                          <Badge variant="secondary" className="text-primary">
+                            {participant.name}
+                          </Badge>
+                        </div>
                       </div>
                     </div>
                   );
                 })}
+            </div>
+          </div>
+
+          {/* Sessões */}
+          <div className="space-y-8">
+            {/* Sessões Futuras */}
+            <div className="bg-black/30 backdrop-blur-lg rounded-xl p-6 border border-white/10">
+              <div className="flex items-center gap-3 mb-6">
+                <Calendar className="w-6 h-6 text-green-400" />
+                <h2 className="text-2xl font-bold">Próximas Sessões</h2>
               </div>
-            )}
+
+              {upcomingSessions.length === 0 ? (
+                <p className="text-muted-foreground text-center py-4">
+                  Nenhuma sessão agendada.
+                </p>
+              ) : (
+                <div className="space-y-4">
+                  {upcomingSessions.map(session => {
+                    return (
+                      <div 
+                        key={session.id}
+                        className="bg-black/40 rounded-lg p-4"
+                      >
+                        <h3 className="font-semibold text-white mb-2">
+                          {session.title}
+                        </h3>
+                        <p className="text-sm text-muted-foreground mb-3">
+                          {session.scheduledDate.toLocaleString('pt-BR', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Sessões Passadas */}
+            <div className="bg-black/30 backdrop-blur-lg rounded-xl p-6 border border-white/10">
+              <div className="flex items-center gap-3 mb-6">
+                <Calendar className="w-6 h-6 text-gray-400" />
+                <h2 className="text-2xl font-bold">Sessões Anteriores</h2>
+              </div>
+
+              {pastSessions.length === 0 ? (
+                <p className="text-muted-foreground text-center py-4">
+                  Nenhuma sessão anterior.
+                </p>
+              ) : (
+                <div className="space-y-4">
+                  {pastSessions.map(session => {
+                    const playerXp = getPlayerXpForSession(session);
+                    
+                    return (
+                      <div 
+                        key={session.id}
+                        className="bg-black/40 rounded-lg p-4"
+                      >
+                        <h3 className="font-semibold text-white mb-2">
+                          {session.title}
+                        </h3>
+                        <p className="text-sm text-muted-foreground mb-1">
+                          {session.scheduledDate.toLocaleString('pt-BR', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </p>
+                        <div className="flex items-center gap-2 text-yellow-400">
+                          <Award className="w-4 h-4" />
+                          <span>PDs recebidos: {playerXp}</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Estatísticas da Campanha */}
+        <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="bg-black/30 backdrop-blur-lg rounded-xl p-6 border border-white/10 text-center">
+            <div className="text-3xl font-bold text-primary mb-2">
+              {sessions.filter(s => s.status === 'concluída').length}
+            </div>
+            <div className="text-muted-foreground">Sessões Concluídas</div>
+          </div>
+          <div className="bg-black/30 backdrop-blur-lg rounded-xl p-6 border border-white/10 text-center">
+            <div className="text-3xl font-bold text-green-400 mb-2">
+              {sessions.filter(s => s.status === 'agendada').length}
+            </div>
+            <div className="text-muted-foreground">Sessões Agendadas</div>
+          </div>
+          <div className="bg-black/30 backdrop-blur-lg rounded-xl p-6 border border-white/10 text-center">
+            <div className="text-3xl font-bold text-blue-400 mb-2">
+              {approvedPlayers.length}
+            </div>
+            <div className="text-muted-foreground">Jogadores Ativos</div>
           </div>
         </div>
       </div>
-    </div>
+    </PlayerLayout>
   );
 };
