@@ -59,6 +59,7 @@ export interface Personagem {
   personalidade?: string;
   historia?: string;
   observacoes?: string;
+  fotoUrl?: string;
 
   // Sistema Mecânico
   atributos: {

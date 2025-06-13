@@ -3,11 +3,10 @@ import { useState, useEffect } from "react";
 import { doc, getDoc, updateDoc, arrayUnion } from "firebase/firestore";
 import { db } from "@/components/auth/firebase-config";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Timer, Save, Eye, Dice6, Users, FileText } from "lucide-react";
+import { Timer, Eye, Dice6, Users, FileText, User } from "lucide-react";
 import RollPage from "../RollPage";
-import NotesPage from "../NotesPage"; // Import adicionado conforme solicitado
+import NotesPage from "../NotesPage";
 
 export interface Session {
   id: string;
@@ -31,6 +30,7 @@ export interface Session {
 interface Character {
   id: string;
   name: string;
+  fotoUrl?: string;
 }
 
 interface SessionPageProps {
@@ -47,7 +47,6 @@ const SessionPage = ({ sessionId, onClose }: SessionPageProps) => {
   const [rollCount, setRollCount] = useState(0);
   const [notes, setNotes] = useState('');
   const [showSummary, setShowSummary] = useState(false);
-  // Estado adicionado para controlar a aba ativa
   const [activeTab, setActiveTab] = useState<'dados' | 'anotacoes'>('dados');
 
   useEffect(() => {
@@ -79,13 +78,31 @@ const SessionPage = ({ sessionId, onClose }: SessionPageProps) => {
           const campaignSnap = await getDoc(campaignRef);
           if (campaignSnap.exists()) {
             const campaignData = campaignSnap.data();
-            const chars = campaignData.participants
+            
+            // Buscar detalhes completos dos personagens
+            const charPromises = campaignData.participants
               .filter((p: any) => p.type === 'character' && p.approved)
-              .map((p: any) => ({
-                id: p.id,
-                name: p.name
-              }));
+              .map(async (p: any) => {
+                const charRef = doc(db, "personagens", p.id);
+                const charSnap = await getDoc(charRef);
+                if (charSnap.exists()) {
+                  const charData = charSnap.data();
+                  return {
+                    id: p.id,
+                    name: p.name,
+                    fotoUrl: charData.fotoUrl || ''
+                  };
+                }
+                return {
+                  id: p.id,
+                  name: p.name,
+                  fotoUrl: ''
+                };
+              });
+
+            const chars = await Promise.all(charPromises);
             setCharacters(chars);
+            
             const initialXp: {[key: string]: number} = {};
             chars.forEach((char: Character) => {
               initialXp[char.id] = 0;
@@ -261,13 +278,32 @@ const SessionPage = ({ sessionId, onClose }: SessionPageProps) => {
                   <Users className="w-4 h-4 text-green-400" />
                   <span className="text-sm">PD Distribuído:</span>
                 </div>
-                <div className="space-y-1 text-xs">
+                <div className="space-y-2">
                   {Object.entries(getLastXpDistribution()!.awards).map(([charId, xp]) => {
                     const char = characters.find(c => c.id === charId);
                     return (
-                      <div key={charId} className="flex justify-between">
-                        <span className="truncate">{char?.name || 'Desconhecido'}</span>
-                        <span className="text-green-400">{xp} PD</span>
+                      <div key={charId} className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          {/* Foto do personagem no resumo */}
+                          <div className="flex-shrink-0 w-8 h-8 rounded-full overflow-hidden border border-white/20">
+                            {char?.fotoUrl ? (
+                              <img 
+                                src={char.fotoUrl} 
+                                alt={char.name}
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  e.currentTarget.src = 'https://via.placeholder.com/40';
+                                }}
+                              />
+                            ) : (
+                              <div className="w-full h-full bg-gray-700 flex items-center justify-center">
+                                <User className="w-4 h-4 text-gray-400" />
+                              </div>
+                            )}
+                          </div>
+                          <span className="text-xs truncate">{char?.name || 'Desconhecido'}</span>
+                        </div>
+                        <span className="text-green-400 text-sm font-medium">{xp} PD</span>
                       </div>
                     );
                   })}
@@ -294,6 +330,22 @@ const SessionPage = ({ sessionId, onClose }: SessionPageProps) => {
             <div className="space-y-2 max-h-48 overflow-y-auto">
               {characters.map(char => (
                 <div key={char.id} className="flex items-center gap-2">
+                  <div className="flex-shrink-0 w-8 h-8 rounded-full overflow-hidden border border-white/20">
+                    {char.fotoUrl ? (
+                      <img 
+                        src={char.fotoUrl} 
+                        alt={char.name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.src = 'https://via.placeholder.com/40';
+                        }}
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gray-700 flex items-center justify-center">
+                        <User className="w-4 h-4 text-gray-400" />
+                      </div>
+                    )}
+                  </div>
                   <span className="text-xs flex-1 truncate">{char.name}</span>
                   <input
                     type="number"
@@ -332,34 +384,93 @@ const SessionPage = ({ sessionId, onClose }: SessionPageProps) => {
           </div>
         </div>
 
-        {/* Sistema de abas adicionado conforme solicitado */}
-        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as any)}>
-          <TabsList className="bg-black/30 backdrop-blur-lg border border-white/10">
-            <TabsTrigger value="dados" className="data-[state=active]:bg-primary/20">
-              <Dice6 className="w-4 h-4 mr-2" /> Dados
-            </TabsTrigger>
-            <TabsTrigger value="anotacoes" className="data-[state=active]:bg-primary/20">
-              <FileText className="w-4 h-4 mr-2" /> Anotações
-            </TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="dados">
-            <div className="bg-black/30 backdrop-blur-lg rounded-xl p-6 border border-white/10">
-              <RollPage onRoll={handleRoll} />
+        {/* Seção de Resumo */}
+        {session.status === 'concluída' && showSummary ? (
+          <div className="bg-black/30 backdrop-blur-lg rounded-xl p-6 border border-white/10">
+            <h2 className="text-xl font-bold mb-4">Resumo da Sessão</h2>
+            <div className="space-y-4">
+              <div>
+                <h3 className="font-semibold text-primary mb-2">Duração</h3>
+                <p className="text-lg">{formatTime(timer)}</p>
+              </div>
+              <div>
+                <h3 className="font-semibold text-primary mb-2">Dados Rolados</h3>
+                <p className="text-lg">{session.diceRolls}</p>
+              </div>
+              {getLastXpDistribution() && (
+                <div>
+                  <h3 className="font-semibold text-primary mb-2">PD Distribuído</h3>
+                  <div className="space-y-2">
+                    {Object.entries(getLastXpDistribution()!.awards).map(([charId, xp]) => {
+                      const char = characters.find(c => c.id === charId);
+                      return (
+                        <div key={charId} className="flex items-center justify-between py-2 border-b border-white/10">
+                          <div className="flex items-center gap-3">
+                            <div className="flex-shrink-0 w-10 h-10 rounded-full overflow-hidden border border-white/20">
+                              {char?.fotoUrl ? (
+                                <img 
+                                  src={char.fotoUrl} 
+                                  alt={char.name}
+                                  className="w-full h-full object-cover"
+                                  onError={(e) => {
+                                    e.currentTarget.src = 'https://via.placeholder.com/40';
+                                  }}
+                                />
+                              ) : (
+                                <div className="w-full h-full bg-gray-700 flex items-center justify-center">
+                                  <User className="w-5 h-5 text-gray-400" />
+                                </div>
+                              )}
+                            </div>
+                            <span className="text-sm font-medium">{char?.name || 'Desconhecido'}</span>
+                          </div>
+                          <span className="text-green-400 text-lg font-bold">{xp} PD</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+              {session.notes && (
+                <div>
+                  <h3 className="font-semibold text-primary mb-2">Anotações</h3>
+                  <div className="bg-black/20 p-4 rounded whitespace-pre-wrap">
+                    {session.notes}
+                  </div>
+                </div>
+              )}
             </div>
-          </TabsContent>
-          
-          <TabsContent value="anotacoes">
-            <div className="bg-black/30 backdrop-blur-lg rounded-xl p-6 border border-white/10">
-              <NotesPage 
-                role="master" 
-                collectionName="lore" 
-                foldersCollection="folders" 
-                campaignId= {session.campaignId}
-              />
-            </div>
-          </TabsContent>
-        </Tabs>
+          </div>
+        ) : (
+          // Sistema de abas para sessões ativas
+          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as any)}>
+            <TabsList className="bg-black/30 backdrop-blur-lg border border-white/10">
+              <TabsTrigger value="dados" className="data-[state=active]:bg-primary/20">
+                <Dice6 className="w-4 h-4 mr-2" /> Dados
+              </TabsTrigger>
+              <TabsTrigger value="anotacoes" className="data-[state=active]:bg-primary/20">
+                <FileText className="w-4 h-4 mr-2" /> Anotações
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="dados">
+              <div className="bg-black/30 backdrop-blur-lg rounded-xl p-6 border border-white/10">
+                <RollPage onRoll={handleRoll} />
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="anotacoes">
+              <div className="bg-black/30 backdrop-blur-lg rounded-xl p-6 border border-white/10">
+                <NotesPage 
+                  role="master" 
+                  collectionName="lore" 
+                  foldersCollection="folders" 
+                  campaignId={session.campaignId}
+                />
+              </div>
+            </TabsContent>
+          </Tabs>
+        )}
       </div>
     </div>
   );

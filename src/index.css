@@ -200,6 +200,14 @@
     border: none !important;
     background: #000 !important;
   }
+
+  .personagem-ficha-container img {
+    transition: transform 0.3s ease;
+  }
+
+  .personagem-ficha-container img:hover {
+    transform: scale(1.05);
+  }
   
   .no-print {
     display: none !important;

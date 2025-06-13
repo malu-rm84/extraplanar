@@ -1,3 +1,4 @@
+// PersonagensPage.tsx
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
@@ -91,7 +92,7 @@ export const PersonagensPage = ({ className, hideHeader }: PersonagensPageProps)
           {personagens.map((personagem, index) => (
             <Card 
               key={index} 
-              className="p-6 bg-white/10 backdrop-blur-sm border border-white/10 hover:border-primary/40 transition-all hover:bg-white/15 group"
+              className="p-6 bg-black/30 backdrop-blur-lg rounded-xl border border-white/10 hover:border-primary/40 transition-all hover:bg-black/40 group"
             >
               <div className="space-y-4">
                 <div className="flex items-start justify-between">
@@ -106,8 +107,24 @@ export const PersonagensPage = ({ className, hideHeader }: PersonagensPageProps)
                       Plano: {personagem.plano}
                     </p>
                   </div>
-                  <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">
-                    <User className="h-6 w-6 text-primary" />
+                  {/* ÁREA MODIFICADA - Foto do personagem */}
+                  <div className="flex-shrink-0 w-12 h-12 rounded-full border-2 border-primary/60 overflow-hidden">
+                    {personagem.fotoUrl ? (
+                      <img 
+                        src={personagem.fotoUrl} 
+                        alt={personagem.nome} 
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          // Caso a imagem não carregue, mostra um placeholder
+                          e.currentTarget.src = 'https://via.placeholder.com/150';
+                          e.currentTarget.className = "w-full h-full bg-primary/10 flex items-center justify-center";
+                        }}
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-primary/10 flex items-center justify-center">
+                        <User className="h-6 w-6 text-primary" />
+                      </div>
+                    )}
                   </div>
                 </div>
                 

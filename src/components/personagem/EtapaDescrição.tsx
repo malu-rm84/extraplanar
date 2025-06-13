@@ -1,5 +1,6 @@
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
 interface EtapaDescricaoProps {
   personagem: any;
@@ -13,6 +14,24 @@ const EtapaDescricao = ({ personagem, setPersonagem }: EtapaDescricaoProps) => {
       
       <div className="grid grid-cols-1 gap-6">
         <div className="space-y-4">
+          {/* Novo campo para a URL da foto */}
+          <div className="bg-black/30 backdrop-blur-sm p-4 rounded-lg border border-white/10">
+            <Label className="text-gray-300">URL da Foto do Personagem</Label>
+            <Input
+              type="text"
+              className="mt-2 bg-black/50 border-white/10 text-gray-200 focus:border-primary/40 focus:ring-primary"
+              value={personagem.fotoUrl || ''}
+              onChange={(e) => setPersonagem({
+                ...personagem,
+                fotoUrl: e.target.value
+              })}
+              placeholder="Cole o link da imagem aqui..."
+            />
+            <p className="text-xs text-gray-400 mt-2">
+              Dica: Você pode usar serviços como Imgur ou Google Drive para hospedar sua imagem
+            </p>
+          </div>
+
           <div className="bg-black/30 backdrop-blur-sm p-4 rounded-lg border border-white/10">
             <Label className="text-gray-300">Descrição Física</Label>
             <Textarea

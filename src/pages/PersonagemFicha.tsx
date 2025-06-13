@@ -116,16 +116,52 @@ export const PersonagemFicha = ({ personagem }: PersonagemFichaProps) => {
   return (
     <div className="personagem-ficha-container max-w-6xl mx-auto bg-black text-gray-200 border border-primary/30 rounded-xl">
     <div className="max-w-6xl mx-auto bg-black/70 text-gray-200 border border-primary/30 rounded-xl shadow-lg backdrop-blur-md print:bg-[#0a0a0a] print:border-primary/30 print:shadow-xl">
-      <div className="border-b border-primary/50 bg-gradient-to-r from-black/80 to-primary/20 p-4 flex items-center justify-between rounded-t-xl print:bg-gradient-to-r print:from-[#1a1a1a] print:to-[#2e1b3b]">
-        <div className="flex-1">
-          <h1 className="text-4xl font-semibold text-center mb-1 text-primary font-serif">
-            {personagem.nome}
-          </h1>
-          <div className="flex justify-center space-x-4 text-lg text-gray-300 print:text-gray-300">
-            <span><strong className="text-primary/90 print:text-[#9333ea]">Raça:</strong> {personagem.raca}</span>
-            <span><strong className="text-primary/90 print:text-[#9333ea]">Plano:</strong> {personagem.plano}</span>
-            <span><strong className="text-primary/90 print:text-[#9333ea]">Idade:</strong> {personagem.faixaEtaria}</span>
-            <span><strong className="text-primary/90 print:text-[#9333ea]">Habil. Racial:</strong> {personagem.habilidadeRacial}</span>
+      {/* Cabeçalho com foto e informações */}
+      <div className="border-b border-primary/50 bg-gradient-to-r from-black/80 to-primary/20 p-6 rounded-t-xl print:bg-gradient-to-r print:from-[#1a1a1a] print:to-[#2e1b3b]">
+        <div className="flex items-start gap-6">
+          {/* Foto do personagem */}
+          {personagem.fotoUrl && (
+            <div className="flex-shrink-0 w-20 h-20 md:w-28 md:h-28 rounded-full border-3 border-primary/60 overflow-hidden shadow-lg">
+              <img 
+                src={personagem.fotoUrl} 
+                alt={personagem.nome} 
+                className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                onError={(e) => {
+                  // Caso a imagem não carregue, mostra um placeholder
+                  e.currentTarget.src = 'https://via.placeholder.com/150';
+                }}
+              />
+            </div>
+          )}
+          
+          {/* Nome e informações do personagem */}
+          <div className="flex-1 min-w-0">
+            <h1 className="text-3xl md:text-4xl font-bold mb-3 text-primary font-serif">
+              {personagem.nome}
+            </h1>
+            
+            {/* Informações organizadas em grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm md:text-base text-gray-300 print:text-gray-300">
+              <div className="flex items-center gap-2">
+                <User className="h-4 w-4 text-primary/80" />
+                <span><strong className="text-primary/90 print:text-[#9333ea]">Raça:</strong> {personagem.raca}</span>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <Globe className="h-4 w-4 text-primary/80" />
+                <span><strong className="text-primary/90 print:text-[#9333ea]">Plano:</strong> {personagem.plano}</span>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <Heart className="h-4 w-4 text-primary/80" />
+                <span><strong className="text-primary/90 print:text-[#9333ea]">Idade:</strong> {personagem.faixaEtaria}</span>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <Zap className="h-4 w-4 text-primary/80" />
+                <span><strong className="text-primary/90 print:text-[#9333ea]">Habil. Racial:</strong> {personagem.habilidadeRacial}</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
