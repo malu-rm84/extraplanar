@@ -27,14 +27,44 @@ const calcularPE = (personagem: Personagem) => {
 };
 
 const EtapaPontosFundamentais = ({ personagem, setPersonagem, calcularTotalPD }: EtapaPontosFundamentaisProps) => {
-  const pdDisponivel = 50 - calcularTotalPD(personagem);
-  const maxPPCompravel = Math.floor(pdDisponivel / 2);
+  // 1. Calcular custos parciais
+  const custoAtributos = calcularTotalPD(personagem);
+  const custoPP = (personagem.ppComprados || 0) * 2;
+  const custoDT = (personagem.dtTotal || 10) - 10;
+  
+  // 2. Calcular PD disponíveis considerando todos os custos
+  const pdDisponivel = 50 - custoAtributos - custoPP - custoDT;
+  
+  // 3. Calcular limites máximos
+  const maxPPCompravel = Math.max(0, Math.floor(pdDisponivel / 2));
+  const maxDT = 10 + pdDisponivel + custoDT;
 
   const handlePPCompradosChange = (valor: number) => {
-    const novoValor = Math.max(0, Math.min(valor, maxPPCompravel));
+    const novoPP = Math.max(0, Math.min(valor, maxPPCompravel));
+    const novoCustoPP = novoPP * 2;
+    const novoCustoDT = (personagem.dtTotal || 10) - 10;
+    
+    // Recalcular PD disponível após mudança de PP
+    const novoPdDisponivel = 50 - custoAtributos - novoCustoPP - novoCustoDT;
+    
+    // Ajustar DT se necessário
+    let novoDT = personagem.dtTotal || 10;
+    if (novoDT > 10 + novoPdDisponivel + novoCustoDT) {
+      novoDT = 10 + novoPdDisponivel + novoCustoDT;
+    }
+
     setPersonagem({
       ...personagem,
-      ppComprados: novoValor
+      ppComprados: novoPP,
+      dtTotal: novoDT
+    });
+  };
+
+  const handleDTChange = (valor: number) => {
+    const novoDT = Math.max(10, Math.min(valor, maxDT));
+    setPersonagem({
+      ...personagem,
+      dtTotal: novoDT
     });
   };
 
@@ -111,34 +141,19 @@ const EtapaPontosFundamentais = ({ personagem, setPersonagem, calcularTotalPD }:
           <div className="flex items-center gap-4">
             <Input
               type="number"
-              value={personagem.dtTotal || 0}
-              onChange={(e) => setPersonagem({
-                ...personagem,
-                dtTotal: parseInt(e.target.value) || 0
-              })}
+              min="10"
+              max={maxDT}
+              value={personagem.dtTotal || 10}
+              onChange={(e) => handleDTChange(Number(e.target.value))}
               className="bg-black/50 border-white/10 text-gray-200 focus:border-primary/40 focus:ring-primary text-center w-20"
             />
-            <div className="text-sm text-gray-400">
-              Valor normalmente entre 10-20
-            </div>
-          </div>
-        </div>
-
-        {/* Defesa Passiva (DP) */}
-        <div className="bg-black/30 backdrop-blur-sm p-4 rounded-lg border border-white/10">
-          <Label className="block text-lg font-medium mb-3 text-gray-300">Defesa Passiva (DP)</Label>
-          <div className="flex items-center gap-4">
-            <Input
-              type="number"
-              value={personagem.dtPassiva || 0}
-              onChange={(e) => setPersonagem({
-                ...personagem,
-                dtPassiva: parseInt(e.target.value) || 0
-              })}
-              className="bg-black/50 border-white/10 text-gray-200 focus:border-primary/40 focus:ring-primary text-center w-20"
-            />
-            <div className="text-sm text-gray-400">
-              Valor normalmente entre 5-15
+            <div className="flex flex-col">
+              <div className="text-sm text-green-400">
+                Custo: {(personagem.dtTotal || 10) - 10} PD
+              </div>
+              <div className="text-sm text-gray-400">
+                Mín: 10, Máx: {maxDT}
+              </div>
             </div>
           </div>
         </div>

@@ -166,64 +166,69 @@ export const PersonagemFicha = ({ personagem }: PersonagemFichaProps) => {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-6 p-4 border border-primary/30 bg-black/50 backdrop-blur-sm shadow-lg print:bg-[#161616] print:border-primary/40">
-        {/* PD */}
-        <div className="col-span-1 text-center">
-          <div className="bg-gradient-to-r from-primary/80 to-primary/40 py-1 text-xs font-bold rounded-t-lg print:bg-gradient-to-r print:from-[#9333ea]/80 print:to-[#9333ea]/40">
-            Pontos de Desenvolvimento
-          </div>
-          <div className="border border-primary/40 rounded-b-lg bg-black/40 py-2 text-white text-xl font-bold print:bg-[#212121] print:border-primary/30">
-            {personagem.pdDisponivel}
-          </div>
-        </div>
+      <div className="mb-6 p-4 border border-primary/30 bg-black/50 backdrop-blur-sm shadow-lg print:bg-[#161616] print:border-primary/40">
+        <div className="flex flex-col gap-4">
+          {/* Primeira linha: PD | PV ---------- | DT */}
+          <div className="flex items-center gap-4">
+            {/* PD */}
+            <div className="text-center min-w-[80px]">
+              <div className="bg-gradient-to-r from-primary/80 to-primary/40 py-1 px-2 text-xs font-bold rounded-t-lg print:bg-gradient-to-r print:from-[#9333ea]/80 print:to-[#9333ea]/40">
+                PD
+              </div>
+              <div className="border border-primary/40 rounded-b-lg bg-black/40 py-2 text-white text-xl font-bold print:bg-[#212121] print:border-primary/30">
+                {personagem.pdDisponivel}
+              </div>
+            </div>
 
-        {/* PP */}
-        <div className="col-span-1 text-center">
-          <div className="bg-gradient-to-r from-primary/80 to-primary/40 py-1 text-xs font-bold rounded-t-lg print:bg-gradient-to-r print:from-[#9333ea]/80 print:to-[#9333ea]/40">
-            Percepção Passiva
-          </div>
-          <div className="border border-primary/40 rounded-b-lg bg-black/40 py-2 text-white text-xl font-bold print:bg-[#212121] print:border-primary/30">
-            {personagem.pp}
-          </div>
-        </div>
+            {/* PV com barra */}
+            <div className="flex-1 flex items-center gap-3">
+              <span className="text-primary font-bold text-sm">PV</span>
+              <div className="flex-1 bg-black/60 border border-primary/40 rounded-lg overflow-hidden">
+                <div className="flex items-center justify-between px-3 py-2">
+                  <div className="flex-1 bg-red-900/30 border border-red-500/40 rounded h-4 relative">
+                    <div className="absolute inset-0 bg-gradient-to-r from-red-600 to-red-400 rounded"></div>
+                  </div>
+                  <span className="ml-3 text-white font-bold">{personagem.pv}</span>
+                </div>
+              </div>
+            </div>
 
-        {/* PE */}
-        <div className="col-span-1 text-center">
-          <div className="bg-gradient-to-r from-primary/80 to-primary/40 py-1 text-xs font-bold rounded-t-lg print:bg-gradient-to-r print:from-[#9333ea]/80 print:to-[#9333ea]/40">
-            Pontos de Experiência
-          </div>
-          <div className="border border-primary/40 rounded-b-lg bg-black/40 py-2 text-white text-xl font-bold print:bg-[#212121] print:border-primary/30">
-            {personagem.pe}
-          </div>
-        </div>
+            {/* Separador */}
+            <div className="text-primary/60">|</div>
 
-        {/* PV */}
-        <div className="col-span-1 text-center">
-          <div className="bg-gradient-to-r from-primary/80 to-primary/40 py-1 text-xs font-bold rounded-t-lg print:bg-gradient-to-r print:from-[#9333ea]/80 print:to-[#9333ea]/40">
-            Pontos de Vida
+            {/* DT com escudo */}
+            <div className="flex items-center gap-2">
+              <Shield className="h-5 w-5 text-primary" />
+              <span className="text-white font-bold text-lg">{personagem.dtTotal}</span>
+            </div>
           </div>
-          <div className="border border-primary/40 rounded-b-lg bg-black/40 py-2 text-white text-xl font-bold print:bg-[#212121] print:border-primary/30">
-            {personagem.pv}
-          </div>
-        </div>
 
-        {/* DT Total */}
-        <div className="col-span-1 text-center">
-          <div className="bg-gradient-to-r from-primary/80 to-primary/40 py-1 text-xs font-bold rounded-t-lg print:bg-gradient-to-r print:from-[#9333ea]/80 print:to-[#9333ea]/40">
-            Defesa Total
-          </div>
-          <div className="border border-primary/40 rounded-b-lg bg-black/40 py-2 text-white text-xl font-bold print:bg-[#212121] print:border-primary/30">
-            {personagem.dtTotal}
-          </div>
-        </div>
+          {/* Segunda linha: | PE ---------- | PP */}
+          <div className="flex items-center gap-4">
+            {/* Espaço vazio para alinhar com o separador */}
+            <div className="min-w-[80px]"></div>
 
-        {/* DT Passiva */}
-        <div className="col-span-1 text-center">
-          <div className="bg-gradient-to-r from-primary/80 to-primary/40 py-1 text-xs font-bold rounded-t-lg print:bg-gradient-to-r print:from-[#9333ea]/80 print:to-[#9333ea]/40">
-            Defesa Passiva
-          </div>
-          <div className="border border-primary/40 rounded-b-lg bg-black/40 py-2 text-white text-xl font-bold print:bg-[#212121] print:border-primary/30">
-            {personagem.dtPassiva}
+            {/* PE com barra */}
+            <div className="flex-1 flex items-center gap-3">
+              <span className="text-primary font-bold text-sm">PE</span>
+              <div className="flex-1 bg-black/60 border border-primary/40 rounded-lg overflow-hidden">
+                <div className="flex items-center justify-between px-3 py-2">
+                  <div className="flex-1 bg-blue-900/30 border border-blue-500/40 rounded h-4 relative">
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-blue-400 rounded"></div>
+                  </div>
+                  <span className="ml-3 text-white font-bold">{personagem.pe}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Separador */}
+            <div className="text-primary/60">|</div>
+
+            {/* PP com olho */}
+            <div className="flex items-center gap-2">
+              <Eye className="h-5 w-5 text-primary" />
+              <span className="text-white font-bold text-lg">{personagem.pp}</span>
+            </div>
           </div>
         </div>
       </div>

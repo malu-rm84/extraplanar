@@ -80,7 +80,7 @@ const EtapaPericias = ({
                       </div>
                       <div className="text-right">
                         <div className="text-primary font-semibold">
-                          {pericia.custoPD} PD/ponto
+                          {pericia.custoPD} PD/2 pontos
                         </div>
                         <div className="text-sm text-green-400">
                           Bônus: +{bonusTotal}

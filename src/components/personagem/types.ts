@@ -97,7 +97,36 @@ export interface Personagem {
 
   // Recursos
   magias: any[];
-  inventario?: any[];
+  inventario?: {
+    geral?: Array<{
+      nome: string;
+      descricao?: string;
+      quantidade?: number;
+    }>;
+    
+    armaduras?: Array<{
+      nome: string;
+      defesa?: number;
+      peso?: string;
+      descricao?: string;
+    }>;
+    
+    armas?: Array<{
+      nome: string;
+      dano?: string;
+      tipo?: string;
+      propriedades?: string[];
+      descricao?: string;
+    }>;
+    
+    magicos?: Array<{
+      nome: string;
+      raridade: string;
+      descricao?: string;
+      efeito?: string;
+      carregamento?: string;
+    }>;
+  };
   extras?: Record<string, any>;
 
   // Pontos de Desenvolvimento
@@ -109,5 +138,4 @@ export interface Personagem {
   pv: number;
   pe: number;
   dtTotal: number;
-  dtPassiva: number;
 }

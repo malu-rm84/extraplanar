@@ -42,6 +42,7 @@ import PlayerNotes from "./pages/player/PlayerNotes";
 import { PlayerRoll } from "./pages/player/PlayerRoll";
 import PlayerConfig from "./pages/player/PlayerConfig";
 import { PlayerPersonagensPage } from "./pages/player/PlayerPersonagensPage";
+import PlayerSessionPage from "./pages/player/PlayerSessionPage";
 
 const queryClient = new QueryClient();
 
@@ -96,6 +97,7 @@ const App = () => (
                   <Route path="/player/editar-personagem/:id" element={<EditarPersonagemPage />} />
                   <Route path="/player/campanhas" element={<PlayerCampanhas />} />
                   <Route path="/campanha/:campaignId" element={<PlayerCampaignDetailPage />} />
+                  <Route path="/sessao/:sessionId" element={<PlayerSessionPage />} />
                   <Route path="/player/config" element={<PlayerConfig />} />
                 </Route>
               </Route>

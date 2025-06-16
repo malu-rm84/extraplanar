@@ -1,6 +1,7 @@
+// EtapaOcupacoes.tsx
 import { Personagem } from "./types";
 import { ocupacoes } from "@/data/Ocupacoes";
-import { FaixasEtarias } from "@/data/FaixaEtaria";
+import { useState, useRef } from 'react';
 
 interface EtapaOcupacoesProps {
   personagem: Personagem;
@@ -14,21 +15,23 @@ const getBonusNiveis = (faixaEtaria: string) => {
 };
 
 const EtapaOcupacoes = ({ personagem, setPersonagem }: EtapaOcupacoesProps) => {
+  const tooltipRef = useRef<HTMLDivElement>(null);
+
   const getAllowedMaxLevel = () => {
-    if (!personagem.faixaEtaria) return 3;
+    if (!personagem.faixaEtaria) return 5;
 
     switch (personagem.faixaEtaria) {
       case "Criança":
         return 0;
       case "Adolescente":
-        return 2;
+        return 3;
       case "Adulto":
-        return 2;
+        return 4;
       case "Idoso":
       case "Caquético":
-        return 1;
-      default:
         return 3;
+      default:
+        return 5;
     }
   };
 
@@ -56,7 +59,7 @@ const EtapaOcupacoes = ({ personagem, setPersonagem }: EtapaOcupacoesProps) => {
 
   const calcularNivelEfetivo = (nivelSelecionado: number) => {
     const bonus = getBonusNiveis(personagem.faixaEtaria || "");
-    return Math.min(nivelSelecionado + bonus, 3);
+    return Math.min(nivelSelecionado + bonus, 5);
   };
 
   return (
@@ -74,16 +77,31 @@ const EtapaOcupacoes = ({ personagem, setPersonagem }: EtapaOcupacoesProps) => {
 
               return (
                 <div key={ocupacao.nome} className="bg-black/30 backdrop-blur-sm p-4 rounded-lg border border-white/10">
-                  <div className="font-medium mb-2 text-gray-300">
-                    {ocupacao.nome}
-                    {selected > 0 && (
-                      <span className="ml-2 text-sm text-primary">
-                        (Nível Efetivo: {calcularNivelEfetivo(selected)})
-                      </span>
-                    )}
+                  <div className="group relative mb-2">
+                    <div className="font-medium text-gray-300 cursor-help border-b border-dashed border-gray-500 pb-1 inline-block">
+                      {ocupacao.nome}
+                    </div>
+                    
+                    {/* Tooltip simplificado com posicionamento CSS */}
+                    <div 
+                      ref={tooltipRef}
+                      className="absolute hidden group-hover:block z-50 bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-80 p-3 text-sm bg-gray-900 border border-amber-700/50 rounded-lg shadow-lg"
+                    >
+                      <div className="font-bold text-amber-400 mb-1">{ocupacao.nome}</div>
+                      <div className="text-gray-300 mb-2 italic">
+                        {ocupacao.descricao || "Descrição do efeito desta ocupação será adicionada aqui..."}
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex gap-2">
-                    {[1, 2, 3].map((nivel) => {
+                  
+                  {selected > 0 && (
+                    <div className="text-sm text-primary mb-2">
+                      Nível Efetivo: {calcularNivelEfetivo(selected)}
+                    </div>
+                  )}
+                  
+                  <div className="flex flex-wrap gap-2">
+                    {[1, 2, 3, 4, 5].map((nivel) => {
                       const nivelDisabled = isDisabled || 
                         nivel > maxAllowed || 
                         (nivel > 1 && !personagem.ocupacoesSelecionadas?.some(o => 
@@ -94,7 +112,7 @@ const EtapaOcupacoes = ({ personagem, setPersonagem }: EtapaOcupacoesProps) => {
                           key={nivel}
                           onClick={() => handleSelectOcupacao(ocupacao.nome, nivel)}
                           disabled={nivelDisabled}
-                          className={`flex-1 p-2 rounded transition-colors ${
+                          className={`flex-1 min-w-[60px] p-2 rounded transition-colors ${
                             selected >= nivel
                               ? 'bg-primary/80 text-white border border-primary/40'
                               : nivelDisabled 

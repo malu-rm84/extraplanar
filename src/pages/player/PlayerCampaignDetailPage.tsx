@@ -353,6 +353,13 @@ export const PlayerCampaignDetailPage = () => {
                             minute: '2-digit'
                           })}
                         </p>
+                         <Button 
+                            onClick={() => navigate(`/sessao/${session.id}`)}
+                            variant="outline"
+                            className="text-green-400 border-green-400 hover:bg-green-400/10"
+                          >
+                            Entrar na Sessão
+                          </Button>
                       </div>
                     );
                   })}
