@@ -1,55 +1,56 @@
-import { Character } from "../data/character";
-import { pericias } from "../data/constants";
 
-export const exportToMarkdown = (character: Character) => {
+import { Personagem } from "../components/personagem/types";
+import { pericias } from "../data/Pericias";
+
+export const exportToMarkdown = (character: Personagem) => {
     const content = `# ${character.nome}
     ## Raça: ${character.raca}
     ## Plano: ${character.plano}
 
     ## Atributos
-    - Força: ${character.atributos.forca}
-    - Agilidade: ${character.atributos.agilidade}
-    - Vigor: ${character.atributos.vigor}
-    - Presença: ${character.atributos.presenca}
-    - Intelecto: ${character.atributos.intelecto}
+    - Força: ${character.atributos.forca.base + character.atributos.forca.racial}
+    - Agilidade: ${character.atributos.agilidade.base + character.atributos.agilidade.racial}
+    - Vigor: ${character.atributos.vigor.base + character.atributos.vigor.racial}
+    - Presença: ${character.atributos.presenca.base + character.atributos.presenca.racial}
+    - Intelecto: ${character.atributos.intelecto.base + character.atributos.intelecto.racial}
 
     ## Vitalidade
-    - PV: ${character.vitalidade.pv}
-    - PE: ${character.vitalidade.pe}
-    - PP: ${character.vitalidade.pp}
-    - DT: ${character.vitalidade.dt}
-    - DP: ${character.vitalidade.dp}
+    - PV: ${character.pv}
+    - PE: ${character.pe}
+    - PP: ${character.pp}
+    - DT: ${character.dtTotal}
 
     ## Habilidades
-    - Racial: ${character.habilidades.racial}
-    - Origem: ${character.habilidades.origem}
-    - Extras: ${character.habilidades.extras.join(", ")}
+    - Racial: ${character.habilidadeRacial}
 
     ## Perícias
-    ${Object.entries(character.pericias)
-    .map(([pericia, valor]) => `- ${pericias[pericia as keyof typeof pericias]}: ${valor}`)
-    .join("\n")}
+    ${character.pericias?.map(categoria => 
+        categoria.pericias
+            .filter(p => p.pontos > 0)
+            .map(p => `- ${p.nome}: ${p.pontos}`)
+            .join("\n")
+    ).join("\n") || "Nenhuma perícia"}
 
     ## Inventário
 
-    ### Armas (${character.inventario.armas.length})
-    ${character.inventario.armas.map(arma => `
-    - **${arma.nome}** (${arma.tipo})
-    - Dano: ${arma.dano}
-    - Descrição: ${arma.descricao}
-    `).join("\n")}
+    ### Armas
+    ${character.inventario?.armas?.map(arma => `
+    - **${arma.nome}** (${arma.tipo || 'N/A'})
+    - Dano: ${arma.dano || 'N/A'}
+    - Descrição: ${arma.descricao || 'N/A'}
+    `).join("\n") || "Nenhuma arma"}
 
-    ### Itens (${character.inventario.itens.length})
-    ${character.inventario.itens.map(item => `
-    - **${item.nome}** (${item.tipo})
-    - Descrição: ${item.descricao}
-    `).join("\n")}
+    ### Itens
+    ${character.inventario?.geral?.map(item => `
+    - **${item.nome}**
+    - Descrição: ${item.descricao || 'N/A'}
+    `).join("\n") || "Nenhum item"}
 
     ## Magias
-    ${character.magias.join("\n")}
+    ${character.magias?.join("\n") || "Nenhuma magia"}
 
-    ## Anotações
-    ${character.anotacoes}
+    ## Observações
+    ${character.observacoes || "Nenhuma observação"}
     `;
 
     const blob = new Blob([content], { type: "text/markdown" });
@@ -58,4 +59,5 @@ export const exportToMarkdown = (character: Character) => {
     a.href = url;
     a.download = `${character.nome.replace(/\s+/g, '_')}.md`;
     a.click();
+    URL.revokeObjectURL(url);
 };
