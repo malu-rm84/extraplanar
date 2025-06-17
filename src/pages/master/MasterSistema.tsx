@@ -19,26 +19,28 @@ import {
   ChevronRight,
   Menu,
   BookOpen,
-  ChevronUp
+  ChevronUp,
+  Scroll,
+  Wand
 } from "lucide-react";
 
 interface Section {
   title: string;
   details?: string[];
-  subsections?: any[]; // Replace 'any' with a more specific type if available
+  subsections?: any[];
   color?: string;
 }
 
 // Content display components
 const TableBlock = ({ data }) => (
-  <div className="overflow-x-auto rounded-lg border border-white/10 text-sm">
+  <div className="overflow-x-auto rounded-lg border-2 border-amber-600/30 text-sm bg-gradient-to-br from-amber-50/5 to-orange-50/5 backdrop-blur-sm">
     <table className="w-full min-w-[600px]">
-      <thead className="bg-primary/10">
+      <thead className="bg-gradient-to-r from-amber-900/30 to-orange-900/30 border-b-2 border-amber-600/40">
         <tr>
           {data[0]?.split('|')
             .filter(c => c.trim())
             .map((header, j) => (
-              <th key={j} className="p-2 text-left font-medium text-primary">
+              <th key={j} className="p-3 text-left font-serif font-bold text-amber-200 tracking-wide">
                 {header.trim()}
               </th>
           ))}
@@ -48,9 +50,9 @@ const TableBlock = ({ data }) => (
         {data.slice(1).map((row, j) => {
           const cells = row.split('|').filter(c => c.trim());
           return (
-            <tr key={j} className="border-t border-white/5 hover:bg-white/5">
+            <tr key={j} className="border-t border-amber-600/20 hover:bg-amber-50/10 transition-colors">
               {cells.map((cell, k) => (
-                <td key={k} className="p-2 text-muted-foreground">
+                <td key={k} className="p-3 text-amber-100/90 font-serif">
                   {cell.trim()}
                 </td>
               ))}
@@ -63,20 +65,23 @@ const TableBlock = ({ data }) => (
 );
 
 const ListBlock = ({ data }) => (
-  <ul className="space-y-2 pl-4 border-l-2 border-primary/30 text-sm">
+  <div className="space-y-3 pl-6 border-l-3 border-amber-600/50 text-sm relative">
+    <div className="absolute -left-2 top-0 w-4 h-4 bg-amber-600 rounded-full shadow-glow"></div>
     {data.map((item, i) => (
-      <li key={i} className="text-muted-foreground flex items-start gap-2">
-        <span className="text-primary mt-1">•</span>
-        {item.replace(/^[-*]+/, '').trim()}
-      </li>
+      <div key={i} className="text-amber-100/90 flex items-start gap-3 font-serif">
+        <span className="text-amber-400 mt-1 text-lg">◆</span>
+        <span className="leading-relaxed">{item.replace(/^[-*]+/, '').trim()}</span>
+      </div>
     ))}
-  </ul>
+  </div>
 );
 
 const TextBlock = ({ data }) => (
-  <div className="text-muted-foreground space-y-2 leading-relaxed text-sm">
+  <div className="text-amber-100/90 space-y-3 leading-relaxed text-sm font-serif">
     {data.map((line, i) => (
-      <p key={i} className="text-justify">{line}</p>
+      <p key={i} className="text-justify first-letter:text-2xl first-letter:font-bold first-letter:text-amber-300 first-letter:float-left first-letter:mr-2 first-letter:mt-1">
+        {line}
+      </p>
     ))}
   </div>
 );
@@ -116,7 +121,7 @@ const ContentRenderer = ({ content }) => {
   const contentBlocks = processContent(content);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {contentBlocks.map((block, index) => (
         <div key={index}>
           {block.type === 'table' && <TableBlock data={block.lines} />}
@@ -132,28 +137,28 @@ const SubsectionRenderer = ({ subsection, sectionColor }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="mb-4 bg-black/20 backdrop-blur-lg rounded-lg border border-white/5">
+    <div className="mb-6 mystic-scroll group hover:border-amber-500/60 transition-all duration-300">
       <button 
-        className={`w-full p-2 flex items-center justify-between transition-colors hover:bg-white/5`}
+        className={`w-full p-4 flex items-center justify-between transition-all duration-300 hover:bg-amber-50/10 rounded-t-lg`}
         onClick={() => setIsOpen(!isOpen)}
-        style={{ borderLeft: `3px solid ${sectionColor}` }}
+        style={{ borderLeft: `4px solid ${sectionColor}` }}
       >
-        <div className="flex items-center gap-2">
-          <Info size={16} style={{ color: sectionColor }} />
-          <h3 className="text-sm font-medium" style={{ color: sectionColor }}>
+        <div className="flex items-center gap-3">
+          <Scroll size={18} style={{ color: sectionColor }} className="animate-float" />
+          <h3 className="text-base font-serif font-bold" style={{ color: sectionColor }}>
             {subsection.title}
           </h3>
         </div>
         {isOpen ? 
-          <ChevronUp size={16} className="text-muted-foreground" /> : 
-          <ChevronDown size={16} className="text-muted-foreground" />
+          <ChevronUp size={18} className="text-amber-300 transition-transform duration-300" /> : 
+          <ChevronDown size={18} className="text-amber-300 transition-transform duration-300" />
         }
       </button>
       
       {isOpen && (
-        <div className="p-3 border-t border-white/5">
+        <div className="p-6 border-t border-amber-600/20 bg-gradient-to-br from-amber-50/5 to-orange-50/5 rounded-b-lg">
           {subsection.details?.map((detail, i) => (
-            <p key={i} className="mb-2 text-muted-foreground text-sm">{detail}</p>
+            <p key={i} className="mb-3 text-amber-100/90 text-sm font-serif leading-relaxed">{detail}</p>
           ))}
           
           {subsection.content && (
@@ -182,31 +187,32 @@ const SidebarSection = ({ category, section, isActive, onClick, sectionColor }) 
   }, [isActive]);
   
   return (
-    <div className="mb-1">
+    <div className="mb-2">
       <button 
-        className={`w-full text-left p-1.5 rounded-md flex items-center justify-between text-sm ${
-          isActive ? 'bg-primary/20 font-medium' : 'hover:bg-white/5'
+        className={`w-full text-left p-3 rounded-lg flex items-center justify-between text-sm font-serif transition-all duration-300 ${
+          isActive ? 'bg-gradient-to-r from-amber-600/30 to-orange-600/20 border border-amber-500/50 font-bold shadow-mystical' : 'hover:bg-amber-50/10 hover:border-amber-600/30 border border-transparent'
         }`}
         onClick={() => {
           onClick();
           setIsOpen(!isOpen);
         }}
       >
-        <div className="flex items-center gap-2">
-          {isOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-          <span style={{ color: sectionColor }}>{section.title}</span>
+        <div className="flex items-center gap-3">
+          {isOpen ? <ChevronDown size={16} className="text-amber-300" /> : <ChevronRight size={16} className="text-amber-300" />}
+          <span style={{ color: sectionColor }} className="tracking-wide">{section.title}</span>
         </div>
       </button>
       
       {isOpen && section.subsections && (
-        <div className="pl-4 mt-1 space-y-1 border-l border-white/10">
+        <div className="pl-6 mt-2 space-y-2 border-l-2 border-amber-600/30">
           {section.subsections.map((subsection, i) => (
-            <div key={i} className="mb-1">
+            <div key={i} className="mb-2">
               <div 
-                className="p-1.5 rounded hover:bg-white/5 cursor-pointer flex items-center gap-2 text-sm"
+                className="p-2 rounded-md hover:bg-amber-50/10 cursor-pointer flex items-center gap-3 text-sm font-serif transition-all duration-300 hover:translate-x-1"
                 onClick={() => document.getElementById(`subsection-${section.title}-${i}`).scrollIntoView({ behavior: 'smooth' })}
                 style={{ color: sectionColor }}
               >
+                <span className="text-amber-400 text-xs">◇</span>
                 {subsection.title}
               </div>
             </div>
@@ -225,13 +231,13 @@ const SidebarCategory = ({ category, activeCategory, activeSection, onSelectSect
   };
   
   const categoryIcons = {
-    "Barco": <Ship size={16} />,
-    "Personagens": <Users size={16} />,
-    "Inventário": <Backpack size={16} />,
-    "Cidades": <Globe size={16} />,
-    "Planos": <Map size={16} />,
-    "Perícias": <Star size={16} />,
-    "Ocupações": <Briefcase size={16} />
+    "Barco": <Ship size={18} className="animate-float" />,
+    "Personagens": <Users size={18} className="animate-float" />,
+    "Inventário": <Backpack size={18} className="animate-float" />,
+    "Cidades": <Globe size={18} className="animate-float" />,
+    "Planos": <Map size={18} className="animate-float" />,
+    "Perícias": <Star size={18} className="animate-float" />,
+    "Ocupações": <Briefcase size={18} className="animate-float" />
   };
   
   const sectionColor = getPlanColor(category.title);
@@ -241,24 +247,26 @@ const SidebarCategory = ({ category, activeCategory, activeSection, onSelectSect
   }, [activeCategory, category.title]);
   
   return (
-    <div className="mb-1">
+    <div className="mb-3">
       <button 
-        className={`w-full text-left p-2 rounded-md flex items-center justify-between text-sm ${
-          category.title === activeCategory ? 'bg-primary/20 text-primary' : 'hover:bg-white/5'
+        className={`w-full text-left p-4 rounded-xl flex items-center justify-between text-sm font-serif font-bold transition-all duration-300 border-2 ${
+          category.title === activeCategory 
+            ? 'bg-gradient-to-r from-primary/30 to-purple-600/20 text-primary border-primary/50 shadow-magical' 
+            : 'hover:bg-amber-50/10 border-amber-600/30 hover:border-amber-500/50 text-amber-200'
         }`}
         onClick={() => setIsOpen(!isOpen)}
       >
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <span style={{ color: sectionColor }}>{categoryIcons[category.title]}</span>
-          <span className={category.title === activeCategory ? 'text-primary' : 'text-white'}>
+          <span className="tracking-wide text-base">
             {category.title}
           </span>
         </div>
-        {isOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+        {isOpen ? <ChevronDown size={16} className="text-amber-300" /> : <ChevronRight size={16} className="text-amber-300" />}
       </button>
       
       {isOpen && (
-        <div className="pl-4 mt-1 space-y-1 border-l border-white/10">
+        <div className="pl-4 mt-3 space-y-2 border-l-3 border-amber-600/40 ml-2">
           {category.sections.map((section, i) => (
             <SidebarSection 
               key={i}
@@ -277,20 +285,33 @@ const SidebarCategory = ({ category, activeCategory, activeSection, onSelectSect
 
 const Sidebar = ({ activeCategory, activeSection, onSelectSection, isSidebarOpen, toggleSidebar }) => {
   return (
-    <div className={`h-full overflow-y-auto custom-scrollbar bg-black/80 md:bg-black/40 backdrop-blur-lg md:backdrop-blur-xl border border-white/10 rounded-xl w-[280px] fixed md:relative z-50 md:z-auto transform transition-transform duration-200 ease-in-out ${
+    <div className={`h-full overflow-y-auto custom-scrollbar mystic-scroll md:bg-gradient-to-b md:from-amber-900/20 md:to-orange-900/10 backdrop-blur-xl w-[320px] fixed md:relative z-50 md:z-auto transform transition-transform duration-300 ease-in-out border-2 border-amber-600/30 ${
       isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
     }`}>
-      <div className="p-3 relative h-full">
+      <div className="p-4 relative h-full">
         {/* Botão de fechar */}
         <button 
           onClick={toggleSidebar}
-          className="md:hidden absolute top-3 right-3 p-1 hover:text-primary"
+          className="md:hidden absolute top-4 right-4 p-2 hover:text-primary rounded-lg hover:bg-amber-50/10 transition-colors"
         >
           <X size={20} />
         </button>
-      <div className="p-3">
         
-        <div className="space-y-1">
+        {/* Título do Grimório */}
+        <div className="mb-6 text-center border-b-2 border-amber-600/40 pb-4">
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <BookOpen className="text-amber-400 animate-glow" size={24} />
+            <Wand className="text-primary animate-glow" size={20} />
+          </div>
+          <h2 className="font-medieval text-xl text-amber-200 glowing-text">
+            Grimório do Sistema
+          </h2>
+          <p className="text-amber-300/70 text-xs font-serif mt-1">
+            Compêndio de Conhecimento Extraplanar
+          </p>
+        </div>
+      
+        <div className="space-y-2">
           {systemInfo.map((category, i) => (
             <SidebarCategory 
               key={i} 
@@ -303,7 +324,6 @@ const Sidebar = ({ activeCategory, activeSection, onSelectSection, isSidebarOpen
         </div>
       </div>
     </div>
-  </div>
   );
 };
 
@@ -314,33 +334,50 @@ const ContentSection = ({ section, sectionColor, category }) => {
     : sectionColor;
   
   return (
-    <div className="space-y-4 animate-fadeIn">
-      <div 
-        className="p-4 md:p-6 bg-black/30 backdrop-blur-lg rounded-xl border border-white/5"
-        style={{ borderTop: `2px solid ${displayColor}` }}
-      >
-        <h2 className="text-lg md:text-xl font-bold mb-3" style={{ color: displayColor }}>{section.title}</h2>
+    <div className="space-y-6 animate-fadeIn">
+      <div className="mystic-scroll relative overflow-hidden">
+        {/* Decorative corners */}
+        <div className="absolute top-2 left-2 w-8 h-8 border-t-2 border-l-2 border-amber-500/60 rounded-tl-lg"></div>
+        <div className="absolute top-2 right-2 w-8 h-8 border-t-2 border-r-2 border-amber-500/60 rounded-tr-lg"></div>
+        <div className="absolute bottom-2 left-2 w-8 h-8 border-b-2 border-l-2 border-amber-500/60 rounded-bl-lg"></div>
+        <div className="absolute bottom-2 right-2 w-8 h-8 border-b-2 border-r-2 border-amber-500/60 rounded-br-lg"></div>
         
-        {section.details?.length > 0 && (
-          <div className="p-3 bg-black/20 rounded-lg border border-white/10 mb-4">
-            <h3 className="text-md font-medium mb-2" style={{ color: displayColor }}>Descrição</h3>
-            <ul className="space-y-2">
-              {section.details.map((detail, i) => (
-                <li key={i} className="text-muted-foreground flex gap-2 text-sm">
-                  <span style={{ color: displayColor }} className="mt-1">•</span>
-                  {detail}
-                </li>
-              ))}
-            </ul>
+        <div className="p-8">
+          <div className="text-center mb-8 relative">
+            <div className="ornamental-divider mb-6"></div>
+            <h2 className="text-2xl md:text-3xl font-medieval font-bold tracking-wide" style={{ color: displayColor }}>
+              {section.title}
+            </h2>
+            <div className="mt-2 w-24 h-1 mx-auto rounded-full" style={{ background: `linear-gradient(90deg, transparent, ${displayColor}, transparent)` }}></div>
+            <div className="ornamental-divider mt-6"></div>
           </div>
-        )}
-        
-        <div className="space-y-4">
-          {section.subsections?.map((subsection, i) => (
-            <div key={i} id={`subsection-${section.title}-${i}`}>
-              <SubsectionRenderer subsection={subsection} sectionColor={displayColor} />
+          
+          {section.details?.length > 0 && (
+            <div className="parchment-section mb-8 relative">
+              <div className="absolute top-3 left-3 text-amber-600/40 text-6xl font-medieval">❦</div>
+              <h3 className="text-lg font-serif font-bold mb-4 text-center" style={{ color: displayColor }}>
+                Sabedoria Ancestral
+              </h3>
+              <ul className="space-y-3 relative z-10">
+                {section.details.map((detail, i) => (
+                  <li key={i} className="text-amber-100/90 flex gap-3 text-sm font-serif leading-relaxed">
+                    <span style={{ color: displayColor }} className="mt-1 text-lg">⚬</span>
+                    <span className="first-letter:text-lg first-letter:font-bold first-letter:text-amber-300">
+                      {detail}
+                    </span>
+                  </li>
+                ))}
+              </ul>
             </div>
-          ))}
+          )}
+          
+          <div className="space-y-6">
+            {section.subsections?.map((subsection, i) => (
+              <div key={i} id={`subsection-${section.title}-${i}`}>
+                <SubsectionRenderer subsection={subsection} sectionColor={displayColor} />
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
@@ -360,25 +397,25 @@ const SearchBar = ({ onSearch, searchResults, clearSearch, searchQuery, setSearc
   };
 
   return (
-    <div className="relative mb-4 w-full max-w-2xl mx-auto">
-      <div className="flex items-center bg-black/30 backdrop-blur-lg rounded-lg px-3 shadow border border-white/10">
-        <Search size={16} className="text-muted-foreground" />
+    <div className="relative mb-6 w-full max-w-2xl mx-auto">
+      <div className="flex items-center mystic-scroll px-4 py-3 shadow-mystical">
+        <Search size={18} className="text-amber-400" />
         <input
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Pesquisar..."
-          className="flex-1 py-2 px-3 bg-transparent outline-none placeholder:text-muted-foreground/50 text-sm"
+          placeholder="Buscar nos grimórios..."
+          className="flex-1 py-2 px-4 bg-transparent outline-none placeholder:text-amber-300/50 text-amber-100 font-serif"
         />
         {searchQuery && (
-          <button onClick={clearSearch} className="p-1 hover:text-primary">
+          <button onClick={clearSearch} className="p-2 hover:text-primary transition-colors rounded-lg hover:bg-amber-50/10">
             <X size={16} />
           </button>
         )}
       </div>
       
       {searchResults.length > 0 && (
-        <div className="absolute top-full mt-1 w-full bg-black/50 backdrop-blur-lg rounded-lg shadow overflow-hidden border border-white/10 z-20">
+        <div className="absolute top-full mt-2 w-full mystic-scroll shadow-mystical overflow-hidden z-20">
           {searchResults.map((result, i) => (
             <button
               key={i}
@@ -386,14 +423,14 @@ const SearchBar = ({ onSearch, searchResults, clearSearch, searchQuery, setSearc
                 onSearch(result.category, result.sectionIndex);
                 clearSearch();
               }}
-              className="p-2 w-full text-left hover:bg-white/5 border-b border-white/5 last:border-0 flex items-start gap-2 text-sm"
+              className="p-4 w-full text-left hover:bg-amber-50/10 border-b border-amber-600/20 last:border-0 flex items-start gap-3 text-sm font-serif transition-all duration-300"
             >
               <div className="text-primary shrink-0">
                 {categoryIcons[result.category]}
               </div>
               <div className="flex-1">
-                <div className="font-medium">{result.title}</div>
-                <div className="text-muted-foreground mt-0.5 line-clamp-2">{result.preview}</div>
+                <div className="font-bold text-amber-200">{result.title}</div>
+                <div className="text-amber-300/80 mt-1 line-clamp-2">{result.preview}</div>
               </div>
             </button>
           ))}
@@ -413,7 +450,7 @@ const MasterSistema = () => {
   const getCategoryColor = (categoryTitle, sectionIndex = 0) => {
     if (categoryTitle === "Planos") {
       const categoryObj = systemInfo.find(c => c.title === categoryTitle);
-      const section = categoryObj?.sections[sectionIndex] as Section; // Type assertion
+      const section = categoryObj?.sections[sectionIndex] as Section;
       return section?.color || "#f97316";
     }
     return "#94a3b8";
@@ -490,11 +527,11 @@ const MasterSistema = () => {
   
   return (
     <MasterLayout>
-      <div className="flex h-full">
+      <div className="flex h-full medieval-background">
         {/* Overlay para mobile */}
         {isSidebarOpen && (
           <div 
-            className="fixed inset-0 bg-black/60 z-40 md:hidden"
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-40 md:hidden"
             onClick={toggleSidebar}
           />
         )}
@@ -509,22 +546,26 @@ const MasterSistema = () => {
         
         {/* Div principal do conteúdo */}
         <div className="flex-1 overflow-y-auto custom-scrollbar relative">
-          {/* Novo cabeçalho com estilo unificado */}
-          <div className="sticky top-0 z-10 bg-black/60 backdrop-blur-lg border-b border-white/10 p-4">
-            <div className="max-w-6xl mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-              <div className="flex items-center gap-3">
+          {/* Cabeçalho medieval */}
+          <div className="sticky top-0 z-10 mystic-scroll border-b-2 border-amber-600/40 backdrop-blur-xl">
+            <div className="max-w-6xl mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-6 p-6">
+              <div className="flex items-center gap-4">
                 <button 
-                  className="p-1.5 rounded-md hover:bg-white/10 md:hidden"
+                  className="p-2 rounded-lg hover:bg-amber-50/10 md:hidden border border-amber-600/30 hover:border-amber-500/50 transition-all"
                   onClick={toggleSidebar}
                 >
-                  <Menu size={18} />
+                  <Menu size={20} className="text-amber-400" />
                 </button>
-                <div>
-                  <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent">
-                    Sistema Extraplanar
+                <div className="text-center md:text-left">
+                  <div className="flex items-center gap-3 justify-center md:justify-start mb-2">
+                    <BookOpen className="text-amber-400 animate-glow" size={32} />
+                    <Wand className="text-primary animate-glow" size={28} />
+                  </div>
+                  <h1 className="text-3xl md:text-4xl font-medieval font-bold glowing-text">
+                    Compêndio Extraplanar
                   </h1>
-                  <p className="text-muted-foreground text-sm md:text-base">
-                    Guia completo de regras e informações
+                  <p className="text-amber-300/80 text-base md:text-lg font-serif italic">
+                    Grimório Completo de Regras e Conhecimentos Arcanos
                   </p>
                 </div>
               </div>
@@ -542,7 +583,7 @@ const MasterSistema = () => {
           </div>
 
           {/* Container do conteúdo */}
-          <div className="max-w-4xl mx-auto px-3 md:px-4 py-4 pb-12">
+          <div className="max-w-5xl mx-auto px-4 md:px-6 py-8 pb-16">
             {activeCategoryObject?.sections.map((section, i) => (
               activeSection === i && (
                 <ContentSection 
@@ -559,63 +600,57 @@ const MasterSistema = () => {
       
       <style>{`
         @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(8px); }
+          from { opacity: 0; transform: translateY(12px); }
           to { opacity: 1; transform: translateY(0); }
         }
         
         .animate-fadeIn {
-          animation: fadeIn 0.2s ease-out forwards;
+          animation: fadeIn 0.4s ease-out forwards;
         }
 
-        /* Scrollbar geral */
+        /* Scrollbar medieval */
         .custom-scrollbar::-webkit-scrollbar {
-          width: 6px;
-          height: 6px;
+          width: 8px;
+          height: 8px;
         }
 
         .custom-scrollbar::-webkit-scrollbar-track {
-          background: rgba(0, 0, 0, 0.2);
-          border-radius: 10px;
+          background: rgba(139, 69, 19, 0.2);
+          border-radius: 12px;
         }
 
         .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: rgba(124, 58, 237, 0.5);
-          border-radius: 10px;
+          background: linear-gradient(180deg, rgba(251, 191, 36, 0.6), rgba(180, 83, 9, 0.8));
+          border-radius: 12px;
+          border: 1px solid rgba(251, 191, 36, 0.3);
         }
 
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: rgba(124, 58, 237, 0.7);
+          background: linear-gradient(180deg, rgba(251, 191, 36, 0.8), rgba(180, 83, 9, 1));
         }
 
         .custom-scrollbar {
           scrollbar-width: thin;
-          scrollbar-color: rgba(124, 58, 237, 0.5) rgba(0, 0, 0, 0.2);
+          scrollbar-color: rgba(251, 191, 36, 0.6) rgba(139, 69, 19, 0.2);
         }
 
-        /* Breakpoints responsivos */
-        /* Desktop (padrão) */
-        @media (min-width: 1025px) {
-          .sidebar-desktop {
-            width: 280px;
-            border-radius: 0.75rem;
-          }
+        /* Efeitos especiais medievais */
+        .border-l-3 {
+          border-left-width: 3px;
         }
 
-        /* Tablet (768px - 1024px) */
-        @media (max-width: 1024px) and (min-width: 769px) {
-          .sidebar-tablet {
-            width: 240px;
-            border-radius: 0.75rem 0 0 0.75rem;
-          }
-          
-          .content-section {
-            padding: 1.5rem;
-          }
+        .first-letter:first-letter {
+          font-size: 1.25em;
+          font-weight: bold;
+          color: rgb(252 211 77);
+          float: left;
+          margin-right: 0.5rem;
+          margin-top: 0.25rem;
+          line-height: 1;
         }
 
-        /* Celular (até 768px) */
+        /* Responsividade aprimorada */
         @media (max-width: 768px) {
-          /* Esconder scrollbar mobile */
           .custom-scrollbar::-webkit-scrollbar {
             display: none;
           }
@@ -624,79 +659,52 @@ const MasterSistema = () => {
             scrollbar-width: none;
           }
 
-          /* Sidebar mobile */
-          .sidebar-mobile {
-            width: 85vw;
-            min-width: 260px;
-            border-radius: 0.75rem 0.75rem 0 0;
-            box-shadow: 0 0 15px rgba(0,0,0,0.3);
-            transform: translateX(-100%);
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          .first-letter:first-letter {
+            font-size: 1.1em;
+            margin-right: 0.25rem;
           }
 
-          .sidebar-mobile.active {
-            transform: translateX(0);
+          .medieval-title {
+            font-size: 1.5rem;
           }
 
-          .sidebar-overlay {
-            background: rgba(0, 0, 0, 0.5);
-          }
-
-          /* Ajustes de tabela */
           table {
             font-size: 0.75rem;
           }
 
           th, td {
-            padding: 0.3rem;
-          }
-
-          /* Header */
-          .main-header h1 {
-            font-size: 1.5rem;
-          }
-
-          /* Conteúdo */
-          .content-container {
-            padding: 1rem;
+            padding: 0.5rem;
           }
         }
 
-        /* Pequenos celulares (até 480px) */
         @media (max-width: 480px) {
-          .sidebar-mobile {
-            width: 90vw;
-            min-width: unset;
+          .medieval-title {
+            font-size: 1.25rem;
           }
-
-          .search-bar {
-            width: 95%;
-          }
-
-          .subsection-title {
+          
+          .ornamental-divider::after {
             font-size: 0.875rem;
+            padding: 0 0.5rem;
           }
         }
 
-        /* Animação de transição suave */
-        .transform {
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        /* Animação de flutuação suave */
+        @keyframes float {
+          0%, 100% { transform: translateY(0px) rotate(0deg); }
+          33% { transform: translateY(-2px) rotate(0.5deg); }
+          66% { transform: translateY(-1px) rotate(-0.3deg); }
         }
 
-        /* Gradiente sutil na borda da sidebar */
-        .sidebar-edge::after {
-          content: '';
-          position: absolute;
-          right: -6px;
-          top: 0;
-          bottom: 0;
-          width: 6px;
-          background: linear-gradient(
-            90deg,
-            rgba(255, 255, 255, 0.05) 0%,
-            rgba(0, 0, 0, 0) 100%
-          );
-          z-index: 10;
+        .animate-float {
+          animation: float 6s ease-in-out infinite;
+        }
+
+        /* Brilho místico aprimorado */
+        .shadow-mystical {
+          box-shadow: 
+            0 0 20px rgba(251, 191, 36, 0.3),
+            0 4px 15px rgba(0, 0, 0, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
         }
       `}</style>
     </MasterLayout>
