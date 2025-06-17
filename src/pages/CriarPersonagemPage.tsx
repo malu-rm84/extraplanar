@@ -5,7 +5,6 @@ import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { parsePD } from "@/utils/pdHelpers";
-
 import BarraProgressoCriacao from "@/components/personagem/BarraProgressoCriacao";
 import BotoesNavegacao from "@/components/personagem/BotoesNavegacao";
 import EtapaDadosBasicos from "@/components/personagem/EtapaDadosBasicos";
@@ -19,7 +18,13 @@ import EtapaCapacidades from "@/components/personagem/EtapaCapacidades";
 import EtapaLinguas from "@/components/personagem/EtapaLinguas";
 import EtapaHabilidades from "@/components/personagem/EtapaHabilidades";
 import EtapaEmDesenvolvimento from "@/components/personagem/EtapaEmDesenvolvimento";
-
+import { 
+  calcularNivelPorPD,
+  calcularTotalPDRecebidos,
+  calcularPP,
+  calcularPV,
+  calcularPE
+} from "@/components/personagem/types";
 import { EtapaCriacao, Personagem } from "@/components/personagem/types";
 import { pericias } from "@/data/Pericias";
 import { ocupacoes } from "@/data/Ocupacoes";
@@ -37,14 +42,15 @@ const calcularTotalPDGastos = (personagem: Personagem) => {
     const custosIncrementais = [0, 1, 2, 4, 7, 11];
     return acc + custosIncrementais.slice(0, (atributo.base || 0) + 1).reduce((a, b) => a + b, 0);
   }, 0);
-
-  const custosAfinidades = Object.values(personagem.afinidades).reduce((acc, nivel) => {
-    return acc + (nivel * (nivel + 1)) / 2;
-  }, 0);
-
+  
+  const custosAfinidades = personagem.afinidades 
+    ? Object.values(personagem.afinidades).reduce((acc, nivel) => 
+        acc + (nivel * (nivel + 1)) / 2, 0)
+    : 0;
+  
   const custosPericias = personagem.pericias?.flatMap(c => c.pericias)
     .reduce((acc, p) => acc + (p.custoPD * (p.pontos || 0)), 0) || 0;
-
+  
   const custosOcupacoes = personagem.ocupacoesSelecionadas?.reduce((acc, ocupacao) => {
     let custo = 0;
     ocupacoes.forEach(categoria => {
@@ -53,16 +59,14 @@ const calcularTotalPDGastos = (personagem: Personagem) => {
     });
     return acc + custo;
   }, 0) || 0;
-
+  
   const custosCapacidades = personagem.capacidadesSelecionadas?.reduce(
     (acc, capacidade) => acc + capacidade.custo, 0
   ) || 0;
-
+  
   const custosLinguas = personagem.linguasAdquiridas?.reduce((acc, l) => acc + l.custoPD, 0) || 0;
-
   const custoshabilidades = personagem.habilidades?.flatMap(c => c.itens)
     .reduce((acc, e) => acc + parsePD(e.custo), 0) || 0;
-
   const custosPPComprados = (personagem.ppComprados || 0) * 2;
   
   return (
@@ -72,19 +76,11 @@ const calcularTotalPDGastos = (personagem: Personagem) => {
   );
 };
 
-const calcularTotalPDRecebidos = (personagem: Personagem) => {
-  const pdSessoes = personagem.pdSessoes?.reduce((acc, session) => acc + session.pdAmount, 0) || 0;
-  return personagem.pdIniciais + pdSessoes;
-};
-
-const calcularNivelPorPD = (totalPD: number) => {
-  return Math.floor(totalPD / 10);
-};
-
 const calcularPDDisponiveis = (personagem: Personagem) => {
   const totalRecebidos = calcularTotalPDRecebidos(personagem);
   const totalGastos = personagem.pdGastos || 0;
-  return totalRecebidos - totalGastos;
+  const result = Number(totalRecebidos) - Number(totalGastos);
+  return isNaN(result) ? 0 : result;
 };
 
 // Função para compatibilidade com os componentes existentes
@@ -111,20 +107,17 @@ export const CriarPersonagemPage = ({
     criadorNome: '',
     dataCriacao: new Date(),
     ppComprados: 0,
-    
     // Novo sistema de PD
     pdIniciais: 50,
     pdGastos: 0,
     pdSessoes: [],
     nivel: 1,
-    
     // Legacy (manter para compatibilidade)
     pdDisponivel: 50,
-    
     pp: 0,
     pv: 0,
     pe: 0,
-    dtTotal: 0,
+    dtTotal: 10,
     atributos: {
       agilidade: { base: 0, racial: 0 },
       forca: { base: 0, racial: 0 },
@@ -151,7 +144,7 @@ export const CriarPersonagemPage = ({
     linguaMaterna: {} as Lingua,
     linguasAdquiridas: [],
   };
-
+  
   const [personagem, setPersonagem] = useState<Personagem>(personagemExistente || estadoInicial);
 
   useEffect(() => {
@@ -185,7 +178,7 @@ export const CriarPersonagemPage = ({
       ...prev,
       pdGastos,
       nivel,
-      pdDisponivel: calcularPDDisponiveis({...prev, pdGastos}) // Para compatibilidade
+      pdDisponivel: totalPD - pdGastos
     }));
   }, [
     personagem.atributos,
@@ -229,28 +222,10 @@ export const CriarPersonagemPage = ({
     }
   };
 
-  const calcularPP = (personagem: Personagem) => {
-    const vigorTotal = personagem.atributos.vigor.base + personagem.atributos.vigor.racial;
-    const pdGastos = personagem.pdGastos || 0;
-    return 10 + vigorTotal + Math.floor(pdGastos / 2);
-  };
-
-  const calcularPV = (personagem: Personagem) => {
-    const vigorTotal = personagem.atributos.vigor.base + personagem.atributos.vigor.racial;
-    const faixa = FaixasEtarias.find(f => f.nome === personagem.faixaEtaria);
-    return 10 + vigorTotal + (faixa?.bonusPV || 0);
-  };
-
-  const calcularPE = (personagem: Personagem) => {
-    const vigorTotal = personagem.atributos.vigor.base + personagem.atributos.vigor.racial;
-    const faixa = FaixasEtarias.find(f => f.nome === personagem.faixaEtaria);
-    return 1 + vigorTotal + (faixa?.bonusPE || 0);
-  };
-
   const salvarPersonagem = async () => {
     try {
       if (!currentUser) throw new Error("Usuário não autenticado");
-
+      
       const personagemCompleto = {
         ...personagem,
         criadoPor: currentUser.uid,
@@ -260,9 +235,9 @@ export const CriarPersonagemPage = ({
         pp: calcularPP(personagem),
         pv: calcularPV(personagem),
         pe: calcularPE(personagem),
-        dtTotal: personagem.dtTotal || 0
+        dtTotal: 10
       };
-
+      
       if (onSave) {
         await onSave(personagemCompleto);
       } else {
@@ -344,7 +319,6 @@ export const CriarPersonagemPage = ({
             Forje seu destino nas realidades extraplanares
           </p>
         </div>
-        
         <div className="flex items-center gap-4">
           <div className="text-xl font-bold text-primary bg-black/20 p-3 rounded-lg border border-primary/20">
             <div className="flex flex-col gap-1 text-center">
@@ -359,7 +333,6 @@ export const CriarPersonagemPage = ({
               </div>
             </div>
           </div>
-          
           <Button 
             onClick={() => setShowConfirmation(true)}
             size="lg"
@@ -369,7 +342,6 @@ export const CriarPersonagemPage = ({
           </Button>
         </div>
       </div>
-
       <div className="flex gap-6 mx-auto animate-fadeIn">
         <div className="w-72 h-auto sticky top-24 self-start">
           <div className="flex flex-col gap-4">
@@ -378,7 +350,6 @@ export const CriarPersonagemPage = ({
               etapaAtual={etapaAtual}
               setEtapaAtual={(etapa) => setEtapaAtual(etapa as EtapaCriacao)}
             />
-            
             <BotoesNavegacao
               etapaAtual={etapaAtual}
               primeiraEtapa={etapas[0].id}
@@ -390,14 +361,12 @@ export const CriarPersonagemPage = ({
             />
           </div>
         </div>
-
         <div className="flex-1 bg-black/30 backdrop-blur-lg rounded-xl shadow-xl border border-white/10">
           <div className="p-6">
             {renderizarEtapaAtual()}
           </div>
         </div>
       </div>
-
       <Dialog open={showConfirmation} onOpenChange={setShowConfirmation}>
         <DialogContent className="bg-black/90 border-gray-700 backdrop-blur-lg">
           <DialogHeader>
@@ -425,7 +394,6 @@ export const CriarPersonagemPage = ({
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
       <style>{`
         @keyframes fadeIn {
           from { opacity: 0; transform: translateY(10px); }
@@ -437,7 +405,6 @@ export const CriarPersonagemPage = ({
         body {
           background: #0a0a0a;
         }
-        
         select option {
           background-color: #0f0f1f;
           color: #e2e2e2;

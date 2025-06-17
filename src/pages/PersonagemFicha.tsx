@@ -23,7 +23,9 @@ const getChartColor = (plano: string) => {
 };
 
 const calcularTotal = (base: number, racial: number) => {
-  return (base || 0) + (racial || 0);
+  const baseValue = isNaN(base) ? 0 : base;
+  const racialValue = isNaN(racial) ? 0 : racial;
+  return baseValue + racialValue;
 };
 
 interface PersonagemFichaProps {
@@ -163,6 +165,14 @@ export const PersonagemFicha = ({ personagem }: PersonagemFichaProps) => {
               </div>
             </div>
           </div>
+          <div className="text-center min-w-[80px]">
+              <div className="bg-gradient-to-r from-primary/80 to-primary/40 py-1 px-2 text-xs font-bold rounded-t-lg print:bg-gradient-to-r print:from-[#9333ea]/80 print:to-[#9333ea]/40">
+                PD
+              </div>
+              <div className="border border-primary/40 rounded-b-lg bg-black/40 py-2 text-white text-xl font-bold print:bg-[#212121] print:border-primary/30">
+                {personagem.pdDisponivel || 0}
+              </div>
+            </div>
         </div>
       </div>
 
@@ -170,16 +180,6 @@ export const PersonagemFicha = ({ personagem }: PersonagemFichaProps) => {
         <div className="flex flex-col gap-4">
           {/* Primeira linha: PD | PV ---------- | DT */}
           <div className="flex items-center gap-4">
-            {/* PD */}
-            <div className="text-center min-w-[80px]">
-              <div className="bg-gradient-to-r from-primary/80 to-primary/40 py-1 px-2 text-xs font-bold rounded-t-lg print:bg-gradient-to-r print:from-[#9333ea]/80 print:to-[#9333ea]/40">
-                PD
-              </div>
-              <div className="border border-primary/40 rounded-b-lg bg-black/40 py-2 text-white text-xl font-bold print:bg-[#212121] print:border-primary/30">
-                {personagem.pdDisponivel}
-              </div>
-            </div>
-
             {/* PV com barra */}
             <div className="flex-1 flex items-center gap-3">
               <span className="text-primary font-bold text-sm">PV</span>
@@ -205,8 +205,6 @@ export const PersonagemFicha = ({ personagem }: PersonagemFichaProps) => {
 
           {/* Segunda linha: | PE ---------- | PP */}
           <div className="flex items-center gap-4">
-            {/* Espaço vazio para alinhar com o separador */}
-            <div className="min-w-[80px]"></div>
 
             {/* PE com barra */}
             <div className="flex-1 flex items-center gap-3">

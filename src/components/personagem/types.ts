@@ -1,6 +1,5 @@
-
 import { Plano } from "../../data/PlanosRacas";
-import { FaixaEtaria } from "../../data/FaixaEtaria";
+import { FaixaEtaria, FaixasEtarias } from "../../data/FaixaEtaria";
 import { Lingua } from "../../data/Linguas";
 import { Habilidades, CategoriaHabilidades } from "../../data/Habilidades";
 import { Pericia, CategoriaPericias } from "../../data/Pericias";
@@ -166,14 +165,59 @@ export interface Personagem {
   dtTotal: number;
 }
 
-// Função helper para calcular nível baseado nos PDs
-export const calcularNivelPorPD = (totalPD: number): number => {
-  if (totalPD < 50) return 0; // Nível 0 se não atingiu 50 PD
-  return 1 + Math.floor((totalPD - 50) / 10); // Nível 1 aos 50 PD, +1 a cada 10 PD
+export const calcularTotalPDRecebidos = (pdData: {
+  pdIniciais: number;
+  pdSessoes?: SessionPD[];
+}): number => {
+  const pdSessoes = pdData.pdSessoes?.reduce((acc, session) => 
+    acc + (session.pdAmount || 0), 0) || 0;
+  
+  const pdIniciais = pdData.pdIniciais || 0;
+  
+  return pdIniciais + pdSessoes;
 };
 
-// Função helper para calcular total de PDs recebidos
-export const calcularTotalPDRecebidos = (personagem: Personagem): number => {
-  const pdSessoes = personagem.pdSessoes?.reduce((acc, session) => acc + session.pdAmount, 0) || 0;
-  return personagem.pdIniciais + pdSessoes;
+export const calcularNivelPorPD = (totalPD: number): number => {
+  if (totalPD < 50) return 0;
+  return 1 + Math.floor((totalPD - 50) / 10);
 };
+
+export function calcularPP(personagem: Personagem): number {
+  const vigorTotal = personagem.atributos.vigor.base + personagem.atributos.vigor.racial;
+  const ppBase = 10 + vigorTotal + (personagem.ppComprados || 0);
+  const nivel = personagem.nivel || 1;
+  const ppMax = 30 + (nivel - 1) * 10;
+  return Math.min(ppBase, ppMax);
+}
+
+export function calcularPV(personagem: Personagem): number {
+  const vigorTotal = personagem.atributos.vigor.base + personagem.atributos.vigor.racial;
+  const faixa = FaixasEtarias.find(f => f.nome === personagem.faixaEtaria);
+  const bonusFaixa = faixa?.bonusPV || 0;
+  
+  // PV inicial (nível 1)
+  const pvBaseNivel1 = 10 + vigorTotal + bonusFaixa;
+  const nivel = personagem.nivel || 1;
+  
+  // A cada nível, adicionamos vigorTotal + bonusFaixa
+  const pvTotal = pvBaseNivel1 + (nivel - 1) * (vigorTotal + bonusFaixa);
+  const pvMax = 20 + (nivel - 1) * 5;
+  
+  return Math.min(pvTotal, pvMax);
+}
+
+export function calcularPE(personagem: Personagem): number {
+  const vigorTotal = personagem.atributos.vigor.base + personagem.atributos.vigor.racial;
+  const faixa = FaixasEtarias.find(f => f.nome === personagem.faixaEtaria);
+  const bonusFaixa = faixa?.bonusPE || 0;
+  
+  // PE inicial (nível 1)
+  const peBaseNivel1 = 1 + vigorTotal + bonusFaixa;
+  const nivel = personagem.nivel || 1;
+  
+  // A cada nível, adicionamos vigorTotal + bonusFaixa
+  const peTotal = peBaseNivel1 + (nivel - 1) * (vigorTotal + bonusFaixa);
+  const peMax = 5 + (nivel - 1) * 5;
+  
+  return Math.min(peTotal, peMax);
+}

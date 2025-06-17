@@ -91,7 +91,7 @@ export function MasterLayout({ children }: MasterLayoutProps) {
       <aside className={`${isMenuOpen ? 'flex' : 'hidden'} md:flex flex-col w-full md:w-64 bg-black/30 backdrop-blur-lg border-r border-white/10 md:fixed md:h-screen md:top-0 md:left-0`}>
         <div className="hidden md:flex items-center gap-2 p-6 border-b border-white/10">
           <img 
-            src="/logo-improvisado.png" 
+            src="/logo-improvisado.png"
             alt="Logo" 
             className="h-6 w-6"
           />

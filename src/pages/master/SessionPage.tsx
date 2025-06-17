@@ -248,7 +248,7 @@ const SessionPage = ({ sessionId, onClose }: SessionPageProps) => {
                 size="sm" 
                 className="flex-1"
               >
-                Encerrar
+                Encerrar Sessão
               </Button>
             )}
             {session.status === 'concluída' && (

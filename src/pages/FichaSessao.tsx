@@ -106,6 +106,7 @@ const FichaSessao = ({ personagem }: FichaSessaoProps) => {
   }, [dadosSessao, alteracoesPendentes]);
 
   const atualizarValor = (campo: string, valor: number, max?: number) => {
+  const numValue = isNaN(valor) ? 0 : valor;
     setDadosSessao(prev => {
       // Apenas DT tem limite máximo fixo (60)
       const novoValor = campo === 'dtAtual'

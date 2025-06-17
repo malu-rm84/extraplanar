@@ -616,6 +616,17 @@ Comece a registrar suas anotações aqui!`,
                         Iniciar Sessão
                       </Button>
                     )}
+                    {/* Adicionado botão para entrar em sessões em andamento */}
+                    {session.status === 'em-andamento' && (
+                      <Button 
+                        size="sm" 
+                        onClick={() => setActiveSessionId(session.id)}
+                        className="bg-blue-600 hover:bg-blue-700"
+                      >
+                        <Play className="w-4 h-4 mr-1" />
+                        Entrar na Sessão
+                      </Button>
+                    )}
                     {session.status === 'concluída' && (
                       <Button 
                         size="sm" 

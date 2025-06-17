@@ -1,12 +1,11 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { doc, updateDoc, arrayUnion, collection, query, where, getDocs, writeBatch } from "firebase/firestore";
+import { doc, updateDoc, arrayUnion, collection, query, where, getDocs, writeBatch, getDoc } from "firebase/firestore";
 import { db } from "@/components/auth/firebase-config";
-import { Personagem, SessionPD, DistributedPD, calcularNivelPorPD, calcularTotalPDRecebidos } from "./types";
+import { Personagem, SessionPD, DistributedPD, calcularNivelPorPD, calcularTotalPDRecebidos, calcularPP, calcularPV, calcularPE } from "./types";
 import { useAuth } from "@/contexts/AuthContext";
 import { Star, Gift, AlertCircle } from "lucide-react";
 
@@ -29,14 +28,13 @@ export const ReceberPDSessao = ({
   const [loading, setLoading] = useState(false);
   const [distributedPDs, setDistributedPDs] = useState<DistributedPD[]>([]);
   const [loadingDistributed, setLoadingDistributed] = useState(false);
-
+  
   // Verificar se já recebeu PD desta sessão
   const jaRecebeuPD = personagem.pdSessoes?.some(pd => pd.sessionId === sessionId);
 
   // Buscar PDs distribuídos pelo mestre para este personagem e sessão
   const buscarPDsDistribuidos = async () => {
     if (!personagem.id) return;
-    
     setLoadingDistributed(true);
     try {
       const distributedQuery = query(
@@ -45,17 +43,13 @@ export const ReceberPDSessao = ({
         where("characterId", "==", personagem.id),
         where("claimed", "==", false)
       );
-      
       const querySnapshot = await getDocs(distributedQuery);
       const pds: DistributedPD[] = [];
-      
       querySnapshot.forEach((doc) => {
         const data = doc.data() as DistributedPD;
         pds.push({ ...data, id: doc.id } as any);
       });
-      
       setDistributedPDs(pds);
-      
       // Se houver PDs distribuídos, usar a soma como valor padrão
       if (pds.length > 0) {
         const totalDistribuido = pds.reduce((acc, pd) => acc + pd.pdAmount, 0);
@@ -76,37 +70,52 @@ export const ReceberPDSessao = ({
 
   const receberPD = async () => {
     if (!personagem.id || !currentUser || pdAmount <= 0) return;
-
     setLoading(true);
     try {
-      const novoPD: SessionPD = {
-        sessionId,
-        sessionName,
-        pdAmount,
-        dateReceived: new Date(),
-        masterId: currentUser.uid
-      };
-
       const batch = writeBatch(db);
-
-      // Atualizar o personagem
       const personagemRef = doc(db, "personagens", personagem.id);
+      
+      // 1. Calcular total de PDs distribuídos
+      const totalDistribuido = distributedPDs.reduce((acc, pd) => acc + pd.pdAmount, 0);
+      
+      // 2. Adicionar cada PD distribuído ao array pdSessoes do personagem
+      const novosPDs: SessionPD[] = distributedPDs.map(pd => ({
+        sessionId: pd.sessionId,
+        sessionName: pd.sessionName,
+        pdAmount: pd.pdAmount,
+        dateReceived: new Date(),
+        masterId: pd.masterId
+      }));
+      
+      // 3. Calcular novo nível e atributos fundamentais
+      const totalAtual = calcularTotalPDRecebidos(personagem);
+      const novoTotal = totalAtual + totalDistribuido;
+      const novoNivel = calcularNivelPorPD(novoTotal);
+      
+      // 4. Calcular atributos fundamentais com o novo nível
+      const pp = calcularPP({ ...personagem, nivel: novoNivel });
+      const pv = calcularPV({ ...personagem, nivel: novoNivel });
+      const pe = calcularPE({ ...personagem, nivel: novoNivel });
+      
+      // 5. Atualizar o personagem com os novos dados
       batch.update(personagemRef, {
-        pdSessoes: arrayUnion(novoPD),
-        nivel: calcularNivelPorPD(calcularTotalPDRecebidos(personagem) + pdAmount),
+        pdSessoes: arrayUnion(...novosPDs),
+        nivel: novoNivel,
+        pp,
+        pv,
+        pe,
         dataAtualizacao: new Date()
       });
-
-      // Marcar PDs distribuídos como reclamados
+      
+      // 6. Marcar cada PD distribuído como reclamado
       for (const distributedPD of distributedPDs) {
         if ((distributedPD as any).id) {
           const distributedRef = doc(db, "distributedPDs", (distributedPD as any).id);
           batch.update(distributedRef, { claimed: true });
         }
       }
-
+      
       await batch.commit();
-
       setIsOpen(false);
       setPdAmount(1);
       setDistributedPDs([]);
@@ -153,7 +162,6 @@ export const ReceberPDSessao = ({
           </div>
         )}
       </Button>
-
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent className="bg-black/90 border-gray-700 backdrop-blur-lg">
           <DialogHeader>
@@ -164,13 +172,11 @@ export const ReceberPDSessao = ({
               Adicionar PD de desenvolvimento para: {personagem.nome}
             </DialogDescription>
           </DialogHeader>
-          
           <div className="space-y-4">
             <div>
               <Label className="text-gray-300">Sessão</Label>
               <div className="text-primary font-medium">{sessionName}</div>
             </div>
-
             {/* Mostrar PDs distribuídos pelo mestre */}
             {loadingDistributed ? (
               <div className="bg-blue-900/30 border border-blue-600/40 rounded-lg p-4">
@@ -207,7 +213,6 @@ export const ReceberPDSessao = ({
                 </div>
               </div>
             )}
-            
             <div>
               <Label htmlFor="pdAmount" className="text-gray-300">
                 Quantidade de PD
@@ -222,7 +227,6 @@ export const ReceberPDSessao = ({
                 className="bg-black/50 border-white/10 text-gray-200 focus:border-primary/40"
               />
             </div>
-
             <div className="bg-blue-900/30 border border-blue-600/40 rounded-lg p-4">
               <div className="text-blue-200 font-medium">Progressão do Personagem</div>
               <div className="text-sm text-blue-300/80 mt-2 space-y-1">
@@ -242,7 +246,6 @@ export const ReceberPDSessao = ({
               </div>
             </div>
           </div>
-
           <DialogFooter>
             <Button 
               variant="outline" 
