@@ -1,3 +1,4 @@
+
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Personagem } from "./types";
@@ -18,6 +19,13 @@ const getCustoAcumuladoPD = (valor: number) => {
   return custosIncrementais.slice(0, valor + 1).reduce((a, b) => a + b, 0);
 };
 
+const calcularPDDisponiveis = (personagem: Personagem) => {
+  const totalRecebidos = (personagem.pdIniciais || 50) + 
+    (personagem.pdSessoes?.reduce((acc, session) => acc + session.pdAmount, 0) || 0);
+  const totalGastos = personagem.pdGastos || 0;
+  return totalRecebidos - totalGastos;
+};
+
 const EtapaAtributos = ({ personagem, setPersonagem }: EtapaAtributosProps) => {
   const atributos: AtributoConfig[] = [
     { chave: 'agilidade', nome: 'Agilidade', desc: 'Reflexos e movimentos ágeis' },
@@ -34,9 +42,12 @@ const EtapaAtributos = ({ personagem, setPersonagem }: EtapaAtributosProps) => {
 
     const pdAtual = getCustoAcumuladoPD(personagem.atributos[atributo].base);
     const pdNovo = getCustoAcumuladoPD(novoValor);
-    const pdTotal = totalPD - pdAtual + pdNovo;
+    const diferencaPD = pdNovo - pdAtual;
+    
+    const pdDisponiveis = calcularPDDisponiveis(personagem);
+    const novoPDGasto = (personagem.pdGastos || 0) + diferencaPD;
 
-    if (pdTotal <= 50) {
+    if (novoPDGasto <= (personagem.pdIniciais || 50) + (personagem.pdSessoes?.reduce((acc, s) => acc + s.pdAmount, 0) || 0)) {
       setPersonagem({
         ...personagem,
         atributos: {
@@ -52,10 +63,22 @@ const EtapaAtributos = ({ personagem, setPersonagem }: EtapaAtributosProps) => {
 
   const totalPD = atributos.reduce((acc, { chave }) => 
     acc + getCustoAcumuladoPD(personagem.atributos[chave].base || 0), 0);
+  
+  const pdDisponiveis = calcularPDDisponiveis(personagem);
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-primary mb-6">Atributos</h2>
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold text-primary mb-6">Atributos</h2>
+        <div className="text-right">
+          <div className="text-lg font-bold text-primary">
+            PD Disponíveis: {pdDisponiveis}
+          </div>
+          <div className="text-sm text-gray-400">
+            Nível: {personagem.nivel} | Total PD: {(personagem.pdIniciais || 50) + (personagem.pdSessoes?.reduce((acc, s) => acc + s.pdAmount, 0) || 0)}
+          </div>
+        </div>
+      </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {atributos.map(({ chave, nome, desc }) => (
@@ -76,6 +99,9 @@ const EtapaAtributos = ({ personagem, setPersonagem }: EtapaAtributosProps) => {
                 </div>
                 <div className="text-md font-bold text-yellow-400">
                   Total: {personagem.atributos[chave].base + personagem.atributos[chave].racial}
+                </div>
+                <div className="text-sm text-amber-300">
+                  Custo: {getCustoAcumuladoPD(personagem.atributos[chave].base || 0)} PD
                 </div>
               </div>
             </div>

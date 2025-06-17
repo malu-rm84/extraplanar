@@ -15,6 +15,7 @@ import FichaSessao from "../FichaSessao";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Personagem } from '@/components/personagem/types';
+import { ReceberPDSessao } from "@/components/personagem/ReceberPDSessao";
 
 interface Session {
   id: string;
@@ -103,6 +104,21 @@ const PlayerSessionPage = () => {
       setUserProfiles(profiles);
     } catch (error) {
       console.error("Erro ao buscar perfis:", error);
+    }
+  };
+
+  const recarregarPersonagem = async () => {
+    if (!playerCharacter?.id) return;
+    
+    try {
+      const charRef = doc(db, "personagens", playerCharacter.id);
+      const charSnap = await getDoc(charRef);
+      if (charSnap.exists()) {
+        const charData = charSnap.data() as Personagem;
+        setPlayerCharacter({ id: playerCharacter.id, ...charData });
+      }
+    } catch (error) {
+      console.error("Erro ao recarregar personagem:", error);
     }
   };
 
@@ -235,6 +251,16 @@ const PlayerSessionPage = () => {
                 {session.status === 'em-andamento' && 'Em Andamento'}
                 {session.status === 'concluída' && 'Concluída'}
               </Badge>
+              
+              {/* Botão de receber PD */}
+              {playerCharacter && session && session.status === 'concluída' && (
+                <ReceberPDSessao
+                  personagem={playerCharacter}
+                  sessionId={sessionId!}
+                  sessionName={session.title}
+                  onPDReceived={recarregarPersonagem}
+                />
+              )}
             </div>
             
             <div className="flex items-center gap-2">

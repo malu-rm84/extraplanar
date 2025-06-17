@@ -1,3 +1,4 @@
+
 import { Plano } from "../../data/PlanosRacas";
 import { FaixaEtaria } from "../../data/FaixaEtaria";
 import { Lingua } from "../../data/Linguas";
@@ -37,6 +38,14 @@ export type EtapaCriacao =
   | "inventario"
   | "habilidades"
   | "pontos-fundamentais";
+
+export interface SessionPD {
+  sessionId: string;
+  sessionName: string;
+  pdAmount: number;
+  dateReceived: Date;
+  masterId: string;
+}
 
 export interface Personagem {
   // Identificação
@@ -129,7 +138,13 @@ export interface Personagem {
   };
   extras?: Record<string, any>;
 
-  // Pontos de Desenvolvimento
+  // Sistema de PD Renovado
+  pdIniciais: number; // Sempre 50
+  pdGastos: number; // PDs gastos na criação
+  pdSessoes: SessionPD[]; // PDs recebidos das sessões
+  nivel: number; // Nível calculado baseado no total de PDs
+
+  // Pontos de Desenvolvimento (legado - manter para compatibilidade)
   ppComprados: number;
   pdDisponivel: number;
 

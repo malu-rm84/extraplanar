@@ -32,7 +32,7 @@ interface CriarPersonagemPageProps {
   onSave?: (personagem: Personagem) => Promise<void>;
 }
 
-const calcularTotalPD = (personagem: Personagem) => {
+const calcularTotalPDGastos = (personagem: Personagem) => {
   const custosAtributos = Object.values(personagem.atributos).reduce((acc, atributo) => {
     const custosIncrementais = [0, 1, 2, 4, 7, 11];
     return acc + custosIncrementais.slice(0, (atributo.base || 0) + 1).reduce((a, b) => a + b, 0);
@@ -72,6 +72,22 @@ const calcularTotalPD = (personagem: Personagem) => {
   );
 };
 
+const calcularTotalPDRecebidos = (personagem: Personagem) => {
+  const pdSessoes = personagem.pdSessoes?.reduce((acc, session) => acc + session.pdAmount, 0) || 0;
+  return personagem.pdIniciais + pdSessoes;
+};
+
+const calcularNivel = (personagem: Personagem) => {
+  const totalPD = calcularTotalPDRecebidos(personagem);
+  return Math.floor(totalPD / 10);
+};
+
+const calcularPDDisponiveis = (personagem: Personagem) => {
+  const totalRecebidos = calcularTotalPDRecebidos(personagem);
+  const totalGastos = personagem.pdGastos || 0;
+  return totalRecebidos - totalGastos;
+};
+
 export const CriarPersonagemPage = ({ 
   personagemExistente, 
   onSave 
@@ -91,12 +107,20 @@ export const CriarPersonagemPage = ({
     criadorNome: '',
     dataCriacao: new Date(),
     ppComprados: 0,
+    
+    // Novo sistema de PD
+    pdIniciais: 50,
+    pdGastos: 0,
+    pdSessoes: [],
+    nivel: 1,
+    
+    // Legacy (manter para compatibilidade)
     pdDisponivel: 50,
+    
     pp: 0,
     pv: 0,
     pe: 0,
     dtTotal: 0,
-    dtPassiva: 0,
     atributos: {
       agilidade: { base: 0, racial: 0 },
       forca: { base: 0, racial: 0 },
@@ -132,12 +156,42 @@ export const CriarPersonagemPage = ({
         const docRef = doc(db, "personagens", id);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
-          setPersonagem(docSnap.data() as Personagem);
+          const data = docSnap.data() as Personagem;
+          // Migrar dados antigos se necessário
+          if (!data.pdIniciais) {
+            data.pdIniciais = 50;
+            data.pdGastos = calcularTotalPDGastos(data);
+            data.pdSessoes = [];
+            data.nivel = calcularNivel(data);
+          }
+          setPersonagem(data);
         }
       }
     };
     carregarParaEdicao();
   }, [id, personagemExistente]);
+
+  // Atualizar PD gastos sempre que algo mudar
+  useEffect(() => {
+    const pdGastos = calcularTotalPDGastos(personagem);
+    const nivel = calcularNivel(personagem);
+    
+    setPersonagem(prev => ({
+      ...prev,
+      pdGastos,
+      nivel,
+      pdDisponivel: calcularPDDisponiveis({...prev, pdGastos}) // Para compatibilidade
+    }));
+  }, [
+    personagem.atributos,
+    personagem.afinidades,
+    personagem.pericias,
+    personagem.ocupacoesSelecionadas,
+    personagem.capacidadesSelecionadas,
+    personagem.linguasAdquiridas,
+    personagem.habilidades,
+    personagem.ppComprados
+  ]);
 
   const etapas = [
     { id: 'dados', nome: 'Dados Básicos' },
@@ -171,7 +225,7 @@ export const CriarPersonagemPage = ({
 
   const calcularPP = (personagem: Personagem) => {
     const vigorTotal = personagem.atributos.vigor.base + personagem.atributos.vigor.racial;
-    const pdGastos = 50 - personagem.pdDisponivel;
+    const pdGastos = personagem.pdGastos || 0;
     return 10 + vigorTotal + Math.floor(pdGastos / 2);
   };
 
@@ -191,19 +245,16 @@ export const CriarPersonagemPage = ({
     try {
       if (!currentUser) throw new Error("Usuário não autenticado");
 
-      const pdGastos = calcularTotalPD(personagem);
       const personagemCompleto = {
         ...personagem,
         criadoPor: currentUser.uid,
         criadorNome: currentUser.displayName || "Anônimo",
         dataCriacao: personagemExistente?.dataCriacao || new Date(),
         dataAtualizacao: new Date(),
-        pdDisponivel: 50 - pdGastos,
         pp: calcularPP(personagem),
         pv: calcularPV(personagem),
         pe: calcularPE(personagem),
-        dtTotal: personagem.dtTotal || 0,
-        dtPassiva: personagem.dtPassiva || 0
+        dtTotal: personagem.dtTotal || 0
       };
 
       if (onSave) {
@@ -272,6 +323,9 @@ export const CriarPersonagemPage = ({
     }
   };
 
+  const pdDisponiveis = calcularPDDisponiveis(personagem);
+  const totalPDRecebidos = calcularTotalPDRecebidos(personagem);
+
   return (
     <div className="container mx-auto px-4 py-8 min-h-screen">
       {/* Novo cabeçalho com estilo unificado */}
@@ -287,9 +341,17 @@ export const CriarPersonagemPage = ({
         
         <div className="flex items-center gap-4">
           <div className="text-xl font-bold text-primary bg-black/20 p-3 rounded-lg border border-primary/20">
-            PD Disponíveis: <span className={`${50 - calcularTotalPD(personagem) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-              {50 - calcularTotalPD(personagem)}
-            </span>/50
+            <div className="flex flex-col gap-1 text-center">
+              <div className="text-sm text-gray-400">Nível {personagem.nivel}</div>
+              <div>
+                PD Disponíveis: <span className={`${pdDisponiveis >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                  {pdDisponiveis}
+                </span>
+              </div>
+              <div className="text-xs text-gray-500">
+                Total: {totalPDRecebidos} PD
+              </div>
+            </div>
           </div>
           
           <Button 

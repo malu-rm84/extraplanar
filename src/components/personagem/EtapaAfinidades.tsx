@@ -1,3 +1,4 @@
+
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Personagem } from "./types";
@@ -16,6 +17,13 @@ interface AfinidadeConfig {
 
 const getCustoAcumulado = (nivel: number) => {
   return (nivel * (nivel + 1)) / 2;
+};
+
+const calcularPDDisponiveis = (personagem: Personagem) => {
+  const totalRecebidos = (personagem.pdIniciais || 50) + 
+    (personagem.pdSessoes?.reduce((acc, session) => acc + session.pdAmount, 0) || 0);
+  const totalGastos = personagem.pdGastos || 0;
+  return totalRecebidos - totalGastos;
 };
 
 const EtapaAfinidades = ({ 
@@ -40,7 +48,10 @@ const EtapaAfinidades = ({
     const diferencaPD = pdNovo - pdAtual;
 
     // Verifica o limite total de PD
-    if (calcularTotalPD(personagem) + diferencaPD <= 50) {
+    const pdDisponiveis = calcularPDDisponiveis(personagem);
+    const novoPDGasto = (personagem.pdGastos || 0) + diferencaPD;
+    
+    if (novoPDGasto <= (personagem.pdIniciais || 50) + (personagem.pdSessoes?.reduce((acc, s) => acc + s.pdAmount, 0) || 0)) {
       setPersonagem({
         ...personagem,
         afinidades: {
@@ -53,10 +64,22 @@ const EtapaAfinidades = ({
 
   const totalPD = afinidades.reduce((acc, { chave }) => 
     acc + getCustoAcumulado(personagem.afinidades[chave]), 0);
+  
+  const pdDisponiveis = calcularPDDisponiveis(personagem);
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-primary mb-6">Afinidades Mágicas</h2>
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold text-primary mb-6">Afinidades Mágicas</h2>
+        <div className="text-right">
+          <div className="text-lg font-bold text-primary">
+            PD Disponíveis: {pdDisponiveis}
+          </div>
+          <div className="text-sm text-gray-400">
+            Nível: {personagem.nivel} | Total PD: {(personagem.pdIniciais || 50) + (personagem.pdSessoes?.reduce((acc, s) => acc + s.pdAmount, 0) || 0)}
+          </div>
+        </div>
+      </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {afinidades.map(({ chave, nome, desc }) => (
@@ -74,6 +97,9 @@ const EtapaAfinidades = ({
               <div className="flex flex-col">
                 <div className="text-md font-bold text-yellow-400">
                   Nível: {personagem.afinidades[chave]}
+                </div>
+                <div className="text-sm text-amber-300">
+                  Custo: {getCustoAcumulado(personagem.afinidades[chave])} PD
                 </div>
               </div>
             </div>
