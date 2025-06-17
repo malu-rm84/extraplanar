@@ -1,4 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
+
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Uncial+Antiqua&family=Tangerine:wght@400;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,121 +7,202 @@
 
 @layer base {
   :root {
-    --background: 260 15% 98%;
-    --foreground: 260 10% 15%;
-    --card: 255 255 255;
-    --card-foreground: 260 10% 15%;
-    --popover: 260 15% 99%;
-    --popover-foreground: 260 10% 15%;
-    --primary: 260 80% 50%;
-    --primary-foreground: 260 10% 98%;
-    --secondary: 260 30% 95%;
-    --secondary-foreground: 260 10% 15%;
-    --muted: 260 20% 92%;
-    --muted-foreground: 260 10% 45%;
-    --accent: 260 80% 92%;
-    --accent-foreground: 260 10% 15%;
-    --destructive: 0 80% 50%;
-    --destructive-foreground: 260 10% 98%;
-    --border: 260 15% 90%;
-    --input: 260 15% 90%;
-    --ring: 260 80% 50%;
+    --background: 25 25% 8%;
+    --foreground: 45 20% 85%;
+    --card: 30 20% 12%;
+    --card-foreground: 45 20% 85%;
+    --popover: 30 20% 10%;
+    --popover-foreground: 45 20% 85%;
+    --primary: 45 80% 55%;
+    --primary-foreground: 25 15% 15%;
+    --secondary: 25 15% 20%;
+    --secondary-foreground: 45 20% 80%;
+    --muted: 30 15% 15%;
+    --muted-foreground: 45 15% 60%;
+    --accent: 15 40% 25%;
+    --accent-foreground: 45 20% 85%;
+    --destructive: 0 60% 40%;
+    --destructive-foreground: 45 20% 85%;
+    --border: 30 20% 25%;
+    --input: 45 30% 85%;
+    --ring: 45 80% 50%;
     --radius: 0.5rem;
   }
 
   .dark {
-    --background: 260 15% 8%;
-    --foreground: 260 10% 98%;
-    --card: 15 23 42;
-    --card-foreground: 260 10% 98%;
-    --popover: 260 15% 10%;
-    --popover-foreground: 260 10% 98%;
-    --primary: 260 80% 60%;
-    --primary-foreground: 260 10% 98%;
-    --secondary: 260 15% 15%;
-    --secondary-foreground: 260 10% 98%;
-    --muted: 260 15% 20%;
-    --muted-foreground: 260 10% 70%;
-    --accent: 260 15% 20%;
-    --accent-foreground: 260 10% 98%;
-    --destructive: 0 80% 45%;
-    --destructive-foreground: 260 10% 98%;
-    --border: 260 15% 20%;
-    --input: 260 15% 20%;
-    --ring: 260 80% 60%;
+    --background: 25 25% 8%;
+    --foreground: 45 20% 85%;
+    --card: 30 20% 12%;
+    --card-foreground: 45 20% 85%;
+    --popover: 30 20% 10%;
+    --popover-foreground: 45 20% 85%;
+    --primary: 45 80% 55%;
+    --primary-foreground: 25 15% 15%;
+    --secondary: 25 15% 20%;
+    --secondary-foreground: 45 20% 80%;
+    --muted: 30 15% 15%;
+    --muted-foreground: 45 15% 60%;
+    --accent: 15 40% 25%;
+    --accent-foreground: 45 20% 85%;
+    --destructive: 0 60% 40%;
+    --destructive-foreground: 45 20% 85%;
+    --border: 30 20% 25%;
+    --input: 45 30% 85%;
+    --ring: 45 80% 50%;
   }
 }
 
 @layer components {
-  .mystic-card {
-    @apply relative bg-card/80 backdrop-blur-sm border border-primary/20 rounded-xl p-6 
-           shadow-[0_8px_32px_rgba(99,102,241,0.1)] transition-all duration-300 hover:border-primary/40 
-           hover:shadow-lg hover:shadow-primary/20;
+  /* Componente principal - Pergaminho Mágico */
+  .mystic-scroll {
+    @apply relative bg-gradient-to-br from-amber-50/10 via-yellow-50/5 to-orange-50/10 
+           backdrop-blur-sm border-2 border-amber-600/30 rounded-lg p-6 
+           shadow-ancient transition-all duration-500 hover:border-amber-500/50 
+           hover:shadow-magical;
   }
   
-  .mystic-card::before {
-    @apply content-[''] absolute inset-0 -z-10 bg-gradient-to-br from-primary/5 to-transparent 
-           rounded-xl opacity-50;
+  .mystic-scroll::before {
+    @apply content-[''] absolute inset-0 -z-10 bg-ancient-paper rounded-lg opacity-10;
+  }
+  
+  .mystic-scroll::after {
+    @apply content-[''] absolute inset-0 rounded-lg pointer-events-none;
+    background: 
+      radial-gradient(circle at 20% 80%, rgba(184, 134, 11, 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(180, 83, 9, 0.1) 0%, transparent 50%),
+      linear-gradient(45deg, transparent 30%, rgba(251, 191, 36, 0.05) 50%, transparent 70%);
   }
 
+  /* Botão Mágico */
   .mystic-button {
-    @apply relative overflow-hidden px-6 py-3 rounded-full bg-primary/20 text-primary shadow-md
-           transition-all duration-300 hover:bg-primary/30 hover:shadow-primary/30 
-           focus:outline-none focus:ring-2 focus:ring-primary/50;
+    @apply relative overflow-hidden px-6 py-3 rounded-lg bg-gradient-to-r from-amber-600/20 to-orange-600/20 
+           text-amber-200 border border-amber-600/40 shadow-lg font-serif font-medium
+           transition-all duration-300 hover:from-amber-500/30 hover:to-orange-500/30 
+           hover:border-amber-500/60 hover:shadow-magical hover:text-amber-100
+           focus:outline-none focus:ring-2 focus:ring-amber-500/50;
   }
   
   .mystic-button::before {
-    @apply content-[''] absolute top-0 left-[-100%] w-full h-full bg-white/20 skew-x-[45deg] 
-           transition-all duration-700;
+    @apply content-[''] absolute top-0 left-[-100%] w-full h-full 
+           bg-gradient-to-r from-transparent via-amber-400/30 to-transparent 
+           skew-x-[25deg] transition-all duration-700;
   }
   
   .mystic-button:hover::before {
     @apply left-[100%];
   }
 
+  /* Input Mágico */
   .mystic-input {
-    @apply bg-black/20 backdrop-blur-lg border border-white/10 rounded-full px-4 py-2 
-           transition-all duration-300 focus:ring-2 focus:ring-primary/50 focus:border-transparent;
+    @apply bg-amber-50/10 backdrop-blur-lg border-2 border-amber-700/30 rounded-md px-4 py-2 
+           text-amber-100 placeholder-amber-300/60 font-serif
+           transition-all duration-300 focus:ring-2 focus:ring-amber-500/50 
+           focus:border-amber-500/60 focus:bg-amber-50/20;
   }
 
-  .plane-section {
-    @apply bg-black/20 backdrop-blur-lg border border-white/10 rounded-xl 
-           shadow-[0_8px_32px_rgba(99,102,241,0.1)] p-6;
+  /* Card Medieval */
+  .medieval-card {
+    @apply mystic-scroll hover:transform hover:scale-[1.02] group;
   }
 
-  .grid-extraplanar {
-    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6;
+  /* Texto com efeito de escrita à mão */
+  .handwritten {
+    @apply font-script text-lg tracking-wide;
   }
 
-  .texture-overlay::after {
-    @apply content-[''] absolute inset-0 pointer-events-none;
-    background-image: url("data:image/svg+xml,%3Csvg width='52' height='26' viewBox='0 0 52 26' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%239C92AC' fill-opacity='0.1' fill-rule='evenodd'%3E%3Cpath d='M10 10c0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6h2c0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4v2c-3.314 0-6-2.686-6-6 0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6zm25.464-1.95l8.486 8.486-1.414 1.414-8.486-8.486 1.414-1.414z' /%3E%3C/g%3E%3C/svg%3E");
+  /* Títulos medievais */
+  .medieval-title {
+    @apply font-medieval text-2xl text-amber-200 text-center mb-6 
+           drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] animate-glow;
+  }
+
+  /* Seção de pergaminho */
+  .parchment-section {
+    @apply bg-gradient-to-br from-amber-50/5 via-yellow-50/3 to-orange-50/5 
+           backdrop-blur-lg border border-amber-600/20 rounded-xl 
+           shadow-ancient p-8 relative overflow-hidden;
+  }
+
+  .parchment-section::before {
+    @apply content-[''] absolute inset-0 pointer-events-none opacity-30;
+    background-image: 
+      radial-gradient(circle at 25% 25%, rgba(184, 134, 11, 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 75% 75%, rgba(180, 83, 9, 0.1) 0%, transparent 50%);
+  }
+
+  /* Layout de grid medieval */
+  .medieval-grid {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8;
+  }
+
+  /* Divisor ornamental */
+  .ornamental-divider {
+    @apply w-full h-px bg-gradient-to-r from-transparent via-amber-600/50 to-transparent 
+           my-8 relative;
+  }
+  
+  .ornamental-divider::after {
+    @apply content-['❦'] absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 
+           bg-background px-4 text-amber-600 text-lg;
+  }
+
+  /* Efeito de texto brilhante */
+  .glowing-text {
+    @apply text-amber-200 drop-shadow-[0_0_10px_rgba(251,191,36,0.5)] animate-glow;
+  }
+
+  /* Badge mágico */
+  .magic-badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium 
+           bg-gradient-to-r from-purple-500/20 to-blue-500/20 text-purple-200 
+           border border-purple-500/30 shadow-mystical;
   }
 }
 
 @layer utilities {
-  .transition-slow {
-    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  /* Fundo principal do site */
+  .medieval-background {
+    background: 
+      radial-gradient(circle at 20% 20%, rgba(139, 69, 19, 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(101, 67, 33, 0.1) 0%, transparent 50%),
+      linear-gradient(135deg, 
+        hsl(25deg 25% 8%) 0%, 
+        hsl(20deg 20% 6%) 50%, 
+        hsl(15deg 15% 4%) 100%
+      );
   }
 
-  .transition-medium {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  /* Textura de pergaminho */
+  .parchment-texture {
+    background-image: 
+      radial-gradient(circle at 100% 50%, transparent 20%, rgba(255,255,255,0.02) 21%, rgba(255,255,255,0.02) 34%, transparent 35%, transparent),
+      linear-gradient(0deg, rgba(255,255,255,0.02) 50%, transparent 50%);
+    background-size: 20px 20px, 20px 20px;
   }
 
-  .bg-extraplanar {
+  /* Animação de chama tremeluzente */
+  .flame-flicker {
+    animation: flicker 3s ease-in-out infinite alternate;
+  }
+
+  /* Brilho mágico */
+  .magical-glow {
+    box-shadow: 
+      0 0 20px rgba(251, 191, 36, 0.3),
+      0 0 40px rgba(251, 191, 36, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  }
+
+  /* Efeito shimmer */
+  .shimmer {
     background: linear-gradient(
-      135deg,
-      hsl(260deg 80% 20% / 0.9) 0%,
-      hsl(260deg 80% 10% / 0.9) 100%
+      90deg,
+      transparent,
+      rgba(251, 191, 36, 0.2),
+      transparent
     );
-  }
-
-  .bg-plane-overlay {
-    background: radial-gradient(
-      circle at 50% 50%,
-      hsl(260deg 80% 60% / 0.1) 0%,
-      hsl(260deg 80% 20% / 0.2) 100%
-    );
+    background-size: 200% 100%;
+    animation: shimmer 3s ease-in-out infinite;
   }
 }
 
@@ -128,68 +210,69 @@
   * {
     @apply border-border;
   }
+  
   body {
-    @apply bg-background text-foreground;
-    font-family: 'Inter', sans-serif;
+    @apply bg-background text-foreground medieval-background parchment-texture;
+    font-family: 'Crimson Text', serif;
+    line-height: 1.6;
   }
 
-  h1, h2, h3, h4 {
-    font-family: 'Playfair Display', serif;
-  }
-}
-
-.popup {
-  @apply fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm;
-}
-
-.popup > div {
-  @apply bg-card border border-white/10 rounded-xl p-6 shadow-2xl backdrop-blur-xl;
-}
-
-.tabs {
-  @apply flex flex-col gap-4;
-}
-
-.tab-title {
-  @apply mystic-button w-full text-left;
-}
-
-.tab-title.active {
-  @apply bg-primary/30 border-primary/50;
-}
-
-.tab-content {
-  @apply plane-section mt-4;
-}
-
-@layer utilities {
-  .drop-shadow-dice {
-    filter: drop-shadow(0 2px 8px rgba(125, 90, 255, 0.3));
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Cinzel', serif;
+    @apply text-amber-200;
   }
 
-  @keyframes dice-roll {
-    0% {
-      transform: rotate(0deg) scale(1);
-    }
-    50% {
-      transform: rotate(180deg) scale(1.2);
-    }
-    100% {
-      transform: rotate(360deg) scale(1);
-    }
+  /* Scrollbar personalizada */
+  ::-webkit-scrollbar {
+    width: 12px;
   }
 
-  .animate-dice-roll {
-    animation: dice-roll 0.8s ease-in-out;
+  ::-webkit-scrollbar-track {
+    @apply bg-amber-900/20;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-amber-600/40 rounded-lg;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-amber-500/60;
   }
 }
 
+/* Popup mágico */
+.magical-popup {
+  @apply fixed inset-0 flex items-center justify-center bg-black/70 backdrop-blur-md z-50;
+}
+
+.magical-popup > div {
+  @apply mystic-scroll max-w-md w-full mx-4 shadow-2xl backdrop-blur-xl border-amber-500/50;
+}
+
+/* Abas medievais */
+.medieval-tabs {
+  @apply flex flex-col gap-6;
+}
+
+.medieval-tab-title {
+  @apply mystic-button w-full text-left justify-start;
+}
+
+.medieval-tab-title.active {
+  @apply bg-gradient-to-r from-amber-500/40 to-orange-500/40 border-amber-400/70 text-amber-100;
+}
+
+.medieval-tab-content {
+  @apply parchment-section mt-6;
+}
+
+/* Estilo para impressão */
 @media print {
   body, html, #ficha-personagem, .personagem-ficha-container {
-    background-color: #000 !important;
+    background-color: #f4f1e8 !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
-    color: #fff !important;
+    color: #2d1810 !important;
   }
   
   .personagem-ficha-container {
@@ -197,58 +280,20 @@
     margin: 0 !important;
     padding: 0 !important;
     box-shadow: none !important;
-    border: none !important;
-    background: #000 !important;
-  }
-
-  .personagem-ficha-container img {
-    transition: transform 0.3s ease;
-  }
-
-  .personagem-ficha-container img:hover {
-    transform: scale(1.05);
+    border: 2px solid #8b5a3c !important;
+    background: #f4f1e8 !important;
   }
   
   .no-print {
     display: none !important;
   }
   
-  .bg-black, .bg-black\/50, .bg-black\/70, .bg-black\/80, .bg-black\/30 {
-    background-color: #000 !important;
+  .mystic-scroll, .parchment-section {
+    background: #f8f5f0 !important;
+    border-color: #8b5a3c !important;
   }
   
-  .text-primary {
-    color: #d8b4fe !important;
-  }
-  
-  .border-primary\/30, .border-primary\/40, .border-primary\/50 {
-    border-color: #9333ea !important;
-  }
-  
-  .bg-gradient-to-r {
-    background-image: none !important;
-    background-color: #1a1a1a !important;
-  }
-  
-  /* Forçar todas as cores de texto para branco */
-  * {
-    color: #fff !important;
-  }
-  
-  /* Corrigir ícones */
-  svg {
-    color: #d8b4fe !important;
-    fill: #d8b4fe !important;
-  }
-  
-  /* Corrigir gráficos */
-  .recharts-polar-grid-angle line {
-    stroke: #444 !important;
-  }
-  
-  .recharts-radar-polygon {
-    stroke: var(--chart-color) !important;
-    fill: var(--chart-color) !important;
-    fill-opacity: 0.2 !important;
+  .text-primary, .text-amber-200 {
+    color: #8b5a3c !important;
   }
 }
