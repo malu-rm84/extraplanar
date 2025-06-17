@@ -55,7 +55,7 @@
 @layer components {
   /* Componente principal - Pergaminho Mágico */
   .mystic-scroll {
-    @apply relative bg-gradient-to-br from-amber-50/10 via-yellow-50/5 to-orange-50/10 
+    @apply relative bg-gradient-to-br from-amber-50/10 via-amber-50/5 to-orange-50/10 
            backdrop-blur-sm border-2 border-amber-600/30 rounded-lg p-6 
            shadow-ancient transition-all duration-500 hover:border-amber-500/50 
            hover:shadow-magical;
@@ -118,9 +118,13 @@
 
   /* Seção de pergaminho */
   .parchment-section {
-    @apply bg-gradient-to-br from-amber-50/5 via-yellow-50/3 to-orange-50/5 
+    @apply bg-gradient-to-br from-amber-50/5 to-orange-50/5 
            backdrop-blur-lg border border-amber-600/20 rounded-xl 
            shadow-ancient p-8 relative overflow-hidden;
+    background-image: linear-gradient(135deg, 
+      rgba(253, 230, 138, 0.05) 0%, 
+      rgba(254, 243, 199, 0.03) 50%, 
+      rgba(251, 191, 36, 0.05) 100%);
   }
 
   .parchment-section::before {
