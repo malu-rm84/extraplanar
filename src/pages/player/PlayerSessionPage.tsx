@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Personagem } from '@/components/personagem/types';
 import { ReceberPDSessao } from "@/components/personagem/ReceberPDSessao";
+import { calcularNivelPorPD, calcularTotalPDRecebidos } from '@/components/personagem/types';
 
 interface Session {
   id: string;
@@ -115,7 +116,13 @@ const PlayerSessionPage = () => {
       const charSnap = await getDoc(charRef);
       if (charSnap.exists()) {
         const charData = charSnap.data() as Personagem;
-        setPlayerCharacter({ id: playerCharacter.id, ...charData });
+        const personagemAtualizado = { id: playerCharacter.id, ...charData };
+        
+        // Recalcular nível baseado no novo sistema
+        const totalPD = calcularTotalPDRecebidos(personagemAtualizado);
+        const novoNivel = calcularNivelPorPD(totalPD);
+        
+        setPlayerCharacter({ ...personagemAtualizado, nivel: novoNivel });
       }
     } catch (error) {
       console.error("Erro ao recarregar personagem:", error);
@@ -177,8 +184,13 @@ const PlayerSessionPage = () => {
                 const charSnap = await getDoc(charRef);
                 if (charSnap.exists()) {
                     const charData = charSnap.data() as Personagem;
-                    // Add ID to character data
-                    setPlayerCharacter({ id: playerChar.characterId, ...charData });
+                    const personagemCompleto = { id: playerChar.characterId, ...charData };
+                    
+                    // Garantir que o nível está correto
+                    const totalPD = calcularTotalPDRecebidos(personagemCompleto);
+                    const nivelCorreto = calcularNivelPorPD(totalPD);
+                    
+                    setPlayerCharacter({ ...personagemCompleto, nivel: nivelCorreto });
                 }
             }
 

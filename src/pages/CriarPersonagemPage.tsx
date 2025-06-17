@@ -77,8 +77,7 @@ const calcularTotalPDRecebidos = (personagem: Personagem) => {
   return personagem.pdIniciais + pdSessoes;
 };
 
-const calcularNivel = (personagem: Personagem) => {
-  const totalPD = calcularTotalPDRecebidos(personagem);
+const calcularNivelPorPD = (totalPD: number) => {
   return Math.floor(totalPD / 10);
 };
 
@@ -167,7 +166,7 @@ export const CriarPersonagemPage = ({
             data.pdIniciais = 50;
             data.pdGastos = calcularTotalPDGastos(data);
             data.pdSessoes = [];
-            data.nivel = calcularNivel(data);
+            data.nivel = calcularNivelPorPD(data.pdIniciais);
           }
           setPersonagem(data);
         }
@@ -179,7 +178,8 @@ export const CriarPersonagemPage = ({
   // Atualizar PD gastos sempre que algo mudar
   useEffect(() => {
     const pdGastos = calcularTotalPDGastos(personagem);
-    const nivel = calcularNivel(personagem);
+    const totalPD = calcularTotalPDRecebidos(personagem);
+    const nivel = calcularNivelPorPD(totalPD);
     
     setPersonagem(prev => ({
       ...prev,
@@ -195,7 +195,8 @@ export const CriarPersonagemPage = ({
     personagem.capacidadesSelecionadas,
     personagem.linguasAdquiridas,
     personagem.habilidades,
-    personagem.ppComprados
+    personagem.ppComprados,
+    personagem.pdSessoes
   ]);
 
   const etapas = [
@@ -347,7 +348,7 @@ export const CriarPersonagemPage = ({
         <div className="flex items-center gap-4">
           <div className="text-xl font-bold text-primary bg-black/20 p-3 rounded-lg border border-primary/20">
             <div className="flex flex-col gap-1 text-center">
-              <div className="text-sm text-gray-400">Nível {personagem.nivel}</div>
+              <div className="text-sm text-gray-400">Nível {calcularNivelPorPD(totalPDRecebidos)}</div>
               <div>
                 PD Disponíveis: <span className={`${pdDisponiveis >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                   {pdDisponiveis}

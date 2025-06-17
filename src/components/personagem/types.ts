@@ -47,6 +47,17 @@ export interface SessionPD {
   masterId: string;
 }
 
+// Nova interface para PDs distribuídos pelo mestre
+export interface DistributedPD {
+  sessionId: string;
+  sessionName: string;
+  characterId: string;
+  pdAmount: number;
+  dateDistributed: Date;
+  masterId: string;
+  claimed: boolean;
+}
+
 export interface Personagem {
   // Identificação
   id?: string;
@@ -154,3 +165,15 @@ export interface Personagem {
   pe: number;
   dtTotal: number;
 }
+
+// Função helper para calcular nível baseado nos PDs
+export const calcularNivelPorPD = (totalPD: number): number => {
+  if (totalPD < 50) return 0; // Nível 0 se não atingiu 50 PD
+  return 1 + Math.floor((totalPD - 50) / 10); // Nível 1 aos 50 PD, +1 a cada 10 PD
+};
+
+// Função helper para calcular total de PDs recebidos
+export const calcularTotalPDRecebidos = (personagem: Personagem): number => {
+  const pdSessoes = personagem.pdSessoes?.reduce((acc, session) => acc + session.pdAmount, 0) || 0;
+  return personagem.pdIniciais + pdSessoes;
+};
