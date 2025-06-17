@@ -8,7 +8,7 @@ import { doc, updateDoc, arrayUnion } from "firebase/firestore";
 import { db } from "@/components/auth/firebase-config";
 import { Personagem, SessionPD } from "./types";
 import { useAuth } from "@/contexts/AuthContext";
-import { star } from "lucide-react";
+import { Star } from "lucide-react";
 
 interface ReceberPDSessaoProps {
   personagem: Personagem;
@@ -66,7 +66,7 @@ export const ReceberPDSessao = ({
     return (
       <div className="bg-green-900/30 border border-green-600/40 rounded-lg p-3 text-center">
         <div className="text-green-400 font-medium flex items-center justify-center gap-2">
-          <star className="w-4 h-4" />
+          <Star className="w-4 h-4" />
           PD já recebido: +{pdRecebido?.pdAmount}
         </div>
         <div className="text-xs text-green-300/80 mt-1">
@@ -82,7 +82,7 @@ export const ReceberPDSessao = ({
         onClick={() => setIsOpen(true)}
         className="bg-primary/20 hover:bg-primary/30 border border-primary/30 hover:border-primary/50 transition-all"
       >
-        <star className="w-4 h-4 mr-2" />
+        <Star className="w-4 h-4 mr-2" />
         Receber PD da Sessão
       </Button>
 

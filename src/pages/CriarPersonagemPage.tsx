@@ -88,6 +88,11 @@ const calcularPDDisponiveis = (personagem: Personagem) => {
   return totalRecebidos - totalGastos;
 };
 
+// Função para compatibilidade com os componentes existentes
+const calcularTotalPD = (personagem: Personagem) => {
+  return calcularTotalPDGastos(personagem);
+};
+
 export const CriarPersonagemPage = ({ 
   personagemExistente, 
   onSave 
