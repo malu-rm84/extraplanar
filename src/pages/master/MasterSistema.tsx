@@ -558,10 +558,10 @@ const MasterSistema = () => {
                 </button>
                 <div className="text-center md:text-left">
                   <div className="flex items-center gap-3 justify-center md:justify-start mb-2">
-                    <BookOpen className="text-amber-400 animate-glow" size={32} />
-                    <Wand className="text-primary animate-glow" size={28} />
+                    <BookOpen className="text-amber-400" size={32} />
+                    <Wand className="text-primary" size={28} />
                   </div>
-                  <h1 className="text-3xl md:text-4xl font-medieval font-bold glowing-text">
+                  <h1 className="text-3xl md:text-4xl font-medieval font-bold text-amber-200">
                     Compêndio Extraplanar
                   </h1>
                   <p className="text-amber-300/80 text-base md:text-lg font-serif italic">
@@ -699,7 +699,7 @@ const MasterSistema = () => {
           animation: float 6s ease-in-out infinite;
         }
 
-        /* Brilho místico aprimorado */
+        /* Sombra mística sem brilho */
         .shadow-mystical {
           box-shadow: 
             0 0 20px rgba(251, 191, 36, 0.3),

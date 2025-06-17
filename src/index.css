@@ -112,8 +112,7 @@
 
   /* Títulos medievais */
   .medieval-title {
-    @apply font-medieval text-2xl text-amber-200 text-center mb-6 
-           drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] animate-glow;
+    @apply font-medieval text-2xl text-amber-200 text-center mb-6;
   }
 
   /* Seção de pergaminho */
@@ -150,11 +149,6 @@
            bg-background px-4 text-amber-600 text-lg;
   }
 
-  /* Efeito de texto brilhante */
-  .glowing-text {
-    @apply text-amber-200 drop-shadow-[0_0_10px_rgba(251,191,36,0.5)] animate-glow;
-  }
-
   /* Badge mágico */
   .magic-badge {
     @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium 
@@ -182,11 +176,6 @@
       radial-gradient(circle at 100% 50%, transparent 20%, rgba(255,255,255,0.02) 21%, rgba(255,255,255,0.02) 34%, transparent 35%, transparent),
       linear-gradient(0deg, rgba(255,255,255,0.02) 50%, transparent 50%);
     background-size: 20px 20px, 20px 20px;
-  }
-
-  /* Animação de chama tremeluzente */
-  .flame-flicker {
-    animation: flicker 3s ease-in-out infinite alternate;
   }
 
   /* Brilho mágico */

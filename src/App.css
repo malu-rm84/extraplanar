@@ -32,7 +32,7 @@
   );
 }
 
-/* Efeito de profundidade mágica */
+/* Efeito de profundidade sem brilho */
 .shadow-mystical {
   box-shadow: 
     0 8px 32px rgba(251, 191, 36, 0.2),
@@ -88,15 +88,6 @@
   }
 }
 
-@keyframes magicalPulse {
-  0%, 100% {
-    box-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
-  }
-  50% {
-    box-shadow: 0 0 40px rgba(251, 191, 36, 0.5), 0 0 60px rgba(251, 191, 36, 0.2);
-  }
-}
-
 @keyframes ancientFloat {
   0%, 100% {
     transform: translateY(0px) rotate(0deg);
@@ -111,10 +102,6 @@
 
 .candle-flicker {
   animation: candleFlicker 4s ease-in-out infinite;
-}
-
-.magical-pulse {
-  animation: magicalPulse 3s ease-in-out infinite;
 }
 
 .ancient-float {

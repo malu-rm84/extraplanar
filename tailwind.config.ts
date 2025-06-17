@@ -91,16 +91,6 @@ export default {
           "0%, 100%": { transform: "translateY(0)" },
           "50%": { transform: "translateY(-8px)" },
         },
-        "glow": {
-          "0%, 100%": { 
-            opacity: "0.8",
-            textShadow: "0 0 10px currentColor"
-          },
-          "50%": { 
-            opacity: "1",
-            textShadow: "0 0 20px currentColor, 0 0 30px currentColor"
-          },
-        },
         "flicker": {
           "0%, 100%": { opacity: "1" },
           "50%": { opacity: "0.8" },
@@ -114,7 +104,6 @@ export default {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "float": "float 6s ease-in-out infinite",
-        "glow": "glow 3s ease-in-out infinite",
         "flicker": "flicker 4s ease-in-out infinite",
         "shimmer": "shimmer 3s ease-in-out infinite",
       },
