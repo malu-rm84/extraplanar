@@ -178,8 +178,8 @@ export const calcularTotalPDRecebidos = (pdData: {
 };
 
 export const calcularNivelPorPD = (totalPD: number): number => {
-  if (totalPD < 50) return 0;
-  return 1 + Math.floor((totalPD - 50) / 10);
+  if (totalPD < 50) return 0; // Menos de 50 PD = nível 0
+  return 1 + Math.floor((totalPD - 50) / 10); // 50 PD = nível 1, a cada 10 PDs ganhos +1 nível
 };
 
 export function calcularPP(personagem: Personagem): number {

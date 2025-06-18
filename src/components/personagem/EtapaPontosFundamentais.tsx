@@ -1,5 +1,6 @@
+
 import { Personagem } from "./types";
-import { calcularPP, calcularPV, calcularPE } from "./types";
+import { calcularPP, calcularPV, calcularPE, calcularNivelPorPD, calcularTotalPDRecebidos } from "./types";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -23,6 +24,10 @@ const EtapaPontosFundamentais = ({
   
   // 3. Calcular limite máximo de PP
   const maxPPCompravel = Math.max(0, Math.floor(pdDisponivel / 2));
+
+  // 4. Calcular nível atual do personagem
+  const totalPDPersonagem = calcularTotalPDRecebidos(personagem);
+  const nivelAtual = calcularNivelPorPD(totalPDPersonagem);
 
   const handlePPCompradosChange = (valor: number) => {
     const novoPP = Math.max(0, Math.min(valor, maxPPCompravel));
@@ -49,6 +54,17 @@ const EtapaPontosFundamentais = ({
             </div>
           </div>
           <p className="text-sm text-gray-400 mt-2">Pontos de Desenvolvimento restantes</p>
+        </div>
+
+        {/* Nível do Personagem */}
+        <div className="bg-black/30 backdrop-blur-sm p-4 rounded-lg border border-white/10">
+          <Label className="block text-lg font-medium mb-3 text-gray-300">Nível do Personagem</Label>
+          <div className="text-2xl font-bold text-center text-amber-400">
+            Nível {nivelAtual}
+          </div>
+          <p className="text-sm text-gray-400 mt-2 text-center">
+            {totalPDPersonagem} PD total • {nivelAtual === 0 ? 'Precisa de 50 PD para nível 1' : `Próximo nível: ${50 + (nivelAtual * 10)} PD`}
+          </p>
         </div>
 
         {/* Percepção Passiva (PP) */}

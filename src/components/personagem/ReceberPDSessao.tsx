@@ -1,13 +1,12 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { doc, updateDoc, arrayUnion, collection, query, where, getDocs, writeBatch, getDoc } from "firebase/firestore";
+import { doc, updateDoc, arrayUnion, collection, query, where, getDocs, writeBatch } from "firebase/firestore";
 import { db } from "@/components/auth/firebase-config";
 import { Personagem, SessionPD, DistributedPD, calcularNivelPorPD, calcularTotalPDRecebidos, calcularPP, calcularPV, calcularPE } from "./types";
 import { useAuth } from "@/contexts/AuthContext";
-import { Star, Gift, AlertCircle } from "lucide-react";
+import { Star, Gift, AlertCircle, TrendingUp } from "lucide-react";
 
 interface ReceberPDSessaoProps {
   personagem: Personagem;
@@ -24,7 +23,6 @@ export const ReceberPDSessao = ({
 }: ReceberPDSessaoProps) => {
   const { currentUser } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
-  const [pdAmount, setPdAmount] = useState(1);
   const [loading, setLoading] = useState(false);
   const [distributedPDs, setDistributedPDs] = useState<DistributedPD[]>([]);
   const [loadingDistributed, setLoadingDistributed] = useState(false);
@@ -50,11 +48,6 @@ export const ReceberPDSessao = ({
         pds.push({ ...data, id: doc.id } as any);
       });
       setDistributedPDs(pds);
-      // Se houver PDs distribuídos, usar a soma como valor padrão
-      if (pds.length > 0) {
-        const totalDistribuido = pds.reduce((acc, pd) => acc + pd.pdAmount, 0);
-        setPdAmount(totalDistribuido);
-      }
     } catch (error) {
       console.error("Erro ao buscar PDs distribuídos:", error);
     } finally {
@@ -63,13 +56,13 @@ export const ReceberPDSessao = ({
   };
 
   useEffect(() => {
-    if (isOpen && !jaRecebeuPD) {
+    if (!jaRecebeuPD) {
       buscarPDsDistribuidos();
     }
-  }, [isOpen, sessionId, personagem.id]);
+  }, [sessionId, personagem.id]);
 
-  const receberPD = async () => {
-    if (!personagem.id || !currentUser || pdAmount <= 0) return;
+  const receberPDsDistribuidos = async () => {
+    if (!personagem.id || !currentUser || distributedPDs.length === 0) return;
     setLoading(true);
     try {
       const batch = writeBatch(db);
@@ -78,14 +71,14 @@ export const ReceberPDSessao = ({
       // 1. Calcular total de PDs distribuídos
       const totalDistribuido = distributedPDs.reduce((acc, pd) => acc + pd.pdAmount, 0);
       
-      // 2. Adicionar cada PD distribuído ao array pdSessoes do personagem
-      const novosPDs: SessionPD[] = distributedPDs.map(pd => ({
-        sessionId: pd.sessionId,
-        sessionName: pd.sessionName,
-        pdAmount: pd.pdAmount,
+      // 2. Criar um único SessionPD com o total dos PDs distribuídos
+      const novoPD: SessionPD = {
+        sessionId: sessionId,
+        sessionName: sessionName,
+        pdAmount: totalDistribuido,
         dateReceived: new Date(),
-        masterId: pd.masterId
-      }));
+        masterId: distributedPDs[0].masterId
+      };
       
       // 3. Calcular novo nível e atributos fundamentais
       const totalAtual = calcularTotalPDRecebidos(personagem);
@@ -99,7 +92,7 @@ export const ReceberPDSessao = ({
       
       // 5. Atualizar o personagem com os novos dados
       batch.update(personagemRef, {
-        pdSessoes: arrayUnion(...novosPDs),
+        pdSessoes: arrayUnion(novoPD),
         nivel: novoNivel,
         pp,
         pv,
@@ -117,17 +110,17 @@ export const ReceberPDSessao = ({
       
       await batch.commit();
       setIsOpen(false);
-      setPdAmount(1);
       setDistributedPDs([]);
       onPDReceived();
     } catch (error) {
-      console.error("Erro ao adicionar PD:", error);
-      alert("Erro ao adicionar PD!");
+      console.error("Erro ao receber PDs:", error);
+      alert("Erro ao receber PDs!");
     } finally {
       setLoading(false);
     }
   };
 
+  // Se já recebeu PD desta sessão, mostrar confirmação
   if (jaRecebeuPD) {
     const pdRecebido = personagem.pdSessoes?.find(pd => pd.sessionId === sessionId);
     return (
@@ -143,109 +136,111 @@ export const ReceberPDSessao = ({
     );
   }
 
+  // Se não há PDs distribuídos disponíveis, não mostrar o botão
+  if (distributedPDs.length === 0 && !loadingDistributed) {
+    return null;
+  }
+
+  const totalDistribuido = distributedPDs.reduce((acc, pd) => acc + pd.pdAmount, 0);
   const totalAtual = calcularTotalPDRecebidos(personagem);
   const nivelAtual = calcularNivelPorPD(totalAtual);
-  const novoTotal = totalAtual + pdAmount;
+  const novoTotal = totalAtual + totalDistribuido;
   const novoNivel = calcularNivelPorPD(novoTotal);
 
   return (
     <>
       <Button
         onClick={() => setIsOpen(true)}
-        className="bg-primary/20 hover:bg-primary/30 border border-primary/30 hover:border-primary/50 transition-all relative"
+        className="bg-amber-600/20 hover:bg-amber-600/30 border border-amber-500/30 hover:border-amber-500/50 transition-all relative text-amber-200"
+        disabled={loadingDistributed || distributedPDs.length === 0}
       >
-        <Star className="w-4 h-4 mr-2" />
-        Receber PD da Sessão
-        {distributedPDs.length > 0 && (
+        <Gift className="w-4 h-4 mr-2" />
+        {loadingDistributed ? "Verificando..." : `Receber ${totalDistribuido} PDs`}
+        {totalDistribuido > 0 && (
           <div className="absolute -top-1 -right-1 bg-amber-500 text-black text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
-            !
+            {totalDistribuido}
           </div>
         )}
       </Button>
+
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent className="bg-black/90 border-gray-700 backdrop-blur-lg">
           <DialogHeader>
-            <DialogTitle className="text-white text-xl">
-              Receber PD da Sessão
+            <DialogTitle className="text-white text-xl flex items-center gap-2">
+              <Gift className="w-5 h-5 text-amber-400" />
+              Receber PDs da Sessão
             </DialogTitle>
             <DialogDescription className="text-gray-300">
-              Adicionar PD de desenvolvimento para: {personagem.nome}
+              O mestre distribuiu PDs para: {personagem.nome}
             </DialogDescription>
           </DialogHeader>
+          
           <div className="space-y-4">
             <div>
-              <Label className="text-gray-300">Sessão</Label>
+              <div className="text-gray-300 font-medium mb-1">Sessão</div>
               <div className="text-primary font-medium">{sessionName}</div>
             </div>
-            {/* Mostrar PDs distribuídos pelo mestre */}
-            {loadingDistributed ? (
-              <div className="bg-blue-900/30 border border-blue-600/40 rounded-lg p-4">
-                <div className="text-blue-200 font-medium flex items-center gap-2">
-                  <Star className="w-4 h-4 animate-spin" />
-                  Verificando PDs distribuídos pelo mestre...
-                </div>
+
+            {/* PDs Distribuídos pelo Mestre */}
+            <div className="bg-amber-900/30 border border-amber-600/40 rounded-lg p-4">
+              <div className="text-amber-200 font-medium flex items-center gap-2 mb-3">
+                <Gift className="w-4 h-4" />
+                PDs Distribuídos pelo Mestre
               </div>
-            ) : distributedPDs.length > 0 ? (
-              <div className="bg-amber-900/30 border border-amber-600/40 rounded-lg p-4">
-                <div className="text-amber-200 font-medium flex items-center gap-2 mb-2">
-                  <Gift className="w-4 h-4" />
-                  PDs Distribuídos pelo Mestre
-                </div>
-                <div className="space-y-1">
-                  {distributedPDs.map((pd, index) => (
-                    <div key={index} className="text-sm text-amber-300/80">
-                      +{pd.pdAmount} PD - {new Date(pd.dateDistributed).toLocaleDateString()}
-                    </div>
-                  ))}
-                  <div className="text-amber-200 font-medium mt-2">
-                    Total: +{distributedPDs.reduce((acc, pd) => acc + pd.pdAmount, 0)} PD
+              <div className="space-y-2">
+                {distributedPDs.map((pd, index) => (
+                  <div key={index} className="flex justify-between items-center text-sm">
+                    <span className="text-amber-300/80">
+                      {new Date(pd.dateDistributed).toLocaleDateString()}
+                    </span>
+                    <span className="text-amber-200 font-medium">
+                      +{pd.pdAmount} PD
+                    </span>
+                  </div>
+                ))}
+                <div className="border-t border-amber-600/30 pt-2 mt-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-amber-200 font-bold">Total:</span>
+                    <span className="text-amber-200 font-bold text-lg">
+                      +{totalDistribuido} PD
+                    </span>
                   </div>
                 </div>
               </div>
-            ) : (
-              <div className="bg-gray-900/30 border border-gray-600/40 rounded-lg p-4">
-                <div className="text-gray-400 font-medium flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4" />
-                  Nenhum PD distribuído pelo mestre encontrado
-                </div>
-                <div className="text-xs text-gray-500 mt-1">
-                  Você pode inserir manualmente se necessário
-                </div>
-              </div>
-            )}
-            <div>
-              <Label htmlFor="pdAmount" className="text-gray-300">
-                Quantidade de PD
-              </Label>
-              <Input
-                id="pdAmount"
-                type="number"
-                min="1"
-                max="20"
-                value={pdAmount}
-                onChange={(e) => setPdAmount(parseInt(e.target.value) || 1)}
-                className="bg-black/50 border-white/10 text-gray-200 focus:border-primary/40"
-              />
             </div>
+
+            {/* Progressão do Personagem */}
             <div className="bg-blue-900/30 border border-blue-600/40 rounded-lg p-4">
-              <div className="text-blue-200 font-medium">Progressão do Personagem</div>
-              <div className="text-sm text-blue-300/80 mt-2 space-y-1">
-                <div>Nível Atual: {nivelAtual} ({totalAtual} PD total)</div>
-                <div className="text-green-400">
-                  Após receber: Nível {novoNivel} ({novoTotal} PD total)
-                  {novoNivel > nivelAtual && (
-                    <span className="text-amber-400 font-bold ml-2">
-                      ⬆️ SUBIU DE NÍVEL!
-                    </span>
-                  )}
+              <div className="text-blue-200 font-medium flex items-center gap-2 mb-3">
+                <TrendingUp className="w-4 h-4" />
+                Progressão do Personagem
+              </div>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-blue-300/80">Nível Atual:</span>
+                  <span className="text-blue-200">Nível {nivelAtual} ({totalAtual} PD)</span>
                 </div>
-                <div className="text-xs text-blue-400 mt-2">
-                  Próximo nível: {Math.ceil(novoTotal / 10) * 10} PD 
-                  (faltam {Math.ceil(novoTotal / 10) * 10 - novoTotal} PD)
+                <div className="flex justify-between">
+                  <span className="text-green-400">Após receber:</span>
+                  <span className="text-green-400 font-medium">
+                    Nível {novoNivel} ({novoTotal} PD)
+                    {novoNivel > nivelAtual && (
+                      <span className="text-amber-400 font-bold ml-2">
+                        ⬆️ SUBIU DE NÍVEL!
+                      </span>
+                    )}
+                  </span>
                 </div>
+                {novoNivel === nivelAtual && (
+                  <div className="text-xs text-blue-400 mt-2">
+                    Próximo nível: {50 + (nivelAtual * 10)} PD 
+                    (faltam {50 + (nivelAtual * 10) - novoTotal} PD)
+                  </div>
+                )}
               </div>
             </div>
           </div>
+
           <DialogFooter>
             <Button 
               variant="outline" 
@@ -255,11 +250,11 @@ export const ReceberPDSessao = ({
               Cancelar
             </Button>
             <Button 
-              onClick={receberPD}
-              disabled={loading || pdAmount <= 0}
-              className="bg-primary hover:bg-primary/90 text-white"
+              onClick={receberPDsDistribuidos}
+              disabled={loading || distributedPDs.length === 0}
+              className="bg-amber-600 hover:bg-amber-600/90 text-white"
             >
-              {loading ? "Salvando..." : "Confirmar"}
+              {loading ? "Recebendo..." : `Receber ${totalDistribuido} PDs`}
             </Button>
           </DialogFooter>
         </DialogContent>
