@@ -79,6 +79,7 @@ export const PlayerCampaignDetailPage = () => {
     Record<string, UserProfile>
   >({});
   const [copySuccess, setCopySuccess] = useState(false);
+  const [totalPDNaCampanha, setTotalPDNaCampanha] = useState(0);
 
   // Buscar perfis de usuários
   const fetchUserProfiles = async (userIds: string[]) => {
@@ -107,6 +108,25 @@ export const PlayerCampaignDetailPage = () => {
   useEffect(() => {
     if (!campaignId || !currentUser) return;
 
+    // Calcular total de PDs
+    const calcularTotalPDs = (sessionsList: Session[]) => {
+      if (!sessionsList.length || !currentUser) return 0;
+      
+      return sessionsList
+        .filter((s) => s.status === "concluída")
+        .reduce((acc, session) => {
+          if (!session.xpAwarded || session.xpAwarded.length === 0) return acc;
+          
+          let sessionXp = 0;
+          session.xpAwarded.forEach((distribution) => {
+            const xp = distribution.awards[currentUser.uid] || 0;
+            sessionXp += xp;
+          });
+          
+          return acc + sessionXp;
+        }, 0);
+    };
+
     // Carregar campanha
     const unsubscribeCampaign = onSnapshot(
       doc(db, "campanhas", campaignId),
@@ -124,7 +144,6 @@ export const PlayerCampaignDetailPage = () => {
           } catch (error) {
             console.error("Erro ao buscar foto do mestre:", error);
           }
-
           const campaignData: Campaign = {
             id: campaignDoc.id,
             name: data.name,
@@ -134,9 +153,7 @@ export const PlayerCampaignDetailPage = () => {
             mestreFoto,
             participants: data.participants || [],
           };
-
           setCampaign(campaignData);
-
           // Encontrar o personagem do jogador atual
           const playerChar = campaignData.participants.find(
             (p) =>
@@ -145,7 +162,6 @@ export const PlayerCampaignDetailPage = () => {
               p.approved
           );
           setPlayerCharacter(playerChar || null);
-
           // Coletar IDs de usuários para buscar perfis
           const userIds = [
             data.mestreId,
@@ -153,7 +169,6 @@ export const PlayerCampaignDetailPage = () => {
               .filter((p) => p.userId)
               .map((p) => p.userId as string),
           ].filter((id, index, self) => id && self.indexOf(id) === index);
-
           fetchUserProfiles(userIds);
         }
       }
@@ -178,6 +193,7 @@ export const PlayerCampaignDetailPage = () => {
         } as Session;
       });
       setSessions(sessionsData);
+      setTotalPDNaCampanha(calcularTotalPDs(sessionsData)); // Atualiza total de PDs
       setLoading(false);
     });
 
@@ -190,13 +206,11 @@ export const PlayerCampaignDetailPage = () => {
   const getPlayerXpForSession = (session: Session): number => {
     if (!currentUser) return 0;
     if (!session.xpAwarded || session.xpAwarded.length === 0) return 0;
-
     let totalXp = 0;
     session.xpAwarded.forEach((distribution) => {
       const xp = distribution.awards[currentUser.uid] || 0;
       totalXp += xp;
     });
-
     return totalXp;
   };
 
@@ -228,9 +242,9 @@ export const PlayerCampaignDetailPage = () => {
     );
   }
 
-  const upcomingSessions = sessions.filter((s) => s.status !== "concluída");
-  const pastSessions = sessions.filter((s) => s.status === "concluída");
   const approvedPlayers = campaign.participants.filter((p) => p.approved);
+  const pastSessions = sessions.filter((s) => s.status === "concluída");
+  const upcomingSessions = sessions.filter((s) => s.status !== "concluída");
 
   return (
     <PlayerLayout>
@@ -339,7 +353,6 @@ export const PlayerCampaignDetailPage = () => {
                 })}
             </div>
           </div>
-
           {/* Sessões */}
           <div className="space-y-8">
             {/* Sessões Futuras */}
@@ -387,7 +400,6 @@ export const PlayerCampaignDetailPage = () => {
                 </div>
               )}
             </div>
-
             {/* Sessões Passadas */}
             <div className="bg-black/30 backdrop-blur-lg rounded-xl p-6 border border-white/10">
               <div className="flex items-center gap-3 mb-6">
@@ -432,9 +444,8 @@ export const PlayerCampaignDetailPage = () => {
             </div>
           </div>
         </div>
-
         {/* Estatísticas da Campanha */}
-        <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="mt-8 grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="bg-black/30 backdrop-blur-lg rounded-xl p-6 border border-white/10 text-center">
             <div className="text-3xl font-bold text-primary mb-2">
               {sessions.filter((s) => s.status === "concluída").length}
@@ -452,6 +463,13 @@ export const PlayerCampaignDetailPage = () => {
               {approvedPlayers.length}
             </div>
             <div className="text-muted-foreground">Jogadores Ativos</div>
+          </div>
+          {/* Novo card: PDs Recebidos */}
+          <div className="bg-black/30 backdrop-blur-lg rounded-xl p-6 border border-white/10 text-center">
+            <div className="text-3xl font-bold text-yellow-400 mb-2">
+              {totalPDNaCampanha}
+            </div>
+            <div className="text-muted-foreground">PDs Recebidos</div>
           </div>
         </div>
       </div>

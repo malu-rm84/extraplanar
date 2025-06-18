@@ -47,10 +47,10 @@ const calcularTotalPDGastos = (personagem: Personagem) => {
     ? Object.values(personagem.afinidades).reduce((acc, nivel) => 
         acc + (nivel * (nivel + 1)) / 2, 0)
     : 0;
-  
+    
   const custosPericias = personagem.pericias?.flatMap(c => c.pericias)
     .reduce((acc, p) => acc + (p.custoPD * (p.pontos || 0)), 0) || 0;
-  
+    
   const custosOcupacoes = personagem.ocupacoesSelecionadas?.reduce((acc, ocupacao) => {
     let custo = 0;
     ocupacoes.forEach(categoria => {
@@ -67,12 +67,20 @@ const calcularTotalPDGastos = (personagem: Personagem) => {
   const custosLinguas = personagem.linguasAdquiridas?.reduce((acc, l) => acc + l.custoPD, 0) || 0;
   const custoshabilidades = personagem.habilidades?.flatMap(c => c.itens)
     .reduce((acc, e) => acc + parsePD(e.custo), 0) || 0;
-  const custosPPComprados = (personagem.ppComprados || 0) * 2;
   
+  const custosPPComprados = 2 * (personagem.ppComprados || 0);
+  const custosPVComprados = 2 * (personagem.pvComprados || 0);
+
   return (
-    custosAtributos + custosAfinidades + custosPericias + 
-    custosOcupacoes + custosCapacidades + custosLinguas + 
-    custoshabilidades + custosPPComprados
+    custosAtributos + 
+    custosAfinidades + 
+    custosPericias + 
+    custosOcupacoes + 
+    custosCapacidades + 
+    custosLinguas + 
+    custoshabilidades + 
+    custosPPComprados + 
+    custosPVComprados
   );
 };
 
@@ -85,7 +93,7 @@ const calcularPDDisponiveis = (personagem: Personagem) => {
 
 // Função para compatibilidade com os componentes existentes
 const calcularTotalPD = (personagem: Personagem) => {
-  return calcularTotalPDGastos(personagem);
+  return calcularTotalPDGastos(personagem); // Retorna um número
 };
 
 export const CriarPersonagemPage = ({ 
@@ -107,6 +115,7 @@ export const CriarPersonagemPage = ({
     criadorNome: '',
     dataCriacao: new Date(),
     ppComprados: 0,
+    pvComprados: 0,
     // Novo sistema de PD
     pdIniciais: 50,
     pdGastos: 0,
@@ -189,6 +198,7 @@ export const CriarPersonagemPage = ({
     personagem.linguasAdquiridas,
     personagem.habilidades,
     personagem.ppComprados,
+    personagem.pvComprados,
     personagem.pdSessoes
   ]);
 
@@ -298,7 +308,12 @@ export const CriarPersonagemPage = ({
           calcularTotalPD={calcularTotalPD}
         />;
       case 'pontos-fundamentais':
-        return <EtapaPontosFundamentais personagem={personagem} setPersonagem={setPersonagem} calcularTotalPD={calcularTotalPD} />;
+        return <EtapaPontosFundamentais 
+          personagem={personagem} 
+          setPersonagem={setPersonagem} 
+          calcularTotalPD={calcularTotalPD} 
+          pdDisponivel={pdDisponiveis}
+        />;
       default:
         return <EtapaDadosBasicos personagem={personagem} setPersonagem={setPersonagem} />;
     }

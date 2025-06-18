@@ -220,13 +220,7 @@ const SessionPage = ({ sessionId, onClose }: SessionPageProps) => {
       await Promise.all(distributionPromises);
 
       alert("PD distribuído com sucesso!");
-      
-      // Reset XP values
-      const resetXp: {[key: string]: number} = {};
-      characters.forEach(char => {
-        resetXp[char.id] = 0;
-      });
-      setXpValues(resetXp);
+    
     } catch (error) {
       console.error("Erro ao distribuir PD:", error);
       alert("Erro ao distribuir PD!");

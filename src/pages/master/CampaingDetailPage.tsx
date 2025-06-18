@@ -211,9 +211,9 @@ Comece a registrar suas anotações aqui!`,
   };
 
   const copyCampaignLink = async () => {
-    const campaignLink = `${window.location.origin}/campanha/${campaignId}`;
+    if (!campaign) return; // Adicione esta verificação
     try {
-      await navigator.clipboard.writeText(campaignLink);
+      await navigator.clipboard.writeText(campaign.inviteLink); // Use inviteLink da campanha
       setCopySuccess(true);
       setTimeout(() => setCopySuccess(false), 2000);
     } catch (error) {

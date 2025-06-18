@@ -15,6 +15,17 @@ interface ReceberPDSessaoProps {
   onPDReceived: () => void;
 }
 
+const convertToDate = (dateObj: Date | { toDate: () => Date } | undefined): Date | null => {
+  if (!dateObj) return null;
+  if (dateObj instanceof Date) {
+    return dateObj;
+  }
+  if (typeof dateObj.toDate === 'function') {
+    return dateObj.toDate();
+  }
+  return null;
+};
+
 export const ReceberPDSessao = ({ 
   personagem, 
   sessionId, 
@@ -125,22 +136,6 @@ export const ReceberPDSessao = ({
     }
   };
 
-  // Se já recebeu PD desta sessão, mostrar confirmação
-  if (jaRecebeuPD) {
-    const pdRecebido = personagem.pdSessoes?.find(pd => pd.sessionId === sessionId);
-    return (
-      <div className="bg-green-900/30 border border-green-600/40 rounded-lg p-3 text-center">
-        <div className="text-green-400 font-medium flex items-center justify-center gap-2">
-          <Star className="w-4 h-4" />
-          PD já recebido: +{pdRecebido?.pdAmount}
-        </div>
-        <div className="text-xs text-green-300/80 mt-1">
-          {pdRecebido?.dateReceived.toLocaleDateString()}
-        </div>
-      </div>
-    );
-  }
-
   // Se não há PDs distribuídos disponíveis, não mostrar o botão
   if (distributedPDs.length === 0 && !loadingDistributed) {
     return null;
@@ -193,16 +188,20 @@ export const ReceberPDSessao = ({
                 PDs Distribuídos pelo Mestre
               </div>
               <div className="space-y-2">
-                {distributedPDs.map((pd, index) => (
-                  <div key={index} className="flex justify-between items-center text-sm">
-                    <span className="text-amber-300/80">
-                      {new Date(pd.dateDistributed).toLocaleDateString()}
-                    </span>
-                    <span className="text-amber-200 font-medium">
-                      +{pd.pdAmount} PD
-                    </span>
-                  </div>
-                ))}
+                {distributedPDs.map((pd, index) => {
+                  const dateDistributed = convertToDate(pd.dateDistributed);
+                  
+                  return (
+                    <div key={index} className="flex justify-between items-center text-sm">
+                      <span className="text-amber-300/80">
+                        {dateDistributed ? dateDistributed.toLocaleDateString() : 'Data inválida'}
+                      </span>
+                      <span className="text-amber-200 font-medium">
+                        +{pd.pdAmount} PD
+                      </span>
+                    </div>
+                  );
+                })}
                 <div className="border-t border-amber-600/30 pt-2 mt-2">
                   <div className="flex justify-between items-center">
                     <span className="text-amber-200 font-bold">Total:</span>

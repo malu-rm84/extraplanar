@@ -38,21 +38,34 @@ export type EtapaCriacao =
   | "habilidades"
   | "pontos-fundamentais";
 
+  export const LIMITES_PV_POR_NIVEL: Record<number, number> = {
+    0: 15,  // Nível 0
+    1: 20,  // Nível 1
+    2: 22,  // Nível 2
+    3: 24,  // Nível 3
+    4: 26,  // Nível 4
+    5: 30,  // Nível 5
+    6: 32,  // Nível 6
+    7: 34,  // Nível 7
+    8: 36,  // Nível 8
+    9: 38,  // Nível 9
+    10: 40, // Nível 10
+  };
+
 export interface SessionPD {
   sessionId: string;
   sessionName: string;
   pdAmount: number;
-  dateReceived: Date;
+  dateReceived: Date | { toDate: () => Date };
   masterId: string;
 }
 
-// Nova interface para PDs distribuídos pelo mestre
 export interface DistributedPD {
   sessionId: string;
   sessionName: string;
   characterId: string;
   pdAmount: number;
-  dateDistributed: Date;
+  dateDistributed: Date | { toDate: () => Date };
   masterId: string;
   claimed: boolean;
 }
@@ -156,6 +169,7 @@ export interface Personagem {
 
   // Pontos de Desenvolvimento (legado - manter para compatibilidade)
   ppComprados: number;
+  pvComprados: number; // Novo campo para PV comprados
   pdDisponivel: number;
 
   // Atributos Derivados
@@ -195,15 +209,19 @@ export function calcularPV(personagem: Personagem): number {
   const faixa = FaixasEtarias.find(f => f.nome === personagem.faixaEtaria);
   const bonusFaixa = faixa?.bonusPV || 0;
   
-  // PV inicial (nível 1)
-  const pvBaseNivel1 = 10 + vigorTotal + bonusFaixa;
+  const pvBaseNivel1 = 10 + vigorTotal + bonusFaixa + (personagem.pvComprados || 0);
   const nivel = personagem.nivel || 1;
   
-  // A cada nível, adicionamos vigorTotal + bonusFaixa
   const pvTotal = pvBaseNivel1 + (nivel - 1) * (vigorTotal + bonusFaixa);
-  const pvMax = 20 + (nivel - 1) * 5;
+  
+  // Obter o limite máximo para o nível atual
+  const pvMax = LIMITES_PV_POR_NIVEL[nivel] || 40;
   
   return Math.min(pvTotal, pvMax);
+}
+
+export function calcularPVMaximo(nivel: number): number {
+  return LIMITES_PV_POR_NIVEL[nivel] || 40;
 }
 
 export function calcularPE(personagem: Personagem): number {
