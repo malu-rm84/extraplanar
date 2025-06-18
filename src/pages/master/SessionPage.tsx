@@ -1,12 +1,14 @@
+
 // SessionPage.tsx
 import { useState, useEffect } from "react";
-import { doc, getDoc, updateDoc, arrayUnion } from "firebase/firestore";
+import { doc, getDoc, updateDoc, arrayUnion, collection, addDoc } from "firebase/firestore";
 import { db } from "@/components/auth/firebase-config";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Timer, Eye, Dice6, Users, FileText, User } from "lucide-react";
 import RollPage from "../RollPage";
 import NotesPage from "../NotesPage";
+import { useAuth } from "@/contexts/AuthContext";
 
 export interface Session {
   id: string;
@@ -39,6 +41,7 @@ interface SessionPageProps {
 }
 
 const SessionPage = ({ sessionId, onClose }: SessionPageProps) => {
+  const { currentUser } = useAuth();
   const [session, setSession] = useState<Session | null>(null);
   const [characters, setCharacters] = useState<Character[]>([]);
   const [xpValues, setXpValues] = useState<{[key: string]: number}>({});
@@ -79,22 +82,22 @@ const SessionPage = ({ sessionId, onClose }: SessionPageProps) => {
           if (campaignSnap.exists()) {
             const campaignData = campaignSnap.data();
             
-            // Buscar detalhes completos dos personagens
+            // Buscar detalhes completos dos personagens usando characterId dos participantes
             const charPromises = campaignData.participants
-              .filter((p: any) => p.type === 'character' && p.approved)
+              .filter((p: any) => p.type === 'character' && p.approved && p.characterId)
               .map(async (p: any) => {
-                const charRef = doc(db, "personagens", p.id);
+                const charRef = doc(db, "personagens", p.characterId);
                 const charSnap = await getDoc(charRef);
                 if (charSnap.exists()) {
                   const charData = charSnap.data();
                   return {
-                    id: p.id,
+                    id: p.characterId, // Usar characterId em vez de p.id
                     name: p.name,
                     fotoUrl: charData.fotoUrl || ''
                   };
                 }
                 return {
-                  id: p.id,
+                  id: p.characterId,
                   name: p.name,
                   fotoUrl: ''
                 };
@@ -178,14 +181,46 @@ const SessionPage = ({ sessionId, onClose }: SessionPageProps) => {
   };
 
   const distributeXP = async () => {
+    if (!currentUser || !session) {
+      alert("Erro: Usuário ou sessão não encontrada!");
+      return;
+    }
+
+    // Validar se há PDs para distribuir
+    const hasXpToDistribute = Object.values(xpValues).some(xp => xp > 0);
+    if (!hasXpToDistribute) {
+      alert("Nenhum PD foi definido para distribuição!");
+      return;
+    }
+
     try {
+      // 1. Salvar na sessão (mantendo funcionalidade existente)
       await updateDoc(doc(db, "sessions", sessionId), {
         xpAwarded: arrayUnion({
           date: new Date(),
           awards: xpValues
         })
       });
+
+      // 2. Criar documentos na coleção distributedPDs para cada personagem que recebeu PD
+      const distributionPromises = Object.entries(xpValues)
+        .filter(([_, pdAmount]) => pdAmount > 0)
+        .map(([characterId, pdAmount]) => {
+          return addDoc(collection(db, "distributedPDs"), {
+            sessionId: sessionId,
+            sessionName: session.title,
+            characterId: characterId,
+            pdAmount: pdAmount,
+            masterId: currentUser.uid,
+            dateDistributed: new Date(),
+            claimed: false
+          });
+        });
+
+      await Promise.all(distributionPromises);
+
       alert("PD distribuído com sucesso!");
+      
       // Reset XP values
       const resetXp: {[key: string]: number} = {};
       characters.forEach(char => {
@@ -195,6 +230,38 @@ const SessionPage = ({ sessionId, onClose }: SessionPageProps) => {
     } catch (error) {
       console.error("Erro ao distribuir PD:", error);
       alert("Erro ao distribuir PD!");
+    }
+  };
+
+  const startSession = async () => {
+    await updateDoc(doc(db, "sessions", sessionId), {
+      status: 'em-andamento',
+      startTime: new Date()
+    });
+    setIsActive(true);
+  };
+
+  const stopSession = async () => {
+    await updateDoc(doc(db, "sessions", sessionId), {
+      status: 'concluída',
+      endTime: new Date(),
+      duration: timer,
+      diceRolls: rollCount,
+      notes: notes
+    });
+    setIsActive(false);
+    setShowSummary(true);
+  };
+
+  const saveNotes = async () => {
+    try {
+      await updateDoc(doc(db, "sessions", sessionId), {
+        notes: notes
+      });
+      alert("Anotações salvas!");
+    } catch (error) {
+      console.error("Erro ao salvar anotações:", error);
+      alert("Erro ao salvar anotações!");
     }
   };
 
@@ -367,6 +434,7 @@ const SessionPage = ({ sessionId, onClose }: SessionPageProps) => {
           </div>
         )}
       </div>
+
       {/* Conteúdo Principal */}
       <div className="flex-1 p-6 space-y-6 overflow-y-auto">
         <div className="flex justify-between items-center">
