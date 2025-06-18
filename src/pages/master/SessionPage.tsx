@@ -233,38 +233,6 @@ const SessionPage = ({ sessionId, onClose }: SessionPageProps) => {
     }
   };
 
-  const startSession = async () => {
-    await updateDoc(doc(db, "sessions", sessionId), {
-      status: 'em-andamento',
-      startTime: new Date()
-    });
-    setIsActive(true);
-  };
-
-  const stopSession = async () => {
-    await updateDoc(doc(db, "sessions", sessionId), {
-      status: 'concluída',
-      endTime: new Date(),
-      duration: timer,
-      diceRolls: rollCount,
-      notes: notes
-    });
-    setIsActive(false);
-    setShowSummary(true);
-  };
-
-  const saveNotes = async () => {
-    try {
-      await updateDoc(doc(db, "sessions", sessionId), {
-        notes: notes
-      });
-      alert("Anotações salvas!");
-    } catch (error) {
-      console.error("Erro ao salvar anotações:", error);
-      alert("Erro ao salvar anotações!");
-    }
-  };
-
   if (!session) return <div className="text-center p-8">Carregando sessão...</div>;
 
   const sessionDate = session.scheduledDate.toLocaleDateString('pt-BR');
