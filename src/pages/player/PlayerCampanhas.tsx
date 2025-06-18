@@ -68,13 +68,13 @@ const PlayerCampanhas = () => {
     carregarPersonagens();
   }, [currentUser]);
 
-useEffect(() => {
-  if (!currentUser?.uid) return;
+  useEffect(() => {
+    if (!currentUser?.uid) return;
 
-  const q = query(
-    collection(db, "campanhas"),
-    where("participantUserIds", "array-contains", currentUser.uid)
-  );
+    const q = query(
+      collection(db, "campanhas"),
+      where("participantUserIds", "array-contains", currentUser.uid)
+    );
 
   const unsubscribe = onSnapshot(q, async (snapshot) => {
     const todasCampanhas = snapshot.docs.map(doc => {
@@ -209,6 +209,32 @@ useEffect(() => {
     }
   };
 
+  const getStatusBadgeColor = (status: CampanhaJogador['status']) => {
+    switch (status) {
+      case 'em andamento':
+        return 'bg-green-500/20 text-green-400 border-green-500/30';
+      case 'não iniciada':
+        return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
+      case 'concluída':
+        return 'bg-gray-500/20 text-gray-400 border-gray-500/30';
+      default:
+        return 'bg-gray-500/20 text-gray-400 border-gray-500/30';
+    }
+  };
+
+  const formatStatus = (status: CampanhaJogador['status']) => {
+    switch (status) {
+      case 'em andamento':
+        return 'Em Andamento';
+      case 'não iniciada':
+        return 'Não Iniciada';
+      case 'concluída':
+        return 'Concluída';
+      default:
+        return status;
+    }
+  };
+
   return (
     <PlayerLayout>
       <Dialog open={showJoinModal} onOpenChange={setShowJoinModal}>
@@ -259,11 +285,12 @@ useEffect(() => {
               Minhas Campanhas
             </h1>
             <div className="flex gap-4 items-center">
+              {/* ALTERAR: Texto do botão */}
               <Button onClick={() => setShowJoinModal(true)}
                 size="lg"
                 className="bg-primary/20 hover:bg-primary/30 border border-primary/30 hover:border-primary/50 transition-all shadow-glow hover:shadow-glow-lg"
               >
-                + Nova Campanha
+                + Entrar em Campanha
               </Button>
             </div>
           </div>
@@ -273,70 +300,101 @@ useEffect(() => {
           {campanhasAprovadas.length > 0 && (
             <div className="bg-black/30 backdrop-blur-lg rounded-xl p-6 border border-white/10">
               <h2 className="text-2xl font-bold mb-4 text-primary">Campanhas Ativas</h2>
-              {campanhasAprovadas.map(c => (
-                <div 
-                  key={c.id} 
-                  className="bg-black/30 backdrop-blur-lg rounded-xl p-6 border border-white/10 hover:border-primary/30 transition-colors"
-                >
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-xl font-semibold text-white">
-                          {c.name}
-                        </h3>
-                      </div>
-                      
-                      <p className="text-muted-foreground mb-4">
-                        {c.description}
-                      </p>
-                      
-                      <div className="flex items-center gap-6 text-sm text-muted-foreground">
+              <div className="space-y-4"> {/* ADICIONAR: Container para espaçamento */}
+                {campanhasAprovadas.map(c => (
+                  <div 
+                    key={c.id} 
+                    className="bg-black/30 backdrop-blur-lg rounded-xl p-6 border border-white/10 hover:border-primary/30 transition-colors"
+                  >
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <h3 className="text-xl font-semibold text-white">
+                            {c.name}
+                          </h3>
+                          {/* ADICIONAR: Badge de status */}
+                          <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusBadgeColor(c.status)}`}>
+                            {formatStatus(c.status)}
+                          </span>
+                        </div>
                         
-                        {c.proximaSessao && (
+                        <p className="text-muted-foreground mb-4">
+                          {c.description}
+                        </p>
+                        
+                        <div className="flex items-center gap-6 text-sm text-muted-foreground">
+                          {/* ADICIONAR: Informação de participantes */}
                           <div className="flex items-center gap-2">
-                            <span className="font-medium">Próxima Sessão:</span>
-                            <span className="text-green-400">
-                              {c.proximaSessao.toLocaleDateString('pt-BR', {
-                                day: '2-digit',
-                                month: '2-digit',
-                                year: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit'
-                              })}
+                            <span className="font-medium">Mestre:</span>
+                            <span className="text-primary">
+                              {c.mestreNome}
                             </span>
                           </div>
-                        )}
+                          
+                          {c.proximaSessao && (
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium">Próxima Sessão:</span>
+                              <span className="text-green-400">
+                                {c.proximaSessao.toLocaleDateString('pt-BR', {
+                                  day: '2-digit',
+                                  month: '2-digit',
+                                  year: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                })}
+                              </span>
+                            </div>
+                          )}
+                        </div>
                       </div>
+                      
+                      <Button 
+                        onClick={() => navigate(`/campanha/${c.id}`)}
+                        className="bg-primary hover:bg-primary/90"
+                      >
+                        Ver Detalhes
+                      </Button>
                     </div>
-                    
-                    <Button 
-                      onClick={() => navigate(`/campanha/${c.id}`)}
-                      className="bg-primary hover:bg-primary/90"
-                    >
-                      Ver Detalhes
-                    </Button>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           )}
 
           {campanhasPendentes.length > 0 && (
             <div className="bg-black/30 backdrop-blur-lg rounded-xl p-6 border border-white/10">
               <h2 className="text-2xl font-bold mb-4 text-amber-400">Solicitações Pendentes</h2>
-              {campanhasPendentes.map(c => (
-                <div key={c.id} className="space-y-2 mb-4">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h3 className="text-lg font-semibold text-amber-300">{c.name}</h3>
-                      <p className="text-sm text-amber-500/80">Mestre: {c.mestreNome}</p>
+              <div className="space-y-4"> {/* ADICIONAR: Container para espaçamento */}
+                {campanhasPendentes.map(c => (
+                  <div 
+                    key={c.id} 
+                    className="bg-black/30 backdrop-blur-lg rounded-xl p-6 border border-amber-500/30 hover:border-amber-300/50 transition-colors"
+                  >
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h3 className="text-lg font-semibold text-amber-300">{c.name}</h3>
+                        <p className="text-sm text-amber-500/80 mt-2">Mestre: {c.mestreNome}</p>
+                        <p className="text-muted-foreground mt-2">{c.description}</p>
+                      </div>
+                      <span className="px-3 py-1 rounded-full text-xs font-medium bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                        Pendente
+                      </span>
                     </div>
-                    <Badge variant="outline" className="text-amber-400">
-                      Pendente
-                    </Badge>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ADICIONAR: Mensagem quando não há campanhas */}
+          {campanhasAprovadas.length === 0 && campanhasPendentes.length === 0 && (
+            <div className="bg-black/30 backdrop-blur-lg rounded-xl p-12 border border-white/10 text-center">
+              <p className="text-muted-foreground text-lg">
+                Você não está participando de nenhuma campanha.
+              </p>
+              <p className="text-muted-foreground text-sm mt-2">
+                Clique em "Entrar em Campanha" para participar de uma campanha existente.
+              </p>
             </div>
           )}
         </div>

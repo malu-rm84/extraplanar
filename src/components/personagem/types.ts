@@ -112,6 +112,7 @@ export interface Personagem {
 
   // Progressão
   pericias?: CategoriaPericias[];
+  pdInvestidoPericias?: number; // NOVO CAMPO - PD investido na categoria perícias
   ocupacoesSelecionadas?: Array<{
     nome: string;
     nivel: number;

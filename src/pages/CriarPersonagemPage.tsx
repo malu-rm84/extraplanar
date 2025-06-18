@@ -48,8 +48,8 @@ const calcularTotalPDGastos = (personagem: Personagem) => {
         acc + (nivel * (nivel + 1)) / 2, 0)
     : 0;
     
-  const custosPericias = personagem.pericias?.flatMap(c => c.pericias)
-    .reduce((acc, p) => acc + (p.custoPD * (p.pontos || 0)), 0) || 0;
+  // ALTERAÇÃO: Agora usa pdInvestidoPericias em vez de calcular custo individual das perícias
+  const custosPericias = personagem.pdInvestidoPericias || 0;
     
   const custosOcupacoes = personagem.ocupacoesSelecionadas?.reduce((acc, ocupacao) => {
     let custo = 0;
@@ -150,6 +150,7 @@ export const CriarPersonagemPage = ({
         pontos: 0
       }))
     })),
+    pdInvestidoPericias: 0, // NOVO CAMPO
     linguaMaterna: {} as Lingua,
     linguasAdquiridas: [],
   };

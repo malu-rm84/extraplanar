@@ -12,6 +12,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { ArrowLeft, Users, Calendar, Play, Edit, Trash2, UserMinus, Eye, Check, X, Copy, Link, User } from "lucide-react";
 import SessionPage from "./SessionPage";
 import type { Campaign } from "./MasterCampanhas";
+import { SelectDropdown } from "@/utils/SelectDropdown";
 
 interface UserProfile {
   displayName: string;
@@ -222,6 +223,19 @@ Comece a registrar suas anotações aqui!`,
     }
   };
 
+  const updateCampaignStatus = async (newStatus: Campaign['status']) => {
+    if (!campaign) return;
+    
+    try {
+      await updateDoc(doc(db, "campanhas", campaignId), {
+        status: newStatus
+      });
+    } catch (error) {
+      console.error("Erro ao atualizar status:", error);
+      alert("Erro ao atualizar status da campanha!");
+    }
+  };
+
   const viewCharacterSheet = (characterId: string) => {
     window.open(`/master/personagens/${characterId}`, '_blank');
   };
@@ -403,6 +417,18 @@ Comece a registrar suas anotações aqui!`,
             <p className="text-muted-foreground text-lg mb-4">
               {campaign.description}
             </p>
+          </div>
+          <div className="flex items-center gap-4 mb-4">
+            <span className="text-muted-foreground">Status:</span>
+            <SelectDropdown 
+              value={campaign.status} 
+              onChange={e => updateCampaignStatus(e.target.value as Campaign['status'])}
+              className="bg-black/20 backdrop-blur-lg border border-white/10"
+            >
+              <option value="não iniciada">Não Iniciada</option>
+              <option value="em andamento">Em Andamento</option>
+              <option value="concluída">Concluída</option>
+            </SelectDropdown>
           </div>
           {/* Link da Campanha */}
           <div className="flex items-center gap-2 bg-black/30 backdrop-blur-lg rounded-lg p-3 border border-white/10">

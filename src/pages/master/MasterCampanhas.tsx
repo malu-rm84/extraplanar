@@ -6,12 +6,13 @@ import { Label } from "@/components/ui/label";
 import { SelectDropdown } from "@/utils/SelectDropdown";
 import { 
   addDoc, collection, doc, onSnapshot, 
-  query, where 
+  query, where, updateDoc, deleteDoc 
 } from "firebase/firestore";
 import { db } from "@/components/auth/firebase-config";
 import { useAuth } from "@/contexts/AuthContext";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import CampaignDetailPage from "./CampaingDetailPage";
+import { Edit, Trash2 } from "lucide-react";
 
 interface Participant {
   id: string;
@@ -46,6 +47,10 @@ const MasterCampanhas = () => {
   const [filterStatus, setFilterStatus] = useState<Campaign['status']>('em andamento');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedCampaignId, setSelectedCampaignId] = useState<string | null>(null);
+  
+  // Estados para edição
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingCampaign, setEditingCampaign] = useState<Campaign | null>(null);
 
   useEffect(() => {
     if (!currentUser?.uid) return;
@@ -105,6 +110,38 @@ const MasterCampanhas = () => {
     } catch (error) {
       console.error("Erro ao criar campanha:", error);
       alert("Erro ao criar campanha!");
+    }
+  };
+
+  // Função para atualizar campanha
+  const updateCampaign = async () => {
+    if (!editingCampaign) return;
+    
+    try {
+      const campaignRef = doc(db, "campanhas", editingCampaign.id);
+      await updateDoc(campaignRef, {
+        name: editingCampaign.name,
+        description: editingCampaign.description,
+        status: editingCampaign.status
+      });
+      setShowEditModal(false);
+      setEditingCampaign(null);
+    } catch (error) {
+      console.error("Erro ao atualizar campanha:", error);
+      alert("Erro ao atualizar campanha!");
+    }
+  };
+
+  // Função para excluir campanha
+  const deleteCampaign = async (campaignId: string) => {
+    const confirmDelete = window.confirm("Tem certeza que deseja excluir esta campanha?");
+    if (!confirmDelete) return;
+    
+    try {
+      await deleteDoc(doc(db, "campanhas", campaignId));
+    } catch (error) {
+      console.error("Erro ao excluir campanha:", error);
+      alert("Erro ao excluir campanha!");
     }
   };
 
@@ -199,6 +236,54 @@ const MasterCampanhas = () => {
           </DialogContent>
         </Dialog>
 
+        {/* Modal de Editar Campanha */}
+        <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
+          <DialogContent className="bg-black/90 border-gray-700 backdrop-blur-lg">
+            <DialogHeader>
+              <DialogTitle className="text-white text-xl">Editar Campanha</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="editName">Nome da Campanha</Label>
+                <Input 
+                  id="editName" 
+                  value={editingCampaign?.name || ''} 
+                  onChange={e => editingCampaign && setEditingCampaign({...editingCampaign, name: e.target.value})} 
+                  placeholder="Digite o nome da campanha"
+                />
+              </div>
+              <div>
+                <Label htmlFor="editDescription">Descrição</Label>
+                <Input 
+                  id="editDescription" 
+                  value={editingCampaign?.description || ''} 
+                  onChange={e => editingCampaign && setEditingCampaign({...editingCampaign, description: e.target.value})} 
+                  placeholder="Breve descrição da campanha"
+                />
+              </div>
+              <div>
+                <Label htmlFor="editStatus">Status</Label>
+                <SelectDropdown 
+                  value={editingCampaign?.status || 'não iniciada'} 
+                  onChange={e => editingCampaign && setEditingCampaign({...editingCampaign, status: e.target.value as Campaign['status']})}
+                >
+                  <option value="não iniciada">Não Iniciada</option>
+                  <option value="em andamento">Em Andamento</option>
+                  <option value="concluída">Concluída</option>
+                </SelectDropdown>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowEditModal(false)}>
+                Cancelar
+              </Button>
+              <Button onClick={updateCampaign} disabled={!editingCampaign?.name.trim()}>
+                Atualizar
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
         {/* Cabeçalho */}
         <div className="text-center mb-12 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8">
@@ -286,12 +371,37 @@ const MasterCampanhas = () => {
                     </div>
                   </div>
                   
-                  <Button 
-                    onClick={() => setSelectedCampaignId(campaign.id)}
-                    className="bg-primary hover:bg-primary/90"
-                  >
-                    Ver Detalhes
-                  </Button>
+                  <div className="flex flex-col md:flex-row gap-2">
+                    <Button 
+                      onClick={() => setSelectedCampaignId(campaign.id)}
+                      className="bg-primary hover:bg-primary/90"
+                    >
+                      Ver Detalhes
+                    </Button>
+                    <div className="flex gap-2">
+                      <Button 
+                        variant="outline"
+                        size="icon"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditingCampaign(campaign);
+                          setShowEditModal(true);
+                        }}
+                      >
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button 
+                        variant="destructive"
+                        size="icon"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteCampaign(campaign.id);
+                        }}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
                 </div>
               </div>
             ))
