@@ -14,7 +14,8 @@ import {
   LineChart,
   Line,
   XAxis,
-  YAxis
+  YAxis,
+  Legend
 } from "recharts";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -23,21 +24,19 @@ import {
   Calendar,
   Trophy,
   Dice6,
-  Heart,
-  Shield,
+  Zap,
   Star,
-  BookOpen,
   Users,
-  Zap
+  BookOpen
 } from "lucide-react";
+import { Personagem, calcularTotalPDRecebidos } from "@/components/personagem/types";
 
-interface Character {
+interface PersonagemDashboard {
   id: string;
-  name: string;
-  class: string;
-  level: number;
-  hp: number;
-  maxHp: number;
+  nome: string;
+  raca: string;
+  nivel: number;
+  pdTotal: number;
   createdAt: Date;
 }
 
@@ -61,7 +60,7 @@ const PlayerDashboard = () => {
     nivelMedio: 0,
     xpTotal: 0
   });
-  const [characters, setCharacters] = useState<Character[]>([]);
+  const [characters, setCharacters] = useState<PersonagemDashboard[]>([]);
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [rotatingStatIndex, setRotatingStatIndex] = useState(0);
 
@@ -109,16 +108,17 @@ const PlayerDashboard = () => {
         );
         const charSnap = await getDocs(charQuery);
         const playerCharacters = charSnap.docs.map(doc => {
-          const data = doc.data() as any;
+          const data = doc.data() as Personagem;
           return {
             id: doc.id,
-            name: data.nome,
-            class: data.classe,
-            level: data.nivel || 1,
-            hp: data.hp || 0,
-            maxHp: data.maxHp || 0,
-            createdAt: (data.dataCriacao as any)?.toDate() || new Date()
-          } as Character;
+            nome: data.nome,
+            raca: data.raca,
+            nivel: data.nivel || 1,
+            pdTotal: calcularTotalPDRecebidos(data),
+            createdAt: data.dataCriacao instanceof Date 
+              ? data.dataCriacao 
+              : (data.dataCriacao as any)?.toDate() || new Date()
+          } as PersonagemDashboard;
         });
 
         // Carregar campanhas onde o jogador participa
@@ -154,12 +154,12 @@ const PlayerDashboard = () => {
             .sort((a, b) => a.getTime() - b.getTime())[0] || null;
         const averageLevel = playerCharacters.length
           ? Math.round(
-              playerCharacters.reduce((sum, char) => sum + char.level, 0) /
+              playerCharacters.reduce((sum, char) => sum + char.nivel, 0) /
                 playerCharacters.length
             )
           : 0;
         const totalXp = playerCharacters.reduce(
-          (sum, char) => sum + char.level * 300,
+          (sum, char) => sum + char.nivel * 100, // 100 XP por nível
           0
         );
         const totalSessions = playerCampaigns.reduce(
@@ -227,24 +227,24 @@ const PlayerDashboard = () => {
   const currentRotatingStat = rotatingStats[rotatingStatIndex];
   const IconComponent = currentRotatingStat.icon;
 
-  // Dados para o gráfico de personagens por classe
-  const classData = characters.reduce((acc: any[], char) => {
-    const existing = acc.find(item => item.name === char.class);
+  // Dados para o gráfico de personagens por raça
+  const raceData = characters.reduce((acc: any[], char) => {
+    const existing = acc.find(item => item.name === char.raca);
     if (existing) {
       existing.value += 1;
     } else {
-      acc.push({ name: char.class, value: 1 });
+      acc.push({ name: char.raca, value: 1 });
     }
     return acc;
   }, []);
 
   const COLORS = ["#9333ea", "#3b82f6", "#10b981", "#f59e0b", "#ef4444"];
 
-  // Dados para gráfico de progressão de nível
-  const levelProgressData = characters.map(char => ({
-    name: char.name,
-    level: char.level,
-    hp: char.maxHp ? Math.round((char.hp / char.maxHp) * 100) : 0
+  // Dados para gráfico de progressão de personagens (nível e PD)
+  const progressionData = characters.map(char => ({
+    name: char.nome,
+    nivel: char.nivel,
+    pd: char.pdTotal
   }));
 
   return (
@@ -362,17 +362,17 @@ const PlayerDashboard = () => {
 
         {/* Gráficos */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          {/* Distribuição por Classe */}
+          {/* Distribuição por Raça (antigo "por Classe") */}
           <div className="bg-black/30 backdrop-blur-lg rounded-xl p-6 border border-white/10 hover:border-primary/20 transition-all duration-300">
             <h3 className="text-lg font-semibold mb-4 text-primary">
-              Personagens por Classe
+              Personagens por Raça
             </h3>
             <div className="h-64">
-              {classData.length > 0 ? (
+              {raceData.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
-                      data={classData}
+                      data={raceData}
                       cx="50%"
                       cy="50%"
                       innerRadius={60}
@@ -380,7 +380,7 @@ const PlayerDashboard = () => {
                       paddingAngle={5}
                       dataKey="value"
                     >
-                      {classData.map((entry, index) => (
+                      {raceData.map((entry, index) => (
                         <Cell
                           key={`cell-${index}`}
                           fill={COLORS[index % COLORS.length]}
@@ -398,15 +398,15 @@ const PlayerDashboard = () => {
             </div>
           </div>
 
-          {/* Progressão de Personagens */}
+          {/* Progressão de Personagens (nível e PD) */}
           <div className="bg-black/30 backdrop-blur-lg rounded-xl p-6 border border-white/10 hover:border-primary/20 transition-all duration-300">
             <h3 className="text-lg font-semibold mb-4 text-primary">
               Progressão dos Personagens
             </h3>
             <div className="h-64">
-              {levelProgressData.length > 0 ? (
+              {progressionData.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={levelProgressData}>
+                  <LineChart data={progressionData}>
                     <XAxis
                       dataKey="name"
                       stroke="#6b7280"
@@ -414,12 +414,22 @@ const PlayerDashboard = () => {
                     />
                     <YAxis stroke="#6b7280" tick={{ fill: "#9ca3af" }} />
                     <Tooltip content={<CustomTooltip />} />
+                    <Legend />
                     <Line
                       type="monotone"
-                      dataKey="level"
+                      dataKey="nivel"
+                      name="Nível"
                       stroke="#9333ea"
                       strokeWidth={3}
                       dot={{ fill: "#9333ea", strokeWidth: 2, r: 6 }}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="pd"
+                      name="PD Total"
+                      stroke="#3b82f6"
+                      strokeWidth={3}
+                      dot={{ fill: "#3b82f6", strokeWidth: 2, r: 6 }}
                     />
                   </LineChart>
                 </ResponsiveContainer>
@@ -446,30 +456,17 @@ const PlayerDashboard = () => {
                 >
                   <div className="flex items-center justify-between mb-2">
                     <h4 className="font-semibold text-white">
-                      {character.name}
+                      {character.nome}
                     </h4>
                     <span className="text-xs bg-primary/20 text-primary px-2 py-1 rounded">
-                      Nv. {character.level}
+                      Nv. {character.nivel}
                     </span>
                   </div>
                   <p className="text-sm text-muted-foreground mb-2">
-                    {character.class}
+                    {character.raca}
                   </p>
-                  <div className="flex items-center gap-2">
-                    <Heart className="h-4 w-4 text-red-400" />
-                    <div className="flex-1 bg-black/30 rounded-full h-2">
-                      <div
-                        className="bg-red-400 h-2 rounded-full transition-all duration-300"
-                        style={{
-                          width: character.maxHp
-                            ? `${(character.hp / character.maxHp) * 100}%`
-                            : "0%"
-                        }}
-                      />
-                    </div>
-                    <span className="text-xs text-muted-foreground">
-                      {character.hp}/{character.maxHp}
-                    </span>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <span>PD: {character.pdTotal}</span>
                   </div>
                 </div>
               ))}
