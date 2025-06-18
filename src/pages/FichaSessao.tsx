@@ -54,17 +54,13 @@ const getChartColor = (plano: string) => {
 const FichaSessao = ({ personagem }: FichaSessaoProps) => {
   const chartColor = getChartColor(personagem.plano);
   
-  // Estado para controlar valores de sessão
+  // Estado para controlar valores de sessão - apenas PV e PE editáveis
   const [dadosSessao, setDadosSessao] = useState({
     pvAtual: personagem.pv,
-    peAtual: personagem.pe,
-    pdAtual: personagem.pdDisponivel,
-    ppAtual: personagem.pp,
-    dtAtual: personagem.dtTotal
+    peAtual: personagem.pe
   });
 
-
-   const gradientMap: Record<string, string> = {
+  const gradientMap: Record<string, string> = {
     red: 'from-red-600 to-red-400',
     blue: 'from-blue-600 to-blue-400',
     yellow: 'from-yellow-600 to-yellow-400',
@@ -105,19 +101,12 @@ const FichaSessao = ({ personagem }: FichaSessaoProps) => {
     }
   }, [dadosSessao, alteracoesPendentes]);
 
-  const atualizarValor = (campo: string, valor: number, max?: number) => {
-  const numValue = isNaN(valor) ? 0 : valor;
-    setDadosSessao(prev => {
-      // Apenas DT tem limite máximo fixo (60)
-      const novoValor = campo === 'dtAtual'
-        ? Math.max(0, Math.min(valor, 60)) // Limita DT entre 0 e 60
-        : Math.max(0, valor); // Outros recursos podem exceder o máximo inicial
-      
-      return {
-        ...prev,
-        [campo]: novoValor
-      };
-    });
+  const atualizarValor = (campo: string, valor: number) => {
+    const numValue = isNaN(valor) ? 0 : valor;
+    setDadosSessao(prev => ({
+      ...prev,
+      [campo]: Math.max(0, numValue)
+    }));
     setAlteracoesPendentes(true);
   };
 
@@ -173,29 +162,29 @@ const FichaSessao = ({ personagem }: FichaSessaoProps) => {
     fullMark: 5
   }));
 
-  // Componente para estatísticas editáveis
-    const RecursoSessao = ({ 
+  // Componente para estatísticas editáveis (apenas PV e PE)
+  const RecursoSessao = ({ 
     label, 
     valor, 
+    valorSessao,
     max, 
-    maxDisplay, // Novo prop para valor a ser exibido
     onChange, 
     cor = "purple", 
     icone,
-    editavel = true
+    editavel = false
   }: {
     label: string;
     valor: number;
+    valorSessao?: number;
     max?: number;
-    maxDisplay?: number; // Novo prop
-    onChange?: (val: number, max?: number) => void;
+    onChange?: (val: number) => void;
     cor?: string;
     icone: JSX.Element;
     editavel?: boolean;
   }) => {
-    const borderClass = borderColorMap[cor] || 'border-purple-500/40 hover:border-purple-500/50';
-    const staticBorderClass = staticBorderColorMap[cor] || 'border-purple-500/40';
+    const borderClass = editavel ? (borderColorMap[cor] || 'border-purple-500/40 hover:border-purple-500/50') : (staticBorderColorMap[cor] || 'border-purple-500/40');
     const gradientClass = gradientMap[cor] || 'from-purple-600 to-purple-400';
+    const valorAtual = valorSessao !== undefined ? valorSessao : valor;
 
     return (
       <div className={`bg-gray-900/80 rounded-lg p-3 transition-colors ${borderClass}`}>
@@ -207,13 +196,13 @@ const FichaSessao = ({ personagem }: FichaSessaoProps) => {
           {editavel && onChange && (
             <div className="flex items-center gap-1">
               <button
-                onClick={() => onChange(valor - 1)}
+                onClick={() => onChange(valorAtual - 1)}
                 className="w-6 h-6 bg-red-600 hover:bg-red-700 rounded text-white flex items-center justify-center text-xs transition-colors"
               >
                 <Minus className="w-3 h-3" />
               </button>
               <button
-                onClick={() => onChange(valor + 1)}
+                onClick={() => onChange(valorAtual + 1)}
                 className="w-6 h-6 bg-green-600 hover:bg-green-700 rounded text-white flex items-center justify-center text-xs transition-colors"
               >
                 <Plus className="w-3 h-3" />
@@ -225,33 +214,30 @@ const FichaSessao = ({ personagem }: FichaSessaoProps) => {
         <div className="flex items-center gap-3">
           {max !== undefined ? (
             <>
-              <div className={`flex-1 bg-gray-800 rounded h-4 relative overflow-hidden ${staticBorderClass}`}>
+              <div className={`flex-1 bg-gray-800 rounded h-4 relative overflow-hidden ${staticBorderColorMap[cor] || 'border-purple-500/40'}`}>
                 <div 
                   className={`h-full bg-gradient-to-r ${gradientClass} transition-all duration-300`}
                   style={{ 
-                    // Garante que a barra não ultrapasse 100% visualmente
-                    width: `${Math.min(100, (valor / max) * 100)}%` 
+                    width: `${Math.min(100, (valorAtual / max) * 100)}%` 
                   }}
                 />
               </div>
               <div className="text-white font-bold min-w-[60px] text-center">
-                {valor}/{maxDisplay ?? max} {/* Usa maxDisplay se existir */}
+                {valorAtual}/{max}
               </div>
             </>
           ) : (
-            // PP agora tem barra também
             <div className="w-full flex items-center gap-3">
-              <div className={`flex-1 bg-gray-800 rounded h-4 relative overflow-hidden ${staticBorderClass}`}>
+              <div className={`flex-1 bg-gray-800 rounded h-4 relative overflow-hidden ${staticBorderColorMap[cor] || 'border-purple-500/40'}`}>
                 <div 
                   className={`h-full bg-gradient-to-r ${gradientClass} transition-all duration-300`}
                   style={{ 
-                    // PP não tem máximo definido, usa 100% quando valor > 0
-                    width: valor > 0 ? '100%' : '0%' 
+                    width: valorAtual > 0 ? '100%' : '0%' 
                   }}
                 />
               </div>
               <div className="text-white font-bold min-w-[60px] text-center">
-                {valor}
+                {valorAtual}
               </div>
             </div>
           )}
@@ -356,55 +342,56 @@ const FichaSessao = ({ personagem }: FichaSessaoProps) => {
         {/* Aba Stats */}
         {abaAtiva === 'stats' && (
           <div className="space-y-6">
-            {/* Stats Principais */}
+            {/* Stats Principais - apenas PV e PE editáveis */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-                <RecursoSessao
+              <RecursoSessao
                 label="PV"
-                valor={dadosSessao.pvAtual}
-                max={personagem.pv} // Para cálculo da barra
-                onChange={(val, max) => atualizarValor('pvAtual', val, max)}
+                valor={personagem.pv}
+                valorSessao={dadosSessao.pvAtual}
+                max={personagem.pv}
+                onChange={(val) => atualizarValor('pvAtual', val)}
                 cor="red"
                 icone={<Heart className="w-4 h-4 text-red-400" />}
+                editavel={true}
               />
               
               <RecursoSessao
                 label="PE"
-                valor={dadosSessao.peAtual}
+                valor={personagem.pe}
+                valorSessao={dadosSessao.peAtual}
                 max={personagem.pe}
-                onChange={(val, max) => atualizarValor('peAtual', val, max)}
+                onChange={(val) => atualizarValor('peAtual', val)}
                 cor="blue"
                 icone={<Zap className="w-4 h-4 text-blue-400" />}
+                editavel={true}
               />
               
+              {/* PD não editável */}
               <RecursoSessao
                 label="PD"
-                valor={dadosSessao.pdAtual}
-                max={personagem.pdDisponivel}
-                onChange={(val, max) => atualizarValor('pdAtual', val, max)}
+                valor={personagem.pdDisponivel || 0}
                 cor="yellow"
                 icone={<Star className="w-4 h-4 text-yellow-400" />}
+                editavel={false}
               />
               
-              {/* PP agora tem barra */}
+              {/* PP não editável */}
               <RecursoSessao
                 label="PP"
-                valor={dadosSessao.ppAtual}
-                max={personagem.pp} // Máximo para cálculo da barra
-                maxDisplay={personagem.pp} // Valor inicial para exibição
-                onChange={(val) => atualizarValor('ppAtual', val)}
+                valor={personagem.pp}
                 cor="purple"
                 icone={<Eye className="w-4 h-4 text-purple-400" />}
+                editavel={false}
               />
               
-              {/* DT com valor exibido sendo atual/inicial */}
+              {/* DT não editável */}
               <RecursoSessao
                 label="DT"
-                valor={dadosSessao.dtAtual}
-                max={60} 
-                maxDisplay={personagem.dtTotal} 
-                onChange={(val, max) => atualizarValor('dtAtual', val, max)}
+                valor={personagem.dtTotal || 0}
+                max={60}
                 cor="green"
                 icone={<Shield className="w-4 h-4 text-green-400" />}
+                editavel={false}
               />
             </div>
 
@@ -455,7 +442,7 @@ const FichaSessao = ({ personagem }: FichaSessaoProps) => {
               </div>
             </div>
 
-            {/* Ações Rápidas */}
+            {/* Ações Rápidas - atualizadas para apenas PV e PE */}
             <div className="bg-gray-900/50 border border-gray-700 rounded-lg p-4">
               <h2 className="text-lg font-bold text-purple-400 mb-4 flex items-center gap-2">
                 <Dice6 className="w-5 h-5" />
@@ -463,7 +450,7 @@ const FichaSessao = ({ personagem }: FichaSessaoProps) => {
               </h2>
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                 <button 
-                  onClick={() => atualizarValor('pvAtual', personagem.pv, personagem.pv)}
+                  onClick={() => atualizarValor('pvAtual', personagem.pv)}
                   className="bg-red-600 hover:bg-red-700 rounded-lg p-3 text-center transition-colors flex flex-col items-center"
                 >
                   <Heart className="w-6 h-6 mx-auto mb-1" />
@@ -471,7 +458,7 @@ const FichaSessao = ({ personagem }: FichaSessaoProps) => {
                 </button>
                 
                 <button 
-                  onClick={() => atualizarValor('peAtual', personagem.pe, personagem.pe)}
+                  onClick={() => atualizarValor('peAtual', personagem.pe)}
                   className="bg-blue-600 hover:bg-blue-700 rounded-lg p-3 text-center transition-colors flex flex-col items-center"
                 >
                   <Zap className="w-6 h-6 mx-auto mb-1" />
@@ -480,8 +467,8 @@ const FichaSessao = ({ personagem }: FichaSessaoProps) => {
                 
                 <button 
                   onClick={() => {
-                    atualizarValor('pvAtual', 1, personagem.pv);
-                    atualizarValor('peAtual', 0, personagem.pe);
+                    atualizarValor('pvAtual', 1);
+                    atualizarValor('peAtual', 0);
                   }}
                   className="bg-gray-600 hover:bg-gray-700 rounded-lg p-3 text-center transition-colors flex flex-col items-center"
                 >
@@ -493,10 +480,7 @@ const FichaSessao = ({ personagem }: FichaSessaoProps) => {
                   onClick={() => {
                     setDadosSessao({
                       pvAtual: personagem.pv,
-                      peAtual: personagem.pe,
-                      pdAtual: personagem.pdDisponivel,
-                      ppAtual: personagem.pp,
-                      dtAtual: personagem.dtTotal
+                      peAtual: personagem.pe
                     });
                     setAlteracoesPendentes(true);
                   }}

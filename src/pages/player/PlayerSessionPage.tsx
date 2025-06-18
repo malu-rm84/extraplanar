@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Personagem } from "@/components/personagem/types";
 import { calcularNivelPorPD, calcularTotalPDRecebidos } from "@/components/personagem/types";
+import { ReceberPDSessao } from "@/components/personagem/ReceberPDSessao";
 
 interface Session {
   id: string;
@@ -349,6 +350,24 @@ const PlayerSessionPage = () => {
                     <h3 className="text-lg font-semibold">PDs Recebidos</h3>
                     <p className="text-2xl text-yellow-400 font-bold">{xpReceived} PDs</p>
                   </div>
+                </div>
+              </div>
+            )}
+
+            {/* Botão Receber PD - sempre visível quando há PDs distribuídos */}
+            {playerCharacter && (
+              <div className="bg-black/30 backdrop-blur-lg rounded-xl p-6 border border-white/10">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg font-semibold text-white mb-2">Pontos de Desenvolvimento</h3>
+                    <p className="text-gray-400">Receba os PDs distribuídos pelo mestre nesta sessão</p>
+                  </div>
+                  <ReceberPDSessao
+                    personagem={playerCharacter}
+                    sessionId={sessionId!}
+                    sessionName={session.title}
+                    onPDReceived={recarregarPersonagem}
+                  />
                 </div>
               </div>
             )}

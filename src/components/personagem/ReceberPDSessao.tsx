@@ -6,7 +6,7 @@ import { doc, updateDoc, arrayUnion, collection, query, where, getDocs, writeBat
 import { db } from "@/components/auth/firebase-config";
 import { Personagem, SessionPD, DistributedPD, calcularNivelPorPD, calcularTotalPDRecebidos, calcularPP, calcularPV, calcularPE } from "./types";
 import { useAuth } from "@/contexts/AuthContext";
-import { Star, Gift, AlertCircle, TrendingUp } from "lucide-react";
+import { Star, Gift, TrendingUp } from "lucide-react";
 
 interface ReceberPDSessaoProps {
   personagem: Personagem;
@@ -80,27 +80,32 @@ export const ReceberPDSessao = ({
         masterId: distributedPDs[0].masterId
       };
       
-      // 3. Calcular novo nível e atributos fundamentais
+      // 3. Calcular novo total de PDs e nível
       const totalAtual = calcularTotalPDRecebidos(personagem);
       const novoTotal = totalAtual + totalDistribuido;
       const novoNivel = calcularNivelPorPD(novoTotal);
       
-      // 4. Calcular atributos fundamentais com o novo nível
-      const pp = calcularPP({ ...personagem, nivel: novoNivel });
-      const pv = calcularPV({ ...personagem, nivel: novoNivel });
-      const pe = calcularPE({ ...personagem, nivel: novoNivel });
+      // 4. Somar PDs ao pdDisponivel atual
+      const novoPdDisponivel = (personagem.pdDisponivel || 0) + totalDistribuido;
       
-      // 5. Atualizar o personagem com os novos dados
+      // 5. Calcular atributos fundamentais com o novo nível
+      const personagemAtualizado = { ...personagem, nivel: novoNivel, pdDisponivel: novoPdDisponivel };
+      const pp = calcularPP(personagemAtualizado);
+      const pv = calcularPV(personagemAtualizado);
+      const pe = calcularPE(personagemAtualizado);
+      
+      // 6. Atualizar o personagem com os novos dados
       batch.update(personagemRef, {
         pdSessoes: arrayUnion(novoPD),
         nivel: novoNivel,
+        pdDisponivel: novoPdDisponivel,
         pp,
         pv,
         pe,
         dataAtualizacao: new Date()
       });
       
-      // 6. Marcar cada PD distribuído como reclamado
+      // 7. Marcar cada PD distribuído como reclamado
       for (const distributedPD of distributedPDs) {
         if ((distributedPD as any).id) {
           const distributedRef = doc(db, "distributedPDs", (distributedPD as any).id);
@@ -221,9 +226,13 @@ export const ReceberPDSessao = ({
                   <span className="text-blue-200">Nível {nivelAtual} ({totalAtual} PD)</span>
                 </div>
                 <div className="flex justify-between">
+                  <span className="text-blue-300/80">PD Disponível Atual:</span>
+                  <span className="text-blue-200">{personagem.pdDisponivel || 0} PD</span>
+                </div>
+                <div className="flex justify-between">
                   <span className="text-green-400">Após receber:</span>
                   <span className="text-green-400 font-medium">
-                    Nível {novoNivel} ({novoTotal} PD)
+                    Nível {novoNivel} ({novoTotal} PD total)
                     {novoNivel > nivelAtual && (
                       <span className="text-amber-400 font-bold ml-2">
                         ⬆️ SUBIU DE NÍVEL!
@@ -231,12 +240,12 @@ export const ReceberPDSessao = ({
                     )}
                   </span>
                 </div>
-                {novoNivel === nivelAtual && (
-                  <div className="text-xs text-blue-400 mt-2">
-                    Próximo nível: {50 + (nivelAtual * 10)} PD 
-                    (faltam {50 + (nivelAtual * 10) - novoTotal} PD)
-                  </div>
-                )}
+                <div className="flex justify-between">
+                  <span className="text-green-400">PD Disponível:</span>
+                  <span className="text-green-400 font-medium">
+                    {(personagem.pdDisponivel || 0) + totalDistribuido} PD
+                  </span>
+                </div>
               </div>
             </div>
           </div>
